@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 BossHide is a simple platformer. The player must reach the end of the level without being spotted, while doing tasks and actions along the way. In the story, an employee is trying to reach the toilets without being seen by the boss.
 
-The project uses Godot 4.3 with the GL Compatibility renderer. `Scene.tscn` is the main scene: a level with the player (`player/`), two walls and a visual floor. The player only moves left and right for now, and the camera follows it. The installed Godot is the Mono build and `project.godot` has an assembly name, but the project has no C# code; the existing scripts are GDScript.
+The project uses Godot 4.3 with the GL Compatibility renderer. `Scene.tscn` is the main scene: a level (`level/`) with the player (`player/`), two walls, a visual floor and a goal zone. The player starts at the left edge, only moves left and right for now, and the camera follows it. Reaching the goal zone near the right wall shows a success message, freezes the player and lets R restart the level. The installed Godot is the Mono build and `project.godot` has an assembly name, but the project has no C# code; the existing scripts are GDScript.
 
 ## Commands
 

@@ -1,11 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://dv8kwa3gq10jy"]
+[gd_scene load_steps=5 format=3 uid="uid://dv8kwa3gq10jy"]
 
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://level/level.gd" id="2_level"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mur"]
 size = Vector2(40, 800)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_arrivee"]
+size = Vector2(40, 96)
+
 [node name="Node2D" type="Node2D"]
+script = ExtResource("2_level")
 
 [node name="Sol" type="ColorRect" parent="."]
 offset_left = -1520.0
@@ -126,4 +131,34 @@ offset_right = 20.0
 offset_bottom = 400.0
 color = Color(0.75, 0.3, 0.3, 1)
 
+[node name="Arrivee" type="Area2D" parent="."]
+position = Vector2(1460, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Arrivee"]
+position = Vector2(0, -16)
+shape = SubResource("RectangleShape2D_arrivee")
+
+[node name="Visuel" type="ColorRect" parent="Arrivee"]
+offset_left = -20.0
+offset_top = -64.0
+offset_right = 20.0
+offset_bottom = 32.0
+color = Color(0.3, 0.75, 0.4, 1)
+
 [node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(-1440, 0)
+
+[node name="Interface" type="CanvasLayer" parent="."]
+
+[node name="MessageSucces" type="Label" parent="Interface"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Bravo, tu as atteint les toilettes !
+Appuie sur R pour rejouer"
+horizontal_alignment = 1
+vertical_alignment = 1
