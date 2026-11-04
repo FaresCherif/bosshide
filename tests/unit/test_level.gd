@@ -74,7 +74,7 @@ func test_le_signal_de_l_arrivee_est_connecte() -> void:
 func test_le_message_de_succes_est_cache_au_depart() -> void:
 	var message: Label = _instantiate_level().get_node("Interface/MessageSucces")
 	assert_false(message.visible, "Le message de succes doit etre cache au depart")
-	assert_string_contains(message.text, "Bravo, tu as atteint les toilettes !")
+	assert_string_contains(message.text, "Well done, you made it to the toilets!")
 
 
 func test_un_autre_corps_ne_declenche_pas_le_succes() -> void:
@@ -94,6 +94,87 @@ func test_le_joueur_dans_l_arrivee_declenche_le_succes() -> void:
 
 	assert_true(level.get_node("Interface/MessageSucces").visible, "Le message doit s'afficher a l'arrivee")
 	assert_false(player.is_physics_processing(), "Le joueur doit etre fige a l'arrivee")
+
+
+func test_le_manager_est_au_milieu_du_parcours() -> void:
+	var level := _instantiate_level()
+	var manager: Node2D = level.get_node_or_null("Manager")
+	assert_not_null(manager, "Le niveau doit contenir le manager")
+	var middle: float = (level.get_node("MurGauche").position.x + level.get_node("MurDroit").position.x) / 2.0
+	assert_eq(manager.position.x, middle, "Le manager doit etre au milieu du parcours")
+
+
+func test_le_manager_est_dessine_derriere_le_joueur() -> void:
+	var level := _instantiate_level()
+	var manager_index: int = level.get_node("Manager").get_index()
+	assert_lt(manager_index, level.get_node("Player").get_index(), "Le manager doit etre en arriere-plan")
+
+
+func test_le_message_de_game_over_est_cache_au_depart() -> void:
+	var message: Label = _instantiate_level().get_node("Interface/MessageGameOver")
+	assert_false(message.visible, "Le message de game over doit etre cache au depart")
+	assert_string_contains(message.text, "Game over")
+
+
+func test_le_signal_du_manager_est_connecte() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var manager: Node = level.get_node("Manager")
+	assert_true(manager.body_spotted.is_connected(level._on_manager_body_spotted), "Le manager doit prevenir le niveau")
+
+
+func test_un_autre_corps_ne_declenche_pas_le_game_over() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var other: Node2D = autofree(StaticBody2D.new())
+	level._on_manager_body_spotted(other)
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "Seul le joueur doit declencher le game over")
+
+
+func test_le_joueur_vu_de_face_declenche_le_game_over() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+	var manager: Node2D = level.get_node("Manager")
+
+	player.position = manager.position
+	await wait_physics_frames(5)
+
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le message doit s'afficher")
+	assert_false(player.is_physics_processing(), "Le joueur doit etre fige au game over")
+	assert_false(manager.is_physics_processing(), "Le manager doit arreter son cycle au game over")
+
+
+func test_le_joueur_passe_quand_le_manager_est_de_dos() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+	var manager: Node2D = level.get_node("Manager")
+
+	manager._physics_process(ManagerWatch.FACING_DURATION)
+	player.position = manager.position
+	await wait_physics_frames(5)
+
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "De dos il ne doit pas y avoir de game over")
+	assert_true(player.is_physics_processing(), "Le joueur doit pouvoir continuer")
+
+
+func test_le_joueur_dans_la_zone_au_retournement_declenche_le_game_over() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+	var manager: Node2D = level.get_node("Manager")
+
+	manager._physics_process(ManagerWatch.FACING_DURATION)
+	player.position = manager.position
+	await wait_physics_frames(5)
+	manager._physics_process(ManagerWatch.BACK_DURATION)
+	await wait_physics_frames(5)
+
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le joueur reste dans la zone : game over")
+
+
+func test_la_victoire_arrete_le_manager() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+	player.position = level.get_node("Arrivee").position
+	await wait_physics_frames(5)
+	assert_false(level.get_node("Manager").is_physics_processing(), "Le manager doit s'arreter a la victoire")
 
 
 func test_action_rejouer_a_sa_touche() -> void:

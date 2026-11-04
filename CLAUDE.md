@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 BossHide is a simple platformer. The player must reach the end of the level without being spotted, while doing tasks and actions along the way. In the story, an employee is trying to reach the toilets without being seen by the boss.
 
-The project uses Godot 4.3 with the GL Compatibility renderer. `Scene.tscn` is the main scene: a level (`level/`) with the player (`player/`), two walls, a visual floor and a goal zone. The player starts at the left edge, only moves left and right for now, and the camera follows it. Reaching the goal zone near the right wall shows a success message, freezes the player and lets R restart the level. The installed Godot is the Mono build and `project.godot` has an assembly name, but the project has no C# code; the existing scripts are GDScript.
+The project uses Godot 4.3 with the GL Compatibility renderer. `Scene.tscn` is the main scene: a level (`level/`) with the player (`player/`), a manager (`manager/`), two walls, a visual floor and a goal zone. The player starts at the left edge, only moves left and right for now, and the camera follows it. Reaching the goal zone near the right wall shows a success message, freezes the player and lets R restart the level. The manager stands in the background in the middle of the level and alternates 10 seconds facing the camera and 5 seconds turned away; being in the zone around them while they face the camera shows a game over message, with the same freeze and restart. The installed Godot is the Mono build and `project.godot` has an assembly name, but the project has no C# code; the existing scripts are GDScript.
 
 ## Commands
 
@@ -42,6 +42,7 @@ Always check the logs: Godot exits with code 0 even after a script error. `--qui
 
 - Tests extend `GutTest` and live in `tests/unit/`. Wrap instantiated nodes in `autofree()` so they don't leak.
 - Comments and assertion messages are in French, written without accents.
+- In-game text is in English by default.
 - `.gitattributes` normalizes text files to LF.
 - `addons/gut/` is third-party code, so don't edit it. The test suite depends on it.
 - `run/main_scene` in `project.godot` points to `res://Scene.tscn`. `tests/unit/test_scene.gd` and `tests/unit/test_level.gd` each hold that path in their own constant, so update them if the main scene moves.
@@ -65,7 +66,7 @@ For each new feature:
 2. Claude enters plan mode and asks all the questions needed to define the scope and anticipate problems or contradictions with earlier rules, before writing any code.
 3. Claude writes the tests, then the code, and iterates until the tests pass.
 4. Claude launches the game (see Commands) and checks the logs for errors. If needed, it also simulates input or takes a screenshot. How the game feels is left to the user's manual tests.
-5. Claude gives the user precise tests to run to check the feature themselves.
+5. Claude gives the user precise tests to run to check the feature themselves, and opens the project in the Godot editor so they can run them: `Start-Process "F:\informatique\Godot_v4.3-stable_mono_win64\Godot_v4.3-stable_mono_win64.exe" -ArgumentList "--path", ".", "-e"`.
 6. Give me a commit name idea
 
 For bugs: only report bugs you have actually observed. Fix one by first writing a test that reproduces it; plan mode is not required.
