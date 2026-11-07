@@ -1,0 +1,98 @@
+# Roadmap BossHide
+
+## Vision
+
+Un employé veut passer son après-midi aux toilettes. Il doit traverser l'open space sans se faire repérer par le patron, et franchir des obstacles (codes, clés, questions) que le patron multiplie d'un niveau à l'autre pour l'en empêcher.
+
+- **Version finale** : 10 niveaux de difficulté croissante, avec score et chrono.
+- **Échéance** : aucune.
+- **Hors périmètre (pour l'instant)** : multijoueur, éditeur de niveaux, histoire à embranchements.
+
+## État actuel
+
+Fait :
+
+- [x] Déplacement gauche/droite, caméra qui suit le joueur
+- [x] Zone d'arrivée, message de réussite, restart avec R
+- [x] Manager fixe : cycle face/dos, scan en trois tiers, game over si repéré
+- [x] Flèche d'anticipation du scan
+- [x] Bureaux : état « travail » qui rend le joueur invisible
+- [x] Manager patrouilleur avec une vision courte vers l'avant
+
+## Jalons
+
+Chaque ligne correspond à une tâche du cycle de CLAUDE.md. Priorités : **P1** indispensable, **P2** souhaitable, **P3** bonus.
+
+### M1 – Obstacles (les « tâches » du pitch)
+
+| Statut | Prio | Fonctionnalité | Critère de fin | Dépend de |
+|---|---|---|---|---|
+| [ ] | P1 | Porte verrouillée | Une porte bloque le passage tant qu'elle n'est pas ouverte | – |
+| [ ] | P1 | Clé à ramasser | Le joueur ramasse une clé avec E ; elle ouvre la porte associée | Porte |
+| [ ] | P1 | Code à lire | Un code affiché quelque part dans le niveau (post-it, écran) se lit avec E | – |
+| [ ] | P1 | Digicode | Une porte s'ouvre en saisissant le bon code ; un mauvais code est refusé | Porte, Code |
+| [ ] | P1 | QCM | Un terminal pose une question à choix multiple ; une bonne réponse ouvre la porte | Porte |
+| [ ] | P2 | Le joueur est vulnérable pendant une interaction | Saisir un code ou répondre au QCM n'empêche pas d'être repéré | Digicode, QCM |
+
+### M2 – Boucle de jeu
+
+| Statut | Prio | Fonctionnalité | Critère de fin | Dépend de |
+|---|---|---|---|---|
+| [ ] | P1 | Chrono | Le temps du niveau s'affiche et s'arrête à l'arrivée | – |
+| [ ] | P1 | Score | Le score est calculé à l'arrivée (règle à définir, voir questions) | Chrono |
+| [ ] | P1 | Données de niveau | Un niveau est décrit dans sa propre scène, chargée par un gestionnaire | – |
+| [ ] | P1 | Enchaînement des niveaux | Une réussite mène au niveau suivant ; un échec relance le même | Données de niveau |
+| [ ] | P2 | Sauvegarde | Les niveaux débloqués et les meilleurs scores sont conservés | Score, Enchaînement |
+
+### M3 – Contenu : les 10 niveaux
+
+Progression indicative, à ajuster en jouant :
+
+| Niveaux | Introduit |
+|---|---|
+| 1–2 | Manager fixe et bureaux (tutoriel) |
+| 3 | Clé et porte |
+| 4 | Manager patrouilleur |
+| 5 | Code à lire et digicode |
+| 6 | QCM |
+| 7–8 | Combinaisons, plusieurs managers |
+| 9–10 | Tout à la fois, contraintes de temps serrées |
+
+- [ ] P1 – Niveaux 1 à 10 jouables du début à la fin
+- [ ] P2 – Courbe de difficulté validée par des tests manuels
+
+### M4 – Habillage
+
+- [ ] P1 – Menu principal et sélection de niveau
+- [ ] P1 – Écrans de fin de niveau (score, chrono, rejouer, suivant)
+- [ ] P2 – Graphismes : joueur, managers, décor de bureau
+- [ ] P2 – Sons : pas, alerte de détection, porte, réussite
+- [ ] P3 – Musique
+
+### M5 – Release
+
+- [ ] P1 – Export et build jouable
+- [ ] P2 – Polish : réglages, remappage des touches, pause
+
+## Backlog d'idées
+
+Idées non planifiées, à piocher quand un jalon se libère :
+
+- **Photocopieuse** : maintenir E pendant quelques secondes pour récupérer un document indispensable.
+- **Téléphone qui sonne** : il faut décrocher rapidement, sinon le patron se retourne.
+- **Mot de passe d'ordinateur** : retrouver un indice dans le niveau pour déverrouiller un poste.
+- **Café à apporter** au patron pour le distraire quelques secondes.
+- **Collègue bavard** : il bloque le passage tant qu'on ne lui a pas répondu.
+- **Cachettes** : plante, armoire, sous un bureau.
+- **Caméras de surveillance** avec un balayage fixe.
+- **Collègue délateur** qui prévient le patron s'il voit le joueur.
+- **Jauge d'envie pressante** qui monte au fil du temps.
+- **Saut ou plusieurs étages** (escaliers, ascenseur).
+
+## Questions ouvertes
+
+- **Plateforme cible** : PC seulement, ou aussi le web ?
+- **Score** : comment le calculer à partir du chrono ? Bonus pour les tâches optionnelles ? Malus en cas d'erreur de code ?
+- **Erreurs** : un mauvais code ou une mauvaise réponse au QCM a-t-il une conséquence (temps perdu, alerte du patron) ?
+- **Contenu des QCM** : thème des questions (culture d'entreprise, humour, culture générale) et qui les écrit ?
+- **Graphismes** : assets faits main ou packs existants ?
