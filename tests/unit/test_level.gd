@@ -1,6 +1,7 @@
 extends GutTest
 
 const MAIN_SCENE_PATH := "res://Scene.tscn"
+const LEFT_SECTOR_OFFSET := Vector2(-200, 0)
 
 
 func _load_level() -> Node:
@@ -134,7 +135,7 @@ func test_le_joueur_vu_de_face_declenche_le_game_over() -> void:
 	var player: CharacterBody2D = level.get_node("Player")
 	var manager: Node2D = level.get_node("Manager")
 
-	player.position = manager.position
+	player.position = manager.position + LEFT_SECTOR_OFFSET
 	await wait_physics_frames(5)
 
 	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le message doit s'afficher")
@@ -161,7 +162,7 @@ func test_le_joueur_dans_la_zone_au_retournement_declenche_le_game_over() -> voi
 	var manager: Node2D = level.get_node("Manager")
 
 	manager._physics_process(ManagerWatch.FACING_DURATION)
-	player.position = manager.position
+	player.position = manager.position + LEFT_SECTOR_OFFSET
 	await wait_physics_frames(5)
 	manager._physics_process(ManagerWatch.BACK_DURATION)
 	await wait_physics_frames(5)
@@ -364,6 +365,30 @@ func test_quitter_le_travail_devant_le_manager_qui_patrouille_declenche_le_game_
 	await wait_physics_frames(5)
 
 	assert_true(level.get_node("Interface/MessageGameOver").visible, "Hors du travail le joueur doit etre repere")
+
+
+func test_le_joueur_au_centre_est_repere_quand_le_manager_y_regarde() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var manager: Node2D = level.get_node("Manager")
+
+	level.get_node("Player").position = manager.position
+	await wait_physics_frames(5)
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "Le manager regarde a gauche, pas au centre")
+
+	manager._physics_process(ManagerWatch.SECTOR_DURATION)
+	await wait_physics_frames(5)
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le manager regarde au centre : game over")
+
+
+func test_le_joueur_dans_la_zone_gauche_passe_quand_le_manager_est_de_dos() -> void:
+	var level := _add_level_with_fixed_manager_back()
+	var player: CharacterBody2D = level.get_node("Player")
+
+	player.position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "De dos il ne doit pas y avoir de game over")
+	assert_true(player.is_physics_processing(), "Le joueur doit pouvoir continuer")
 
 
 func test_la_victoire_arrete_le_manager_qui_patrouille() -> void:
