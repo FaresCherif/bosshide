@@ -102,3 +102,56 @@ func test_de_dos_le_manager_ne_voit_aucune_zone() -> void:
 	watch.update(ManagerWatch.FACING_DURATION)
 	for offset in [-200.0, 0.0, 200.0]:
 		assert_false(watch.sees(offset, 600.0), "De dos le manager ne doit rien voir")
+
+
+func _watch_after(seconds: float) -> ManagerWatch:
+	var watch := ManagerWatch.new()
+	watch.update(seconds)
+	return watch
+
+
+func test_la_position_du_regard_suit_le_balayage() -> void:
+	var expected := {
+		1.0: -1.0, 2.0: -0.5, 3.0: 0.0, 4.0: 0.5, 5.0: 1.0, 6.0: 0.5, 7.0: 0.0, 8.0: -0.5, 9.0: -1.0,
+	}
+	for seconds in expected:
+		assert_eq(_watch_after(seconds).look_position(), expected[seconds], "Position du regard a %s secondes" % seconds)
+
+
+func test_le_regard_attend_a_gauche_au_debut_et_a_la_fin() -> void:
+	assert_eq(ManagerWatch.new().look_position(), -1.0, "Le regard doit commencer a gauche")
+	assert_eq(_watch_after(0.5).look_position(), -1.0, "Le regard doit attendre a gauche la premiere seconde")
+	assert_eq(_watch_after(9.5).look_position(), -1.0, "Le regard doit attendre a gauche la derniere seconde")
+
+
+func test_le_regard_avance_progressivement() -> void:
+	assert_eq(_watch_after(2.5).look_position(), -0.25, "Le regard doit glisser entre deux zones")
+
+
+func test_le_regard_est_au_milieu_de_chaque_zone_a_mi_etape() -> void:
+	for step in ManagerWatch.SCAN_ORDER.size():
+		var seconds := (step + 0.5) * ManagerWatch.SECTOR_DURATION
+		assert_eq(_watch_after(seconds).look_position(), float(ManagerWatch.SCAN_ORDER[step]), "Le regard doit etre au milieu de la zone")
+
+
+func test_le_regard_passe_la_limite_quand_la_zone_change() -> void:
+	for step in range(1, ManagerWatch.SCAN_ORDER.size()):
+		var seconds := step * ManagerWatch.SECTOR_DURATION
+		assert_eq(absf(_watch_after(seconds).look_position()), 0.5, "Le regard doit etre sur une limite au changement de zone")
+
+
+func test_de_dos_le_regard_est_a_gauche() -> void:
+	assert_eq(_watch_after(12.0).look_position(), -1.0, "De dos le regard doit etre pret a repartir de la gauche")
+
+
+func test_la_fleche_est_visible_de_face() -> void:
+	assert_true(ManagerWatch.new().is_arrow_visible(), "La fleche doit etre visible de face")
+
+
+func test_la_fleche_est_cachee_de_dos() -> void:
+	assert_false(_watch_after(ManagerWatch.FACING_DURATION).is_arrow_visible(), "La fleche doit etre cachee de dos")
+	assert_false(_watch_after(13.5).is_arrow_visible(), "La fleche doit rester cachee 1,5 seconde avant le retournement")
+
+
+func test_la_fleche_previent_avant_le_retournement() -> void:
+	assert_true(_watch_after(14.5).is_arrow_visible(), "La fleche doit reapparaitre juste avant le retournement")

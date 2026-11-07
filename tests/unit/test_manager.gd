@@ -125,3 +125,37 @@ func test_le_secteur_visuel_est_cache_de_dos() -> void:
 	assert_true(manager.get_node("SecteurVisuel").visible, "Le secteur doit etre visible de face")
 	manager._physics_process(ManagerWatch.FACING_DURATION)
 	assert_false(manager.get_node("SecteurVisuel").visible, "Le secteur doit etre cache de dos")
+
+
+func test_la_fleche_est_au_dessus_du_manager() -> void:
+	var manager := _add_manager()
+	var arrow: Node2D = manager.get_node_or_null("Fleche")
+	assert_not_null(arrow, "Le manager doit avoir une fleche")
+	assert_lt(arrow.position.y, manager.get_node("Visuel").offset_top, "La fleche doit etre au-dessus du manager")
+
+
+func test_la_fleche_tourne_avec_le_regard() -> void:
+	var manager := _add_manager()
+	var arrow: Node2D = manager.get_node("Fleche")
+	assert_almost_eq(arrow.rotation, manager.ARROW_MAX_ANGLE, 0.001, "La fleche doit commencer a gauche")
+	manager._physics_process(3.0)
+	assert_almost_eq(arrow.rotation, 0.0, 0.001, "La fleche doit pointer vers le bas au centre")
+	manager._physics_process(2.0)
+	assert_almost_eq(arrow.rotation, -manager.ARROW_MAX_ANGLE, 0.001, "La fleche doit finir a droite")
+
+
+func test_la_fleche_glisse_entre_deux_zones() -> void:
+	var manager := _add_manager()
+	manager._physics_process(2.5)
+	var expected: float = manager.ARROW_MAX_ANGLE * 0.25
+	assert_almost_eq(manager.get_node("Fleche").rotation, expected, 0.001, "La fleche doit etre entre deux zones")
+
+
+func test_la_fleche_est_cachee_de_dos_puis_previent_du_retournement() -> void:
+	var manager := _add_manager()
+	var arrow: Node2D = manager.get_node("Fleche")
+	assert_true(arrow.visible, "La fleche doit etre visible de face")
+	manager._physics_process(ManagerWatch.FACING_DURATION)
+	assert_false(arrow.visible, "La fleche doit etre cachee de dos")
+	manager._physics_process(4.5)
+	assert_true(arrow.visible, "La fleche doit reapparaitre juste avant le retournement")

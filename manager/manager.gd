@@ -4,12 +4,14 @@ signal body_spotted(body: Node2D)
 
 const FACING_COLOR := Color(0.9, 0.55, 0.2, 1)
 const BACK_COLOR := Color(0.4, 0.3, 0.25, 1)
+const ARROW_MAX_ANGLE := deg_to_rad(60.0)
 
 var _watch := ManagerWatch.new()
 
 @onready var _body_visual: ColorRect = $Visuel
 @onready var _zone_visual: ColorRect = $ZoneVisuelle
 @onready var _sector_visual: ColorRect = $SecteurVisuel
+@onready var _arrow: Node2D = $Fleche
 @onready var _zone: Area2D = $Zone
 @onready var _zone_width: float = $Zone/CollisionShape2D.shape.size.x
 
@@ -34,3 +36,5 @@ func _refresh_display() -> void:
 	_sector_visual.visible = facing
 	var sector_width := _sector_visual.size.x
 	_sector_visual.position.x = _watch.current_sector() * sector_width - sector_width / 2.0
+	_arrow.visible = _watch.is_arrow_visible()
+	_arrow.rotation = -_watch.look_position() * ARROW_MAX_ANGLE

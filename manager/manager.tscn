@@ -29,6 +29,11 @@ offset_right = 24.0
 offset_bottom = 32.0
 color = Color(0.9, 0.55, 0.2, 1)
 
+[node name="Fleche" type="Polygon2D" parent="."]
+position = Vector2(0, -150)
+color = Color(0.95, 0.95, 0.95, 1)
+polygon = PackedVector2Array(-4, 0, 4, 0, 4, 32, 12, 32, 0, 50, -12, 32, -4, 32)
+
 [node name="Zone" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Zone"]

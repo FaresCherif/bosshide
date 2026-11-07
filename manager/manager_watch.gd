@@ -6,6 +6,7 @@ const BACK_DURATION := 5.0
 const SECTOR_DURATION := 2.0
 # Zones regardees pendant la phase de face : -1 gauche, 0 centre, 1 droite
 const SCAN_ORDER := [-1, 0, 1, 0, -1]
+const ARROW_WARNING := 1.0
 
 var _facing := true
 var _time_left := FACING_DURATION
@@ -41,3 +42,16 @@ static func sector_at(offset_x: float, zone_width: float) -> int:
 
 func sees(offset_x: float, zone_width: float) -> bool:
 	return _facing and sector_at(offset_x, zone_width) == current_sector()
+
+
+# Regard continu entre -1 (gauche) et 1 (droite) : il passe -0.5 et 0.5 quand la zone change
+func look_position() -> float:
+	if not _facing:
+		return -1.0
+	var time_from_middle := absf(FACING_DURATION - _time_left - FACING_DURATION / 2.0)
+	return maxf(-1.0, 1.0 - time_from_middle / SECTOR_DURATION)
+
+
+# Cachee de dos, sauf juste avant le retournement pour prevenir le joueur
+func is_arrow_visible() -> bool:
+	return _facing or _time_left <= ARROW_WARNING
