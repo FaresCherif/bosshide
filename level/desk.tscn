@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bureau"]
+size = Vector2(80, 96)
+
+[node name="Bureau" type="Area2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -16)
+shape = SubResource("RectangleShape2D_bureau")
+
+[node name="Visuel" type="ColorRect" parent="."]
+offset_left = -40.0
+offset_top = -64.0
+offset_right = 40.0
+offset_bottom = 32.0
+color = Color(0.15, 0.3, 0.7, 1)

@@ -5,6 +5,7 @@ var _progress := LevelProgress.new()
 @onready var _player: CharacterBody2D = $Player
 @onready var _goal: Area2D = $Arrivee
 @onready var _manager: Node2D = $Manager
+@onready var _desks: Node2D = $Bureaux
 @onready var _success_message: Label = $Interface/MessageSucces
 @onready var _game_over_message: Label = $Interface/MessageGameOver
 
@@ -17,6 +18,15 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("restart") and _progress.can_restart():
 		get_tree().reload_current_scene()
+	elif event.is_action_pressed("work") and _progress.can_move():
+		_player.press_work(_is_player_on_desk())
+
+
+func _is_player_on_desk() -> bool:
+	for desk: Area2D in _desks.get_children():
+		if desk.overlaps_body(_player):
+			return true
+	return false
 
 
 func _on_arrivee_body_entered(body: Node2D) -> void:
@@ -28,7 +38,7 @@ func _on_arrivee_body_entered(body: Node2D) -> void:
 
 
 func _on_manager_body_spotted(body: Node2D) -> void:
-	if body != _player:
+	if body != _player or _player.is_working():
 		return
 	_progress.fail()
 	_game_over_message.visible = _progress.is_game_over()

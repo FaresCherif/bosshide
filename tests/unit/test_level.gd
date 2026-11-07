@@ -198,3 +198,94 @@ func test_action_droite_a_ses_touches() -> void:
 
 func test_scene_principale_definie() -> void:
 	assert_eq(ProjectSettings.get_setting("application/run/main_scene"), MAIN_SCENE_PATH, "F5 doit lancer le niveau")
+
+
+func _pressed(action: String) -> InputEventAction:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = true
+	return event
+
+
+# Met le manager de dos pour que le joueur ne soit pas repere avant d'appuyer sur E
+func _place_player_on_desk_behind_manager(level: Node) -> void:
+	level.get_node("Manager")._physics_process(ManagerWatch.FACING_DURATION)
+	level.get_node("Player").position = level.get_node("Bureaux/Bureau1").position
+	await wait_physics_frames(5)
+
+
+func test_action_travailler_a_sa_touche() -> void:
+	assert_true(InputMap.has_action("work"), "L'action work doit exister")
+	assert_has(_action_keycodes("work"), KEY_E, "La touche E doit faire travailler le joueur")
+
+
+func test_le_niveau_a_deux_bureaux_dans_la_zone_du_manager() -> void:
+	var level := _instantiate_level()
+	var manager: Node2D = level.get_node("Manager")
+	var zone_shape: RectangleShape2D = manager.get_node("Zone/CollisionShape2D").shape
+	var desks: Array = level.get_node("Bureaux").get_children()
+
+	assert_eq(desks.size(), 2, "Le niveau doit contenir deux bureaux")
+	for desk in desks:
+		assert_lt(abs(desk.position.x - manager.position.x), zone_shape.size.x / 2.0, "Le bureau doit etre dans la zone")
+
+
+func test_les_bureaux_sont_dessines_derriere_le_joueur() -> void:
+	var level := _instantiate_level()
+	assert_lt(level.get_node("Bureaux").get_index(), level.get_node("Player").get_index(), "Les bureaux doivent etre derriere le joueur")
+
+
+func test_e_sur_un_bureau_fait_travailler_le_joueur() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_desk_behind_manager(level)
+
+	level._unhandled_input(_pressed("work"))
+
+	assert_true(level.get_node("Player").is_working(), "E sur un bureau doit faire travailler le joueur")
+
+
+func test_e_hors_bureau_ne_fait_rien() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await wait_physics_frames(5)
+
+	level._unhandled_input(_pressed("work"))
+
+	assert_false(level.get_node("Player").is_working(), "E hors d'un bureau ne doit rien faire")
+
+
+func test_au_travail_le_manager_de_face_ne_repere_pas_le_joueur() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_desk_behind_manager(level)
+
+	level._unhandled_input(_pressed("work"))
+	level.get_node("Manager")._physics_process(ManagerWatch.BACK_DURATION)
+	await wait_physics_frames(5)
+
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "Au travail il ne doit pas y avoir de game over")
+	assert_true(level.get_node("Manager").is_physics_processing(), "Le manager doit continuer son cycle")
+
+
+func test_quitter_le_travail_devant_le_manager_declenche_le_game_over() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_desk_behind_manager(level)
+
+	level._unhandled_input(_pressed("work"))
+	level.get_node("Manager")._physics_process(ManagerWatch.BACK_DURATION)
+	await wait_physics_frames(5)
+	level._unhandled_input(_pressed("work"))
+	await wait_physics_frames(5)
+
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Hors du travail le joueur doit etre repere")
+
+
+func test_e_est_sans_effet_apres_le_game_over() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+
+	player.position = level.get_node("Bureaux/Bureau1").position
+	await wait_physics_frames(5)
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le joueur doit etre repere avant de travailler")
+
+	level._unhandled_input(_pressed("work"))
+
+	assert_false(player.is_working(), "E ne doit plus rien faire apres le game over")
