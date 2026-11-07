@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://dv8kwa3gq10jy"]
+[gd_scene load_steps=8 format=3 uid="uid://dv8kwa3gq10jy"]
 
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://level/level.gd" id="2_level"]
 [ext_resource type="PackedScene" path="res://manager/manager.tscn" id="3_manager"]
 [ext_resource type="PackedScene" path="res://level/desk.tscn" id="4_desk"]
+[ext_resource type="PackedScene" path="res://manager/patrolling_manager.tscn" id="5_patrol"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mur"]
 size = Vector2(40, 800)
@@ -156,6 +157,9 @@ position = Vector2(-150, 0)
 position = Vector2(150, 0)
 
 [node name="Manager" parent="." instance=ExtResource("3_manager")]
+
+[node name="ManagerPatrouille" parent="." instance=ExtResource("5_patrol")]
+position = Vector2(300, 0)
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector2(-1440, 0)

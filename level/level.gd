@@ -5,6 +5,7 @@ var _progress := LevelProgress.new()
 @onready var _player: CharacterBody2D = $Player
 @onready var _goal: Area2D = $Arrivee
 @onready var _manager: Node2D = $Manager
+@onready var _patrolling_manager: Node2D = $ManagerPatrouille
 @onready var _desks: Node2D = $Bureaux
 @onready var _success_message: Label = $Interface/MessageSucces
 @onready var _game_over_message: Label = $Interface/MessageGameOver
@@ -13,6 +14,7 @@ var _progress := LevelProgress.new()
 func _ready() -> void:
 	_goal.body_entered.connect(_on_arrivee_body_entered)
 	_manager.body_spotted.connect(_on_manager_body_spotted)
+	_patrolling_manager.body_spotted.connect(_on_manager_body_spotted)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -48,3 +50,4 @@ func _on_manager_body_spotted(body: Node2D) -> void:
 func _freeze_level() -> void:
 	_player.set_physics_process(_progress.can_move())
 	_manager.set_physics_process(_progress.can_move())
+	_patrolling_manager.set_physics_process(_progress.can_move())

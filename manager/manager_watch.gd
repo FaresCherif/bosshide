@@ -1,7 +1,7 @@
 class_name ManagerWatch
 extends RefCounted
 
-const FACING_DURATION := 10.0
+const FACING_DURATION := 6.0
 const BACK_DURATION := 5.0
 
 var _facing := true

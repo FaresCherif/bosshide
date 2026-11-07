@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://manager/patrolling_manager.gd" id="1_patrol"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vision"]
+size = Vector2(150, 96)
+
+[node name="ManagerPatrouille" type="Node2D"]
+script = ExtResource("1_patrol")
+
+[node name="ZoneVisuelle" type="ColorRect" parent="."]
+offset_left = -150.0
+offset_top = 20.0
+offset_bottom = 32.0
+color = Color(0.7, 0.3, 0.9, 0.45)
+
+[node name="Visuel" type="ColorRect" parent="."]
+offset_left = -24.0
+offset_top = -80.0
+offset_right = 24.0
+offset_bottom = 32.0
+color = Color(0.6, 0.3, 0.8, 1)
+
+[node name="Zone" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Zone"]
+position = Vector2(-75, -16)
+shape = SubResource("RectangleShape2D_vision")

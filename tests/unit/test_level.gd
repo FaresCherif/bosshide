@@ -289,3 +289,85 @@ func test_e_est_sans_effet_apres_le_game_over() -> void:
 	level._unhandled_input(_pressed("work"))
 
 	assert_false(player.is_working(), "E ne doit plus rien faire apres le game over")
+
+
+func _add_level_with_fixed_manager_back() -> Node:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Manager")._physics_process(ManagerWatch.FACING_DURATION)
+	return level
+
+
+func test_la_patrouille_couvre_la_zone_du_manager_fixe() -> void:
+	var level := _instantiate_level()
+	var manager: Node2D = level.get_node("Manager")
+	var patrol: Node2D = level.get_node_or_null("ManagerPatrouille")
+	var half_zone: float = manager.get_node("Zone/CollisionShape2D").shape.size.x / 2.0
+
+	assert_not_null(patrol, "Le niveau doit contenir le manager qui patrouille")
+	assert_eq(patrol.left_limit, manager.position.x - half_zone, "La patrouille doit commencer au bord gauche de la zone")
+	assert_eq(patrol.right_limit, manager.position.x + half_zone, "La patrouille doit finir au bord droit de la zone")
+
+
+func test_le_manager_qui_patrouille_est_dessine_derriere_le_joueur() -> void:
+	var level := _instantiate_level()
+	var patrol_index: int = level.get_node("ManagerPatrouille").get_index()
+	assert_lt(patrol_index, level.get_node("Player").get_index(), "Le manager doit etre derriere le joueur")
+
+
+func test_le_signal_du_manager_qui_patrouille_est_connecte() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var patrol: Node = level.get_node("ManagerPatrouille")
+	assert_true(patrol.body_spotted.is_connected(level._on_manager_body_spotted), "Le manager doit prevenir le niveau")
+
+
+func test_le_joueur_devant_le_manager_qui_patrouille_declenche_le_game_over() -> void:
+	var level := _add_level_with_fixed_manager_back()
+	var patrol: Node2D = level.get_node("ManagerPatrouille")
+
+	level.get_node("Player").position.x = patrol.position.x - 75.0
+	await wait_physics_frames(5)
+
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le joueur devant le manager doit etre repere")
+	assert_false(patrol.is_physics_processing(), "Le manager doit s'arreter au game over")
+
+
+func test_le_joueur_derriere_le_manager_qui_patrouille_n_est_pas_repere() -> void:
+	var level := _add_level_with_fixed_manager_back()
+	var player: CharacterBody2D = level.get_node("Player")
+
+	player.position.x = level.get_node("ManagerPatrouille").position.x + 75.0
+	await wait_physics_frames(5)
+
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "Le joueur derriere le manager ne doit pas etre repere")
+	assert_true(player.is_physics_processing(), "Le joueur doit pouvoir continuer")
+
+
+func test_au_travail_le_manager_qui_patrouille_ne_repere_pas_le_joueur() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_desk_behind_manager(level)
+
+	level._unhandled_input(_pressed("work"))
+	level.get_node("ManagerPatrouille")._physics_process(2.0)
+	await wait_physics_frames(5)
+
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "Au travail il ne doit pas y avoir de game over")
+
+
+func test_quitter_le_travail_devant_le_manager_qui_patrouille_declenche_le_game_over() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_desk_behind_manager(level)
+
+	level._unhandled_input(_pressed("work"))
+	level.get_node("ManagerPatrouille")._physics_process(2.0)
+	await wait_physics_frames(5)
+	level._unhandled_input(_pressed("work"))
+	await wait_physics_frames(5)
+
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Hors du travail le joueur doit etre repere")
+
+
+func test_la_victoire_arrete_le_manager_qui_patrouille() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Player").position = level.get_node("Arrivee").position
+	await wait_physics_frames(5)
+	assert_false(level.get_node("ManagerPatrouille").is_physics_processing(), "Le manager doit s'arreter a la victoire")
