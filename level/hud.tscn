@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 40
 text = "Well done, you made it to the toilets!
-Enter: next level - R: play again"
+Enter: next level - R: play again - Esc: level select"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -24,7 +24,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 40
 text = "Game over, the manager saw you!
-Press R to play again"
+R: play again - Esc: level select"
 horizontal_alignment = 1
 vertical_alignment = 1
 

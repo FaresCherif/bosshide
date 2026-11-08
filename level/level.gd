@@ -6,8 +6,9 @@ extends Node2D
 signal succeeded(score: int)
 signal restart_requested
 signal next_requested
+signal menu_requested
 
-const SUCCESS_TEXT := "Well done, you made it to the toilets!\nTime: %s - Score: %d\nEnter: next level - R: play again"
+const SUCCESS_TEXT := "Well done, you made it to the toilets!\nTime: %s - Score: %d\nEnter: next level - R: play again - Esc: level select"
 
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
@@ -82,6 +83,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_quiz_input(event)
 	elif _door_code.is_keypad_open():
 		_keypad_input(event)
+	elif event.is_action_pressed("ui_cancel"):
+		menu_requested.emit()
 	elif event.is_action_pressed("restart") and _progress.can_restart():
 		restart_requested.emit()
 	elif event.is_action_pressed("next_level") and _progress.can_continue():

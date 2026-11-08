@@ -4,6 +4,8 @@ extends RefCounted
 var _paths: Array
 var _index := 0
 var _scores := {}
+# Deblocages de la session : rien n'est sauvegarde a la fermeture
+var _unlocked := 1
 
 
 func _init(paths: Array) -> void:
@@ -30,10 +32,28 @@ func is_finished() -> bool:
 	return _index >= _paths.size()
 
 
-# Rejouer un niveau remplace son score
+func unlocked_count() -> int:
+	return _unlocked
+
+
+func is_unlocked(number: int) -> bool:
+	return number >= 1 and number <= _unlocked
+
+
+# Choisit un niveau debloque (numero a partir de 1) comme niveau courant
+func select(number: int) -> bool:
+	if not is_unlocked(number):
+		return false
+	_index = number - 1
+	return true
+
+
+# Rejouer un niveau remplace son score ; une reussite debloque le niveau suivant
 func record_score(score: int) -> void:
-	if not is_finished():
-		_scores[_index] = score
+	if is_finished():
+		return
+	_scores[_index] = score
+	_unlocked = clampi(_index + 2, _unlocked, _paths.size())
 
 
 func total_score() -> int:
@@ -47,6 +67,7 @@ func advance() -> void:
 	_index = mini(_index + 1, _paths.size())
 
 
+# Revient au niveau 1 et efface les scores, mais garde les deblocages
 func restart_all() -> void:
 	_index = 0
 	_scores.clear()

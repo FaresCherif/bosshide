@@ -63,7 +63,7 @@ Progression indicative, à ajuster en jouant :
 
 ### M4 – Habillage
 
-- [ ] P1 – Menu principal et sélection de niveau
+- [x] P1 – Menu principal et sélection de niveau (déblocage limité à la session en attendant la sauvegarde)
 - [ ] P1 – Écrans de fin de niveau (score, chrono, rejouer, suivant)
 - [ ] P2 – Graphismes : joueur, managers, décor de bureau
 - [ ] P2 – Sons : pas, alerte de détection, porte, réussite

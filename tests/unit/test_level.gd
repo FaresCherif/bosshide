@@ -944,3 +944,48 @@ func test_entree_apres_un_game_over_ne_passe_pas_au_suivant() -> void:
 	level._unhandled_input(_pressed("next_level"))
 
 	assert_signal_not_emitted(level, "next_requested", "Un echec ne doit pas mener au niveau suivant")
+
+
+func test_echap_pendant_le_jeu_demande_le_menu() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level._unhandled_input(_pressed("ui_cancel"))
+	assert_signal_emitted(level, "menu_requested", "Echap doit ramener au selecteur")
+
+
+func test_echap_apres_un_game_over_demande_le_menu() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+
+	level._unhandled_input(_pressed("ui_cancel"))
+
+	assert_signal_emitted(level, "menu_requested", "Echap apres un game over doit ramener au selecteur")
+
+
+func test_echap_pendant_le_digicode_ferme_seulement_le_panneau() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _open_keypad(level)
+	watch_signals(level)
+
+	level._unhandled_input(_pressed("ui_cancel"))
+
+	assert_false(level.get_node("Interface/Digicode").visible, "Echap doit fermer le panneau")
+	assert_signal_not_emitted(level, "menu_requested", "Echap ne doit pas quitter le niveau pendant le digicode")
+
+
+func test_echap_pendant_la_question_est_ignore() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _start_talk(level)
+	watch_signals(level)
+
+	level._unhandled_input(_pressed("ui_cancel"))
+
+	assert_signal_not_emitted(level, "menu_requested", "Echap ne doit pas quitter le niveau pendant la question")
+
+
+func test_les_messages_de_fin_mentionnent_echap() -> void:
+	var level := _instantiate_level()
+	assert_string_contains(level.get_node("Interface/MessageGameOver").text, "Esc")
+	assert_string_contains(level.SUCCESS_TEXT, "Esc")

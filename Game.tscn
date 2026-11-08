@@ -9,6 +9,7 @@ script = ExtResource("1_game")
 layer = 2
 
 [node name="Niveau" type="Label" parent="Interface"]
+visible = false
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -32,3 +33,104 @@ theme_override_font_sizes/font_size = 40
 text = "All levels done!"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="MenuPrincipal" type="Control" parent="Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Titre" type="Label" parent="Interface/MenuPrincipal"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 120.0
+offset_right = 300.0
+offset_bottom = 200.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 64
+text = "BossHide"
+horizontal_alignment = 1
+
+[node name="Boutons" type="VBoxContainer" parent="Interface/MenuPrincipal"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -60.0
+offset_right = 140.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="Jouer" type="Button" parent="Interface/MenuPrincipal/Boutons"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Play"
+
+[node name="Choisir" type="Button" parent="Interface/MenuPrincipal/Boutons"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Select level"
+
+[node name="Quitter" type="Button" parent="Interface/MenuPrincipal/Boutons"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Quit"
+
+[node name="Selecteur" type="Control" parent="Interface"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Titre" type="Label" parent="Interface/Selecteur"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 80.0
+offset_right = 300.0
+offset_bottom = 140.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 44
+text = "Select a level"
+horizontal_alignment = 1
+
+[node name="Niveaux" type="GridContainer" parent="Interface/Selecteur"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -80.0
+offset_right = 420.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 5
+
+[node name="Retour" type="Button" parent="Interface/Selecteur"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -120.0
+offset_right = 80.0
+offset_bottom = -72.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 24
+text = "Back"
