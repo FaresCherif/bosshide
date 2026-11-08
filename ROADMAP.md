@@ -27,8 +27,8 @@ Chaque ligne correspond à une tâche du cycle de CLAUDE.md. Priorités : **P1**
 
 | Statut | Prio | Fonctionnalité | Critère de fin | Dépend de |
 |---|---|---|---|---|
-| [ ] | P1 | Porte verrouillée | Une porte bloque le passage tant qu'elle n'est pas ouverte | – |
-| [ ] | P1 | Clé à ramasser | Le joueur ramasse une clé avec E ; elle ouvre la porte associée | Porte |
+| [x] | P1 | Porte verrouillée | Une porte bloque le passage tant qu'elle n'est pas ouverte | – |
+| [x] | P1 | Clé à ramasser | Le joueur ramasse une clé avec E ; elle ouvre la porte associée | Porte |
 | [ ] | P1 | Code à lire | Un code affiché quelque part dans le niveau (post-it, écran) se lit avec E | – |
 | [ ] | P1 | Digicode | Une porte s'ouvre en saisissant le bon code ; un mauvais code est refusé | Porte, Code |
 | [ ] | P1 | QCM | Un terminal pose une question à choix multiple ; une bonne réponse ouvre la porte | Porte |

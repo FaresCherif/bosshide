@@ -213,6 +213,8 @@ func _place_player_on_desk_behind_manager(level: Node) -> void:
 	level.get_node("Manager")._physics_process(ManagerWatch.FACING_DURATION)
 	level.get_node("Player").position = level.get_node("Bureaux/Bureau1").position
 	await wait_physics_frames(5)
+	# Bureau1 porte la cle : le premier appui la prend, les suivants font travailler
+	level._unhandled_input(_pressed("work"))
 
 
 func test_action_travailler_a_sa_touche() -> void:
@@ -396,3 +398,130 @@ func test_la_victoire_arrete_le_manager_qui_patrouille() -> void:
 	level.get_node("Player").position = level.get_node("Arrivee").position
 	await wait_physics_frames(5)
 	assert_false(level.get_node("ManagerPatrouille").is_physics_processing(), "Le manager doit s'arreter a la victoire")
+
+
+# Contact : demi-largeur de la porte (20) + demi-largeur du joueur (16), avec une marge
+const DOOR_CONTACT_OFFSET := -40.0
+
+
+# Met le manager de dos et place le joueur sur la cle, sans appuyer sur E
+func _place_player_on_key_behind_manager(level: Node) -> void:
+	level.get_node("Manager")._physics_process(ManagerWatch.FACING_DURATION)
+	level.get_node("Player").position = level.get_node("Cle").position
+	await wait_physics_frames(5)
+
+
+func _place_player_at_door(level: Node) -> void:
+	var player: CharacterBody2D = level.get_node("Player")
+	player.position = Vector2(level.get_node("Porte").position.x + DOOR_CONTACT_OFFSET, player.position.y)
+	await wait_physics_frames(5)
+
+
+func _move_right_for(frames: int) -> void:
+	Input.action_press("move_right")
+	await wait_physics_frames(frames)
+	Input.action_release("move_right")
+
+
+func test_la_porte_est_entre_la_zone_du_manager_et_l_arrivee() -> void:
+	var level := _instantiate_level()
+	var door: Node2D = level.get_node_or_null("Porte")
+	var manager: Node2D = level.get_node("Manager")
+	var half_zone: float = manager.get_node("Zone/CollisionShape2D").shape.size.x / 2.0
+
+	assert_true(door is StaticBody2D, "Le niveau doit contenir une porte qui bloque")
+	assert_gt(door.position.x, manager.position.x + half_zone, "La porte doit etre apres la zone du manager")
+	assert_lt(door.position.x, level.get_node("Arrivee").position.x, "La porte doit etre avant l'arrivee")
+
+
+func test_la_cle_est_sur_le_bureau_de_gauche() -> void:
+	var level := _instantiate_level()
+	var key: Node2D = level.get_node_or_null("Cle")
+	assert_true(key is Area2D, "Le niveau doit contenir une cle")
+	assert_eq(key.position, level.get_node("Bureaux/Bureau1").position, "La cle doit etre sur le bureau de gauche")
+
+
+func test_la_cle_est_dessinee_devant_les_bureaux() -> void:
+	var level := _instantiate_level()
+	assert_gt(level.get_node("Cle").get_index(), level.get_node("Bureaux").get_index(), "La cle doit etre devant le bureau")
+
+
+func test_l_indicateur_de_cle_est_cache_au_depart() -> void:
+	var indicator: Label = _instantiate_level().get_node("Interface/IndicateurCle")
+	assert_false(indicator.visible, "L'indicateur de cle doit etre cache au depart")
+	assert_string_contains(indicator.text, "Key")
+
+
+func test_e_sur_la_cle_la_prend_sans_travailler() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_key_behind_manager(level)
+
+	level._unhandled_input(_pressed("work"))
+
+	assert_true(level.get_node("Interface/IndicateurCle").visible, "L'indicateur doit s'afficher")
+	assert_false(level.get_node("Cle").visible, "La cle doit disparaitre du bureau")
+	assert_false(level.get_node("Player").is_working(), "Prendre la cle ne doit pas faire travailler")
+
+
+func test_un_second_e_sur_le_bureau_de_la_cle_fait_travailler() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_key_behind_manager(level)
+
+	level._unhandled_input(_pressed("work"))
+	level._unhandled_input(_pressed("work"))
+
+	assert_true(level.get_node("Player").is_working(), "Le second appui doit faire travailler")
+	assert_true(level.get_node("Interface/IndicateurCle").visible, "Le joueur doit garder la cle")
+
+
+func test_la_porte_fermee_bloque_le_joueur() -> void:
+	var level := _add_level_with_fixed_manager_back()
+	var player: CharacterBody2D = level.get_node("Player")
+	var door: Node2D = level.get_node("Porte")
+
+	player.position.x = door.position.x - 100.0
+	await _move_right_for(30)
+
+	assert_lt(player.position.x, door.position.x, "Le joueur ne doit pas traverser la porte fermee")
+
+
+func test_e_a_la_porte_sans_cle_ne_fait_rien() -> void:
+	var level := _add_level_with_fixed_manager_back()
+	await _place_player_at_door(level)
+
+	level._unhandled_input(_pressed("work"))
+	await wait_physics_frames(2)
+
+	var door: Node2D = level.get_node("Porte")
+	assert_true(door.visible, "La porte doit rester visible")
+	assert_false(door.get_node("CollisionShape2D").disabled, "La porte doit rester fermee")
+
+
+func test_e_a_la_porte_avec_la_cle_l_ouvre() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_key_behind_manager(level)
+	level._unhandled_input(_pressed("work"))
+	await _place_player_at_door(level)
+
+	level._unhandled_input(_pressed("work"))
+	await wait_physics_frames(2)
+
+	var door: Node2D = level.get_node("Porte")
+	assert_false(door.visible, "La porte ouverte doit disparaitre")
+	assert_true(door.get_node("CollisionShape2D").disabled, "La porte ouverte ne doit plus bloquer")
+	assert_false(level.get_node("Interface/IndicateurCle").visible, "La cle doit etre consommee")
+	assert_false(level.get_node("Player").is_working(), "Ouvrir la porte ne doit pas faire travailler")
+
+
+func test_la_porte_ouverte_laisse_passer_le_joueur() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_key_behind_manager(level)
+	level._unhandled_input(_pressed("work"))
+	await _place_player_at_door(level)
+	level._unhandled_input(_pressed("work"))
+	await wait_physics_frames(2)
+
+	var player: CharacterBody2D = level.get_node("Player")
+	await _move_right_for(30)
+
+	assert_gt(player.position.x, level.get_node("Porte").position.x, "Le joueur doit traverser la porte ouverte")
