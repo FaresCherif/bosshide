@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://dv8kwa3gq10jy"]
+[gd_scene load_steps=12 format=3 uid="uid://dv8kwa3gq10jy"]
 
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://level/level.gd" id="2_level"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://level/key.tscn" id="6_key"]
 [ext_resource type="PackedScene" path="res://level/door.tscn" id="7_door"]
 [ext_resource type="PackedScene" path="res://level/post_it.tscn" id="8_post_it"]
+[ext_resource type="PackedScene" path="res://level/colleague.tscn" id="9_colleague"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mur"]
 size = Vector2(40, 800)
@@ -171,6 +172,9 @@ position = Vector2(-1000, 0)
 [node name="PorteDigicode" parent="." instance=ExtResource("7_door")]
 position = Vector2(-400, 0)
 
+[node name="Collegue" parent="." instance=ExtResource("9_colleague")]
+position = Vector2(-250, 0)
+
 [node name="Manager" parent="." instance=ExtResource("3_manager")]
 
 [node name="ManagerPatrouille" parent="." instance=ExtResource("5_patrol")]
@@ -280,4 +284,59 @@ offset_right = 320.0
 offset_bottom = 204.0
 theme_override_font_sizes/font_size = 16
 text = "Enter: confirm - Esc: close"
+horizontal_alignment = 1
+
+[node name="Collegue" type="Panel" parent="Interface"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -120.0
+offset_right = 260.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Titre" type="Label" parent="Interface/Collegue"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 504.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.3, 0.7, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "Hey! Quick question..."
+
+[node name="Question" type="Label" parent="Interface/Collegue"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 44.0
+offset_right = 504.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 24
+text = "Question"
+autowrap_mode = 3
+
+[node name="Choix" type="Label" parent="Interface/Collegue"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 108.0
+offset_right = 504.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 20
+text = "1.
+2.
+3."
+
+[node name="Aide" type="Label" parent="Interface/Collegue"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 208.0
+offset_right = 504.0
+offset_bottom = 232.0
+theme_override_font_sizes/font_size = 14
+text = "Answer with 1, 2 or 3"
 horizontal_alignment = 1

@@ -753,3 +753,133 @@ func test_le_game_over_ferme_le_panneau() -> void:
 
 	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le joueur doit etre repere")
 	assert_false(level.get_node("Interface/Digicode").visible, "Le panneau doit se fermer au game over")
+
+
+func _start_talk(level: Node) -> void:
+	level.get_node("Player").position.x = level.get_node("Collegue").position.x
+	await wait_physics_frames(5)
+
+
+func _answer_key(level: Node, right: bool) -> InputEventKey:
+	var answer: int = level._quiz.question()["answer"]
+	var choice := answer if right else (answer + 1) % 3
+	return _digit_key(choice + 1)
+
+
+func test_le_collegue_est_entre_le_digicode_et_le_bureau_de_gauche() -> void:
+	var level := _instantiate_level()
+	var colleague: Node2D = level.get_node_or_null("Collegue")
+	var manager: Node2D = level.get_node("Manager")
+	var half_zone: float = manager.get_node("Zone/CollisionShape2D").shape.size.x / 2.0
+
+	assert_true(colleague is Area2D, "Le niveau doit contenir un collegue")
+	assert_gt(colleague.position.x, level.get_node("PorteDigicode").position.x, "Le collegue doit etre apres le digicode")
+	assert_lt(colleague.position.x, level.get_node("Bureaux/Bureau1").position.x, "Le collegue doit etre avant le bureau de gauche")
+	assert_gt(colleague.position.x, manager.position.x - half_zone, "Le collegue doit etre dans la zone du manager")
+
+
+func test_le_collegue_est_dessine_derriere_le_joueur() -> void:
+	var level := _instantiate_level()
+	assert_lt(level.get_node("Collegue").get_index(), level.get_node("Player").get_index(), "Le collegue doit etre derriere le joueur")
+
+
+func test_le_signal_du_collegue_est_connecte() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var colleague: Area2D = level.get_node("Collegue")
+	assert_true(colleague.body_entered.is_connected(level._on_collegue_body_entered), "Le collegue doit prevenir le niveau")
+
+
+func test_le_panneau_du_collegue_est_cache_au_depart() -> void:
+	assert_false(_instantiate_level().get_node("Interface/Collegue").visible, "Le panneau doit etre cache au depart")
+
+
+func test_passer_devant_le_collegue_lance_la_question() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _start_talk(level)
+
+	var question: Dictionary = level._quiz.question()
+	assert_true(level.get_node("Interface/Collegue").visible, "Le panneau doit s'ouvrir")
+	assert_eq(level.get_node("Interface/Collegue/Question").text, question["text"], "La question doit s'afficher")
+	assert_string_contains(level.get_node("Interface/Collegue/Choix").text, "1. " + question["choices"][0])
+
+
+func test_le_joueur_ne_bouge_pas_pendant_la_question() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+	await _start_talk(level)
+	var x := player.position.x
+
+	await _move_left_for(10)
+
+	assert_eq(player.position.x, x, "Le joueur doit rester immobile pendant la question")
+
+
+func test_le_manager_ne_repere_pas_le_joueur_pendant_la_question() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _start_talk(level)
+	await wait_physics_frames(10)
+
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "Pendant la question le joueur est protege")
+	assert_true(level.get_node("Manager").is_physics_processing(), "Le manager doit continuer son cycle")
+
+
+func test_les_autres_touches_ne_ferment_pas_la_question() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _start_talk(level)
+
+	level._unhandled_input(_pressed("work"))
+	level._unhandled_input(_pressed("ui_cancel"))
+	level._unhandled_input(_digit_key(4))
+
+	assert_true(level.get_node("Interface/Collegue").visible, "Seules les touches 1 a 3 repondent")
+
+
+func test_la_bonne_reponse_ferme_la_question_sans_penalite() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _start_talk(level)
+	var score_before: int = level._score.score()
+
+	level._unhandled_input(_answer_key(level, true))
+
+	assert_false(level.get_node("Interface/Collegue").visible, "Le panneau doit se fermer")
+	assert_eq(level._score.score(), score_before, "La bonne reponse ne doit rien couter")
+	assert_false(level.get_node("ManagerPatrouille").is_attracted(), "Le manager ne doit pas foncer")
+
+
+func test_une_mauvaise_reponse_coute_des_points_et_fait_foncer_la_patrouille() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _start_talk(level)
+	var score_before: int = level._score.score()
+	var patrol: Node2D = level.get_node("ManagerPatrouille")
+
+	level._unhandled_input(_answer_key(level, false))
+	var x_before := patrol.position.x
+	patrol._physics_process(0.5)
+
+	assert_false(level.get_node("Interface/Collegue").visible, "Le panneau doit se fermer")
+	assert_eq(level._score.score(), score_before - LevelScore.WRONG_ANSWER_PENALTY, "La mauvaise reponse doit couter des points")
+	assert_almost_eq(x_before - patrol.position.x, ManagerPatrol.SPEED * ManagerPatrol.RUSH_FACTOR * 0.5, 0.01, "Le manager doit foncer vers le collegue")
+
+
+func test_apres_une_mauvaise_reponse_le_joueur_n_est_plus_protege() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _start_talk(level)
+
+	level._unhandled_input(_answer_key(level, false))
+	await wait_physics_frames(5)
+
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le manager qui regarde a gauche doit reperer le joueur")
+
+
+func test_repasser_devant_le_collegue_ne_relance_pas_la_question() -> void:
+	var level := _add_level_with_fixed_manager_back()
+	var player: CharacterBody2D = level.get_node("Player")
+	await _start_talk(level)
+	level._unhandled_input(_answer_key(level, true))
+
+	player.position.x -= 100.0
+	await wait_physics_frames(5)
+	await _start_talk(level)
+
+	assert_false(level.get_node("Interface/Collegue").visible, "Le collegue ne doit parler qu'une fois")
+	assert_false(level._quiz.is_talking(), "Le joueur doit pouvoir passer")

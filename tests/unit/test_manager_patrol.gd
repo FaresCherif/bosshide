@@ -108,3 +108,19 @@ func test_une_nouvelle_attirance_remplace_la_cible() -> void:
 	patrol.update(1.0)
 	assert_eq(patrol.get_x(), 200.0, "Le manager doit aller vers la nouvelle cible")
 	assert_eq(patrol.get_direction(), 1, "Le manager doit regarder vers la nouvelle cible")
+
+
+func test_le_manager_qui_fonce_va_deux_fois_plus_vite() -> void:
+	var patrol := _new_patrol()
+	patrol.attract(-250.0, ManagerPatrol.RUSH_FACTOR)
+	patrol.update(1.0)
+	assert_eq(patrol.get_x(), RIGHT_LIMIT - ManagerPatrol.SPEED * 2.0, "Le manager doit foncer a 2 fois sa vitesse")
+
+
+func test_le_manager_qui_a_fonce_revient_a_vitesse_normale() -> void:
+	var patrol := _new_patrol()
+	patrol.attract(-400.0, ManagerPatrol.RUSH_FACTOR)
+	patrol.update(3.0)
+	patrol.update(ManagerPatrol.ATTRACT_WAIT)
+	patrol.update(0.5)
+	assert_eq(patrol.get_x(), -400.0 + ManagerPatrol.SPEED * 0.5, "Le retour doit se faire a vitesse normale")

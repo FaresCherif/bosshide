@@ -4,6 +4,7 @@ extends RefCounted
 const BASE_SCORE := 1000
 const POINTS_PER_SECOND := 10
 const WRONG_CODE_PENALTY := 100
+const WRONG_ANSWER_PENALTY := 100
 
 var _elapsed := 0.0
 var _running := true

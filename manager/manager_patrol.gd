@@ -5,6 +5,7 @@ enum State { PATROL, ATTRACTED, WAITING, RETURNING }
 
 const SPEED := 150.0
 const ATTRACT_WAIT := 3.0
+const RUSH_FACTOR := 2.0
 
 var _left_limit: float
 var _right_limit: float
@@ -13,6 +14,7 @@ var _direction := -1
 var _state := State.PATROL
 var _target := 0.0
 var _wait := 0.0
+var _attract_speed := SPEED
 
 
 func _init(left_limit: float, right_limit: float) -> void:
@@ -33,9 +35,11 @@ func is_attracted() -> bool:
 	return _state != State.PATROL
 
 
-# Le manager quitte sa ronde pour aller voir la cible, meme hors de ses limites
-func attract(target_x: float) -> void:
+# Le manager quitte sa ronde pour aller voir la cible, meme hors de ses limites ;
+# speed_factor l'accelere a l'aller seulement
+func attract(target_x: float, speed_factor := 1.0) -> void:
 	_target = target_x
+	_attract_speed = SPEED * speed_factor
 	_state = State.ATTRACTED
 
 
@@ -44,7 +48,7 @@ func update(delta: float) -> void:
 		State.PATROL:
 			_patrol(delta)
 		State.ATTRACTED:
-			if _move_toward(_target, delta):
+			if _move_toward(_target, _attract_speed * delta):
 				_state = State.WAITING
 				_wait = ATTRACT_WAIT
 		State.WAITING:
@@ -53,7 +57,7 @@ func update(delta: float) -> void:
 				_target = clampf(_x, _left_limit, _right_limit)
 				_state = State.PATROL if _target == _x else State.RETURNING
 		State.RETURNING:
-			if _move_toward(_target, delta):
+			if _move_toward(_target, SPEED * delta):
 				_state = State.PATROL
 
 
@@ -70,8 +74,8 @@ func _patrol(delta: float) -> void:
 
 
 # Marche vers la cible sans la depasser ; renvoie true une fois arrive
-func _move_toward(target: float, delta: float) -> bool:
+func _move_toward(target: float, distance: float) -> bool:
 	if target != _x:
 		_direction = 1 if target > _x else -1
-	_x = move_toward(_x, target, SPEED * delta)
+	_x = move_toward(_x, target, distance)
 	return _x == target

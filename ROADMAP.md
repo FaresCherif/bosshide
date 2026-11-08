@@ -31,8 +31,8 @@ Chaque ligne correspond à une tâche du cycle de CLAUDE.md. Priorités : **P1**
 | [x] | P1 | Clé à ramasser | Le joueur ramasse une clé avec E ; elle ouvre la porte associée | Porte |
 | [x] | P1 | Code à lire | Un code de 4 chiffres tiré au hasard, sur un post-it : E l'affiche tant que le joueur reste devant (à retenir de tête) | – |
 | [x] | P1 | Digicode | E ouvre un panneau de saisie au clavier (0-9, Retour arrière, Entrée, Échap) ; le bon code ouvre la porte. Le jeu continue pendant la saisie. Un mauvais code fait perdre 100 points et attire le manager qui patrouille (il va au digicode, attend 3 s, puis reprend sa ronde) | Porte, Code |
-| [ ] | P1 | QCM | Un terminal pose une question à choix multiple ; une bonne réponse ouvre la porte | Porte |
-| [ ] | P2 | Le joueur est vulnérable pendant une interaction | Saisir un code ou répondre au QCM n'empêche pas d'être repéré | Digicode, QCM |
+| [x] | P1 | Collègue et QCM | Un collègue bloque le joueur au passage et pose une question à 3 choix (touches 1-2-3) ; le joueur est protégé pendant la question. Une mauvaise réponse coûte 100 points et fait foncer le manager qui patrouille (2× sa vitesse) | – |
+| [x] | P2 | Le joueur est vulnérable pendant une interaction | Le jeu continue pendant la saisie du digicode ; pendant la question du collègue, le joueur est protégé | Digicode, QCM |
 
 ### M2 – Boucle de jeu
 
@@ -54,7 +54,7 @@ Progression indicative, à ajuster en jouant :
 | 3 | Clé et porte |
 | 4 | Manager patrouilleur |
 | 5 | Code à lire et digicode |
-| 6 | QCM |
+| 6 | Collègue et QCM |
 | 7–8 | Combinaisons, plusieurs managers |
 | 9–10 | Tout à la fois, contraintes de temps serrées |
 
@@ -93,6 +93,4 @@ Idées non planifiées, à piocher quand un jalon se libère :
 
 - **Plateforme cible** : PC seulement, ou aussi le web ?
 - **Score** : bonus pour les tâches optionnelles ?
-- **Erreurs au QCM** : même conséquence qu'un mauvais code (points perdus, manager attiré) ?
-- **Contenu des QCM** : thème des questions (culture d'entreprise, humour, culture générale) et qui les écrit ?
 - **Graphismes** : assets faits main ou packs existants ?

@@ -26,8 +26,8 @@ func _physics_process(delta: float) -> void:
 		body_spotted.emit(body)
 
 
-func attract(target_x: float) -> void:
-	_patrol.attract(target_x)
+func attract(target_x: float, speed_factor := 1.0) -> void:
+	_patrol.attract(target_x, speed_factor)
 
 
 func is_attracted() -> bool:

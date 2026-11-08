@@ -6,6 +6,7 @@ var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
 var _score := LevelScore.new()
 var _door_code := DoorCode.new(DoorCode.random_code(RandomNumberGenerator.new()))
+var _quiz := ColleagueQuiz.new(ColleagueQuiz.pick_question(QuizQuestions.QUESTIONS, RandomNumberGenerator.new()))
 
 @onready var _player: CharacterBody2D = $Player
 @onready var _goal: Area2D = $Arrivee
@@ -24,6 +25,10 @@ var _door_code := DoorCode.new(DoorCode.random_code(RandomNumberGenerator.new())
 @onready var _keypad: Panel = $Interface/Digicode
 @onready var _keypad_entry: Label = $Interface/Digicode/Saisie
 @onready var _keypad_error: Label = $Interface/Digicode/Erreur
+@onready var _colleague: Area2D = $Collegue
+@onready var _quiz_panel: Panel = $Interface/Collegue
+@onready var _quiz_question: Label = $Interface/Collegue/Question
+@onready var _quiz_choices: Label = $Interface/Collegue/Choix
 
 
 func _ready() -> void:
@@ -31,6 +36,7 @@ func _ready() -> void:
 	_manager.body_spotted.connect(_on_manager_body_spotted)
 	_patrolling_manager.body_spotted.connect(_on_manager_body_spotted)
 	_post_it.body_exited.connect(_on_post_it_body_exited)
+	_colleague.body_entered.connect(_on_collegue_body_entered)
 	_post_it_code.text = _door_code.code()
 
 
@@ -44,7 +50,9 @@ func _refresh_chrono() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _door_code.is_keypad_open():
+	if _quiz.is_talking():
+		_quiz_input(event)
+	elif _door_code.is_keypad_open():
 		_keypad_input(event)
 	elif event.is_action_pressed("restart") and _progress.can_restart():
 		get_tree().reload_current_scene()
@@ -130,6 +138,33 @@ func _refresh_keypad() -> void:
 	_keypad_entry.text = " ".join(slots)
 
 
+# Le collegue interpelle le joueur au passage : il le bloque jusqu'a sa reponse
+func _on_collegue_body_entered(body: Node2D) -> void:
+	if body != _player or not _progress.can_move() or not _quiz.start():
+		return
+	_player.set_busy(true)
+	var question := _quiz.question()
+	_quiz_question.text = question["text"]
+	var lines := []
+	for i in question["choices"].size():
+		lines.append("%d. %s" % [i + 1, question["choices"][i]])
+	_quiz_choices.text = "\n".join(lines)
+	_quiz_panel.visible = true
+
+
+# Pendant la question, seules les touches 1 a 3 comptent
+func _quiz_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		var result := _quiz.answer(_digit_of(event) - 1)
+		if result == ColleagueQuiz.Result.WRONG:
+			_score.add_penalty(LevelScore.WRONG_ANSWER_PENALTY)
+			_patrolling_manager.attract(_colleague.position.x, ManagerPatrol.RUSH_FACTOR)
+		if result != ColleagueQuiz.Result.IGNORED:
+			_player.set_busy(false)
+			_quiz_panel.visible = false
+	get_viewport().set_input_as_handled()
+
+
 func _on_post_it_body_exited(body: Node2D) -> void:
 	if body != _player:
 		return
@@ -154,7 +189,7 @@ func _on_arrivee_body_entered(body: Node2D) -> void:
 
 
 func _on_manager_body_spotted(body: Node2D) -> void:
-	if body != _player or _player.is_working():
+	if body != _player or _player.is_working() or _quiz.is_talking():
 		return
 	_progress.fail()
 	_game_over_message.visible = _progress.is_game_over()
