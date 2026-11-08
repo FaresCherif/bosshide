@@ -60,6 +60,7 @@ Progression indicative, à ajuster en jouant :
 
 - [ ] P1 – Niveaux 1 à 10 jouables du début à la fin
 - [ ] P2 – Courbe de difficulté validée par des tests manuels
+- [ ] P2 – Scènes de scénario : une introduction qui pose l'histoire (l'employé qui veut passer son après-midi aux toilettes), des scènes entre certains niveaux qui expliquent pourquoi le patron ajoute de nouveaux obstacles, et une fin. Chaque scène peut être passée.
 
 ### M4 – Habillage
 
@@ -95,3 +96,4 @@ Idées non planifiées, à piocher quand un jalon se libère :
 - **Plateforme cible** : PC seulement, ou aussi le web ?
 - **Score** : bonus pour les tâches optionnelles ?
 - **Graphismes** : assets faits main ou packs existants ?
+- **Scènes de scénario** : quel format (texte seul, dialogues entre personnages, images fixes, petite animation dans le décor du jeu) ? Entre quels niveaux ? Qui écrit les textes ? Peut-on les revoir depuis le menu ?
