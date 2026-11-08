@@ -946,11 +946,12 @@ func test_entree_apres_un_game_over_ne_passe_pas_au_suivant() -> void:
 	assert_signal_not_emitted(level, "next_requested", "Un echec ne doit pas mener au niveau suivant")
 
 
-func test_echap_pendant_le_jeu_demande_le_menu() -> void:
+func test_echap_pendant_le_jeu_demande_la_pause() -> void:
 	var level: Node = add_child_autofree(_load_level())
 	watch_signals(level)
 	level._unhandled_input(_pressed("ui_cancel"))
-	assert_signal_emitted(level, "menu_requested", "Echap doit ramener au selecteur")
+	assert_signal_emitted(level, "pause_requested", "Echap pendant le jeu doit mettre en pause")
+	assert_signal_not_emitted(level, "menu_requested", "Echap pendant le jeu ne doit plus quitter le niveau")
 
 
 func test_echap_apres_un_game_over_demande_le_menu() -> void:
@@ -962,6 +963,7 @@ func test_echap_apres_un_game_over_demande_le_menu() -> void:
 	level._unhandled_input(_pressed("ui_cancel"))
 
 	assert_signal_emitted(level, "menu_requested", "Echap apres un game over doit ramener au selecteur")
+	assert_signal_not_emitted(level, "pause_requested", "Apres la fin, il n'y a rien a mettre en pause")
 
 
 func test_echap_pendant_le_digicode_ferme_seulement_le_panneau() -> void:

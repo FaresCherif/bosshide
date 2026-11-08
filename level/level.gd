@@ -7,6 +7,7 @@ signal succeeded(score: int)
 signal restart_requested
 signal next_requested
 signal menu_requested
+signal pause_requested
 
 const SUCCESS_TEXT := "Well done, you made it to the toilets!\nTime: %s - Score: %d\nEnter: next level - R: play again - Esc: level select"
 
@@ -84,7 +85,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _door_code.is_keypad_open():
 		_keypad_input(event)
 	elif event.is_action_pressed("ui_cancel"):
-		menu_requested.emit()
+		# Le meme appui ne doit pas etre retraite par le jeu (sinon la pause se refermerait aussitot)
+		get_viewport().set_input_as_handled()
+		if _progress.can_move():
+			pause_requested.emit()
+		else:
+			menu_requested.emit()
 	elif event.is_action_pressed("restart") and _progress.can_restart():
 		restart_requested.emit()
 	elif event.is_action_pressed("next_level") and _progress.can_continue():

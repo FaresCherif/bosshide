@@ -3,7 +3,7 @@ extends Node
 
 # Menu principal, selecteur de niveau, puis niveaux charges un par un avec leurs scores
 
-enum Screen { MENU, SELECTOR, LEVEL, END }
+enum Screen { MENU, SELECTOR, LEVEL, PAUSE, END }
 
 const LEVELS := ["res://levels/level_01.tscn", "res://levels/level_02.tscn"]
 const LEVEL_NODE_NAME := "Niveau"
@@ -22,6 +22,10 @@ var _screen := Screen.MENU
 @onready var _selector: Control = $Interface/Selecteur
 @onready var _level_buttons: GridContainer = $Interface/Selecteur/Niveaux
 @onready var _back_button: Button = $Interface/Selecteur/Retour
+@onready var _pause: Control = $Interface/Pause
+@onready var _resume_button: Button = $Interface/Pause/Boutons/Reprendre
+@onready var _pause_select_button: Button = $Interface/Pause/Boutons/Selection
+@onready var _pause_menu_button: Button = $Interface/Pause/Boutons/Menu
 
 
 func _ready() -> void:
@@ -29,6 +33,9 @@ func _ready() -> void:
 	_select_button.pressed.connect(_on_choisir_pressed)
 	_quit_button.pressed.connect(_on_quitter_pressed)
 	_back_button.pressed.connect(_on_retour_pressed)
+	_resume_button.pressed.connect(_on_reprendre_pressed)
+	_pause_select_button.pressed.connect(_on_selection_pressed)
+	_pause_menu_button.pressed.connect(_on_menu_pressed)
 	for i in LEVELS.size():
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(150, 80)
@@ -43,6 +50,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		Screen.SELECTOR:
 			if event.is_action_pressed("ui_cancel"):
 				_show_menu()
+		Screen.PAUSE:
+			if event.is_action_pressed("ui_cancel"):
+				get_viewport().set_input_as_handled()
+				_resume()
 		Screen.END:
 			if event.is_action_pressed("restart"):
 				_sequence.restart_all()
@@ -56,7 +67,8 @@ func _set_screen(screen: Screen) -> void:
 	_screen = screen
 	_menu.visible = screen == Screen.MENU
 	_selector.visible = screen == Screen.SELECTOR
-	_level_label.visible = screen == Screen.LEVEL
+	_level_label.visible = screen == Screen.LEVEL or screen == Screen.PAUSE
+	_pause.visible = screen == Screen.PAUSE
 	_end_screen.visible = screen == Screen.END
 
 
@@ -99,6 +111,7 @@ func _load_current_level() -> void:
 	_level.restart_requested.connect(_on_level_restart_requested)
 	_level.next_requested.connect(_on_level_next_requested)
 	_level.menu_requested.connect(_on_level_menu_requested)
+	_level.pause_requested.connect(_on_level_pause_requested)
 	add_child(_level)
 	_level_label.text = "Level %d/%d" % [_sequence.level_number(), _sequence.level_count()]
 
@@ -149,3 +162,27 @@ func _on_level_next_requested() -> void:
 
 func _on_level_menu_requested() -> void:
 	_show_selector()
+
+
+# Le niveau reste charge mais fige : joueur, managers et chrono s'arretent
+func _on_level_pause_requested() -> void:
+	_level.process_mode = Node.PROCESS_MODE_DISABLED
+	_set_screen(Screen.PAUSE)
+	_resume_button.call_deferred("grab_focus")
+
+
+func _resume() -> void:
+	_level.process_mode = Node.PROCESS_MODE_INHERIT
+	_set_screen(Screen.LEVEL)
+
+
+func _on_reprendre_pressed() -> void:
+	_resume()
+
+
+func _on_selection_pressed() -> void:
+	_show_selector()
+
+
+func _on_menu_pressed() -> void:
+	_show_menu()

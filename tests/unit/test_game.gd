@@ -231,3 +231,108 @@ func test_un_moins_bon_score_ne_change_pas_l_affichage() -> void:
 	_level(game).menu_requested.emit()
 
 	assert_string_contains(_level_button(game, 1).text, "Best: 500", "Le meilleur score doit rester affiche")
+
+
+func _pause(game: Node) -> void:
+	_level(game).pause_requested.emit()
+
+
+func test_les_signaux_de_la_pause_sont_connectes() -> void:
+	var game := _add_game_playing()
+	assert_true(_level(game).pause_requested.is_connected(game._on_level_pause_requested), "Echap en jeu doit prevenir le jeu")
+	assert_true(_button(game, "Pause/Boutons/Reprendre").pressed.is_connected(game._on_reprendre_pressed))
+	assert_true(_button(game, "Pause/Boutons/Selection").pressed.is_connected(game._on_selection_pressed))
+	assert_true(_button(game, "Pause/Boutons/Menu").pressed.is_connected(game._on_menu_pressed))
+
+
+func test_la_pause_est_cachee_au_depart() -> void:
+	var game := _add_game_playing()
+	assert_false(_screen(game, "Pause").visible, "Le menu de pause doit etre cache en jeu")
+
+
+func test_la_pause_fige_le_niveau_sans_le_decharger() -> void:
+	var game := _add_game_playing()
+	var level := _level(game)
+	_pause(game)
+
+	assert_true(_screen(game, "Pause").visible, "Le menu de pause doit s'afficher")
+	assert_eq(_level(game), level, "Le niveau doit rester charge")
+	assert_eq(level.process_mode, Node.PROCESS_MODE_DISABLED, "Le niveau doit etre fige")
+
+
+func test_le_chrono_ne_bouge_pas_pendant_la_pause() -> void:
+	var game := _add_game_playing()
+	await wait_physics_frames(5)
+	_pause(game)
+	var chrono: Label = _level(game).get_node("Interface/Chrono")
+	var text := chrono.text
+
+	await wait_physics_frames(10)
+
+	assert_eq(chrono.text, text, "Le chrono doit etre fige pendant la pause")
+
+
+func test_resume_reprend_le_meme_niveau_au_meme_endroit() -> void:
+	var game := _add_game_playing()
+	var level := _level(game)
+	level.get_node("Player").position.x = -1000.0
+	_pause(game)
+
+	_button(game, "Pause/Boutons/Reprendre").pressed.emit()
+
+	assert_false(_screen(game, "Pause").visible, "Le menu de pause doit se cacher")
+	assert_eq(_level(game), level, "Le meme niveau doit reprendre")
+	assert_eq(level.process_mode, Node.PROCESS_MODE_INHERIT, "Le niveau doit etre reactive")
+	assert_eq(level.get_node("Player").position.x, -1000.0, "Le joueur doit etre au meme endroit")
+
+
+func test_echap_dans_la_pause_reprend_le_niveau() -> void:
+	var game := _add_game_playing()
+	var level := _level(game)
+	_pause(game)
+
+	game._unhandled_input(_pressed("ui_cancel"))
+
+	assert_false(_screen(game, "Pause").visible, "Echap doit fermer la pause")
+	assert_eq(level.process_mode, Node.PROCESS_MODE_INHERIT, "Le niveau doit etre reactive")
+
+
+func test_level_select_depuis_la_pause_abandonne_le_niveau() -> void:
+	var game := _add_game_playing()
+	_pause(game)
+	_button(game, "Pause/Boutons/Selection").pressed.emit()
+	assert_true(_screen(game, "Selecteur").visible, "Le selecteur doit s'ouvrir")
+	assert_false(_screen(game, "Pause").visible, "La pause doit se cacher")
+	assert_null(_level(game), "Le niveau doit etre abandonne")
+
+
+func test_main_menu_depuis_la_pause_abandonne_le_niveau() -> void:
+	var game := _add_game_playing()
+	_pause(game)
+	_button(game, "Pause/Boutons/Menu").pressed.emit()
+	assert_true(_screen(game, "MenuPrincipal").visible, "Le menu principal doit s'ouvrir")
+	assert_null(_level(game), "Le niveau doit etre abandonne")
+
+
+func _press_escape() -> void:
+	var event := InputEventAction.new()
+	event.action = "ui_cancel"
+	event.pressed = true
+	Input.parse_input_event(event)
+	var release := InputEventAction.new()
+	release.action = "ui_cancel"
+	release.pressed = false
+	Input.parse_input_event(release)
+	# En headless, les evenements restent en tampon tant que rien ne les vide
+	Input.flush_buffered_events()
+
+
+func test_un_vrai_appui_sur_echap_ouvre_la_pause_sans_la_refermer() -> void:
+	var game := _add_game_playing()
+	await wait_frames(2)
+
+	_press_escape()
+	await wait_frames(2)
+
+	assert_true(_screen(game, "Pause").visible, "Un seul appui doit laisser la pause ouverte")
+	assert_eq(_level(game).process_mode, Node.PROCESS_MODE_DISABLED, "Le niveau doit rester fige")

@@ -72,7 +72,8 @@ Progression indicative, à ajuster en jouant :
 ### M5 – Release
 
 - [ ] P1 – Export et build jouable
-- [ ] P2 – Polish : réglages, remappage des touches, pause
+- [x] P2 – Pause (Échap : Resume, Level select, Main menu)
+- [ ] P2 – Polish : réglages, remappage des touches
 
 ## Backlog d'idées
 
