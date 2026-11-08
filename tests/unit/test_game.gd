@@ -210,3 +210,24 @@ func test_l_ecran_de_fin_mentionne_echap() -> void:
 	var game := _add_game_playing()
 	_finish_all_levels(game, 300)
 	assert_string_contains(game.get_node("Interface/FinDuJeu").text, "Esc")
+
+
+func test_le_selecteur_affiche_le_meilleur_score_des_niveaux_reussis() -> void:
+	var game := _add_game_playing()
+	_level(game).succeeded.emit(500)
+	_level(game).menu_requested.emit()
+
+	var text := _level_button(game, 1).text
+	assert_string_contains(text, "Level 1")
+	assert_string_contains(text, "Best: 500", "Le meilleur score doit s'afficher")
+	assert_false(_level_button(game, 2).text.contains("Best"), "Un niveau pas encore reussi n'a pas de score")
+
+
+func test_un_moins_bon_score_ne_change_pas_l_affichage() -> void:
+	var game := _add_game_playing()
+	_level(game).succeeded.emit(500)
+	_level(game).restart_requested.emit()
+	_level(game).succeeded.emit(300)
+	_level(game).menu_requested.emit()
+
+	assert_string_contains(_level_button(game, 1).text, "Best: 500", "Le meilleur score doit rester affiche")

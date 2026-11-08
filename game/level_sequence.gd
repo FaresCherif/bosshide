@@ -6,6 +6,7 @@ var _index := 0
 var _scores := {}
 # Deblocages de la session : rien n'est sauvegarde a la fermeture
 var _unlocked := 1
+var _best_scores := {}
 
 
 func _init(paths: Array) -> void:
@@ -53,7 +54,16 @@ func record_score(score: int) -> void:
 	if is_finished():
 		return
 	_scores[_index] = score
+	_best_scores[_index] = maxi(score, _best_scores.get(_index, score))
 	_unlocked = clampi(_index + 2, _unlocked, _paths.size())
+
+
+func has_best_score(number: int) -> bool:
+	return _best_scores.has(number - 1)
+
+
+func best_score(number: int) -> int:
+	return _best_scores.get(number - 1, 0)
 
 
 func total_score() -> int:
@@ -67,7 +77,7 @@ func advance() -> void:
 	_index = mini(_index + 1, _paths.size())
 
 
-# Revient au niveau 1 et efface les scores, mais garde les deblocages
+# Revient au niveau 1 et efface les scores, mais garde les deblocages et les meilleurs scores
 func restart_all() -> void:
 	_index = 0
 	_scores.clear()

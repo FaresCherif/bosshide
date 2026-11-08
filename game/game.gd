@@ -31,7 +31,7 @@ func _ready() -> void:
 	_back_button.pressed.connect(_on_retour_pressed)
 	for i in LEVELS.size():
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(150, 56)
+		button.custom_minimum_size = Vector2(150, 80)
 		button.add_theme_font_size_override("font_size", 22)
 		button.pressed.connect(_on_level_button_pressed.bind(i + 1))
 		_level_buttons.add_child(button)
@@ -73,8 +73,16 @@ func _show_selector() -> void:
 		var button: Button = _level_buttons.get_child(i)
 		var unlocked := _sequence.is_unlocked(i + 1)
 		button.disabled = not unlocked
-		button.text = "Level %d" % (i + 1) if unlocked else "Level %d (locked)" % (i + 1)
+		button.text = _level_button_text(i + 1, unlocked)
 	_level_buttons.get_child(0).call_deferred("grab_focus")
+
+
+func _level_button_text(number: int, unlocked: bool) -> String:
+	if not unlocked:
+		return "Level %d (locked)" % number
+	if _sequence.has_best_score(number):
+		return "Level %d\nBest: %d" % [number, _sequence.best_score(number)]
+	return "Level %d" % number
 
 
 func _load_current_level() -> void:

@@ -107,3 +107,47 @@ func test_recommencer_garde_les_niveaux_debloques() -> void:
 	sequence.record_score(500)
 	sequence.restart_all()
 	assert_true(sequence.is_unlocked(2), "Les deblocages doivent durer toute la session")
+
+
+func test_au_depart_aucun_meilleur_score() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	assert_false(sequence.has_best_score(1), "Aucun niveau ne doit avoir de meilleur score au depart")
+
+
+func test_un_score_devient_le_meilleur() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.record_score(500)
+	assert_true(sequence.has_best_score(1), "Le niveau 1 doit avoir un meilleur score")
+	assert_eq(sequence.best_score(1), 500)
+
+
+func test_un_score_plus_faible_ne_remplace_pas_le_meilleur() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.record_score(500)
+	sequence.record_score(300)
+	assert_eq(sequence.best_score(1), 500, "Le meilleur score doit rester")
+	assert_eq(sequence.total_score(), 300, "Le total doit utiliser le dernier score")
+
+
+func test_un_score_plus_fort_remplace_le_meilleur() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.record_score(500)
+	sequence.record_score(800)
+	assert_eq(sequence.best_score(1), 800, "Le nouveau record doit remplacer l'ancien")
+
+
+func test_chaque_niveau_a_son_meilleur_score() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.record_score(500)
+	sequence.advance()
+	sequence.record_score(200)
+	assert_eq(sequence.best_score(1), 500)
+	assert_eq(sequence.best_score(2), 200)
+	assert_false(sequence.has_best_score(3), "Le niveau 3 n'a pas ete reussi")
+
+
+func test_recommencer_garde_les_meilleurs_scores() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.record_score(500)
+	sequence.restart_all()
+	assert_eq(sequence.best_score(1), 500, "Les meilleurs scores doivent durer toute la session")
