@@ -48,3 +48,63 @@ func test_un_grand_delta_reste_dans_les_limites() -> void:
 	var patrol := _new_patrol()
 	patrol.update(ONE_WAY_DURATION * 5.5)
 	assert_between(patrol.get_x(), LEFT_LIMIT, RIGHT_LIMIT, "Le manager doit rester dans ses limites")
+
+
+func test_attirer_amene_le_manager_a_la_cible_hors_de_ses_limites() -> void:
+	var patrol := _new_patrol()
+	patrol.attract(-400.0)
+	patrol.update(5.0)
+	assert_eq(patrol.get_x(), -400.0, "Le manager doit aller jusqu'a la cible")
+	assert_eq(patrol.get_direction(), -1, "Le manager doit regarder vers la cible")
+	assert_true(patrol.is_attracted(), "Le manager doit etre attire")
+
+
+func test_attirer_vers_la_droite() -> void:
+	var patrol := _new_patrol()
+	patrol.attract(500.0)
+	patrol.update(2.0)
+	assert_eq(patrol.get_x(), 500.0, "Le manager doit aller jusqu'a la cible")
+	assert_eq(patrol.get_direction(), 1, "Le manager doit regarder vers la cible")
+
+
+func test_le_manager_attire_attend_sur_place() -> void:
+	var patrol := _new_patrol()
+	patrol.attract(-400.0)
+	patrol.update(5.0)
+	patrol.update(ManagerPatrol.ATTRACT_WAIT - 0.1)
+	assert_eq(patrol.get_x(), -400.0, "Le manager doit rester a la cible")
+	assert_true(patrol.is_attracted(), "Le manager doit encore etre attire")
+
+
+func test_le_manager_revient_dans_ses_limites_puis_reprend_sa_ronde() -> void:
+	var patrol := _new_patrol()
+	patrol.attract(-400.0)
+	patrol.update(5.0)
+	patrol.update(ManagerPatrol.ATTRACT_WAIT)
+	patrol.update(1.0)
+	assert_eq(patrol.get_x(), LEFT_LIMIT, "Le manager doit revenir a sa limite")
+	assert_eq(patrol.get_direction(), 1, "Le manager doit repartir vers l'interieur")
+	assert_false(patrol.is_attracted(), "Le manager doit reprendre sa ronde")
+
+	patrol.update(1.0)
+	assert_eq(patrol.get_x(), LEFT_LIMIT + ManagerPatrol.SPEED, "La ronde doit reprendre normalement")
+
+
+func test_attire_dans_ses_limites_il_reprend_sa_ronde_sur_place() -> void:
+	var patrol := _new_patrol()
+	patrol.attract(0.0)
+	patrol.update(2.0)
+	patrol.update(ManagerPatrol.ATTRACT_WAIT)
+	assert_false(patrol.is_attracted(), "Le manager doit reprendre sa ronde")
+	patrol.update(1.0)
+	assert_eq(patrol.get_x(), -ManagerPatrol.SPEED, "La ronde doit reprendre depuis la cible")
+
+
+func test_une_nouvelle_attirance_remplace_la_cible() -> void:
+	var patrol := _new_patrol()
+	patrol.attract(-400.0)
+	patrol.update(1.0)
+	patrol.attract(200.0)
+	patrol.update(1.0)
+	assert_eq(patrol.get_x(), 200.0, "Le manager doit aller vers la nouvelle cible")
+	assert_eq(patrol.get_direction(), 1, "Le manager doit regarder vers la nouvelle cible")

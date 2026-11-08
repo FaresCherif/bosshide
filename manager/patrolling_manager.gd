@@ -26,6 +26,14 @@ func _physics_process(delta: float) -> void:
 		body_spotted.emit(body)
 
 
+func attract(target_x: float) -> void:
+	_patrol.attract(target_x)
+
+
+func is_attracted() -> bool:
+	return _patrol.is_attracted()
+
+
 # Place le manager et met sa zone de vision devant lui
 func _refresh_display() -> void:
 	position.x = _patrol.get_x()

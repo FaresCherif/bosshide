@@ -44,3 +44,16 @@ func test_format_du_temps_en_secondes() -> void:
 
 func test_format_du_temps_en_minutes() -> void:
 	assert_eq(LevelScore.format_time(75.5), "01:15.5")
+
+
+func test_une_penalite_baisse_le_score() -> void:
+	var score := LevelScore.new()
+	score.add_penalty(LevelScore.WRONG_CODE_PENALTY)
+	assert_eq(score.score(), LevelScore.BASE_SCORE - 100, "Un mauvais code doit couter 100 points")
+
+
+func test_les_penalites_ne_rendent_pas_le_score_negatif() -> void:
+	var score := LevelScore.new()
+	score.update(95.0)
+	score.add_penalty(LevelScore.WRONG_CODE_PENALTY)
+	assert_eq(score.score(), 0, "Le score ne doit pas etre negatif")

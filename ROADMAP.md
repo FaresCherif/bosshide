@@ -29,8 +29,8 @@ Chaque ligne correspond à une tâche du cycle de CLAUDE.md. Priorités : **P1**
 |---|---|---|---|---|
 | [x] | P1 | Porte verrouillée | Une porte bloque le passage tant qu'elle n'est pas ouverte | – |
 | [x] | P1 | Clé à ramasser | Le joueur ramasse une clé avec E ; elle ouvre la porte associée | Porte |
-| [ ] | P1 | Code à lire | Un code de 4 chiffres tiré au hasard, sur un post-it : E l'affiche tant que le joueur reste devant (à retenir de tête) | – |
-| [ ] | P1 | Digicode | E ouvre un panneau de saisie au clavier (0-9, Retour arrière, Entrée, Échap) ; le bon code ouvre la porte. Le jeu continue pendant la saisie. Un mauvais code fait perdre des points et attire le manager qui patrouille | Porte, Code |
+| [x] | P1 | Code à lire | Un code de 4 chiffres tiré au hasard, sur un post-it : E l'affiche tant que le joueur reste devant (à retenir de tête) | – |
+| [x] | P1 | Digicode | E ouvre un panneau de saisie au clavier (0-9, Retour arrière, Entrée, Échap) ; le bon code ouvre la porte. Le jeu continue pendant la saisie. Un mauvais code fait perdre 100 points et attire le manager qui patrouille (il va au digicode, attend 3 s, puis reprend sa ronde) | Porte, Code |
 | [ ] | P1 | QCM | Un terminal pose une question à choix multiple ; une bonne réponse ouvre la porte | Porte |
 | [ ] | P2 | Le joueur est vulnérable pendant une interaction | Saisir un code ou répondre au QCM n'empêche pas d'être repéré | Digicode, QCM |
 
@@ -92,7 +92,7 @@ Idées non planifiées, à piocher quand un jalon se libère :
 ## Questions ouvertes
 
 - **Plateforme cible** : PC seulement, ou aussi le web ?
-- **Score** : bonus pour les tâches optionnelles ? Combien de points perdus par mauvais code ?
+- **Score** : bonus pour les tâches optionnelles ?
 - **Erreurs au QCM** : même conséquence qu'un mauvais code (points perdus, manager attiré) ?
 - **Contenu des QCM** : thème des questions (culture d'entreprise, humour, culture générale) et qui les écrit ?
 - **Graphismes** : assets faits main ou packs existants ?

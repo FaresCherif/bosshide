@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dv8kwa3gq10jy"]
+[gd_scene load_steps=11 format=3 uid="uid://dv8kwa3gq10jy"]
 
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://level/level.gd" id="2_level"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://manager/patrolling_manager.tscn" id="5_patrol"]
 [ext_resource type="PackedScene" path="res://level/key.tscn" id="6_key"]
 [ext_resource type="PackedScene" path="res://level/door.tscn" id="7_door"]
+[ext_resource type="PackedScene" path="res://level/post_it.tscn" id="8_post_it"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mur"]
 size = Vector2(40, 800)
@@ -164,6 +165,12 @@ position = Vector2(-150, 0)
 [node name="Porte" parent="." instance=ExtResource("7_door")]
 position = Vector2(800, 0)
 
+[node name="PostIt" parent="." instance=ExtResource("8_post_it")]
+position = Vector2(-1000, 0)
+
+[node name="PorteDigicode" parent="." instance=ExtResource("7_door")]
+position = Vector2(-400, 0)
+
 [node name="Manager" parent="." instance=ExtResource("3_manager")]
 
 [node name="ManagerPatrouille" parent="." instance=ExtResource("5_patrol")]
@@ -222,3 +229,55 @@ grow_horizontal = 0
 theme_override_font_sizes/font_size = 28
 text = "00:00.0"
 horizontal_alignment = 2
+
+[node name="Digicode" type="Panel" parent="Interface"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -110.0
+offset_right = 160.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Titre" type="Label" parent="Interface/Digicode"]
+layout_mode = 0
+offset_top = 16.0
+offset_right = 320.0
+offset_bottom = 52.0
+theme_override_font_sizes/font_size = 24
+text = "Enter code"
+horizontal_alignment = 1
+
+[node name="Saisie" type="Label" parent="Interface/Digicode"]
+layout_mode = 0
+offset_top = 64.0
+offset_right = 320.0
+offset_bottom = 124.0
+theme_override_font_sizes/font_size = 40
+text = "_ _ _ _"
+horizontal_alignment = 1
+
+[node name="Erreur" type="Label" parent="Interface/Digicode"]
+visible = false
+layout_mode = 0
+offset_top = 128.0
+offset_right = 320.0
+offset_bottom = 160.0
+theme_override_colors/font_color = Color(0.95, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 22
+text = "Wrong code"
+horizontal_alignment = 1
+
+[node name="Aide" type="Label" parent="Interface/Digicode"]
+layout_mode = 0
+offset_top = 172.0
+offset_right = 320.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 16
+text = "Enter: confirm - Esc: close"
+horizontal_alignment = 1

@@ -30,5 +30,9 @@ func press_work(on_desk: bool) -> void:
 	_refresh_display()
 
 
+func set_busy(busy: bool) -> void:
+	_work.set_busy(busy)
+
+
 func _refresh_display() -> void:
 	_rectangle.color = WORKING_COLOR if _work.is_working() else NORMAL_COLOR

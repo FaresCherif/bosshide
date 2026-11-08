@@ -54,3 +54,18 @@ func test_la_direction_est_nulle_pendant_le_travail() -> void:
 	var work := PlayerWork.new()
 	work.press_work(true)
 	assert_eq(work.allowed_direction(1.0), 0.0, "Le joueur doit etre immobile pendant le travail")
+
+
+func test_occupe_le_joueur_est_immobile() -> void:
+	var work := PlayerWork.new()
+	work.set_busy(true)
+	assert_eq(work.allowed_direction(1.0), 0.0, "Le joueur occupe doit etre immobile")
+	work.set_busy(false)
+	assert_eq(work.allowed_direction(1.0), 1.0, "Le joueur libere doit pouvoir bouger")
+
+
+func test_stop_ne_libere_pas_le_joueur_occupe() -> void:
+	var work := PlayerWork.new()
+	work.set_busy(true)
+	work.stop()
+	assert_eq(work.allowed_direction(-1.0), 0.0, "Une touche de deplacement ne doit pas fermer le panneau")

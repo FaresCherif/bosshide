@@ -581,3 +581,175 @@ func test_le_message_de_game_over_n_affiche_pas_de_score() -> void:
 	var message: Label = level.get_node("Interface/MessageGameOver")
 	assert_true(message.visible, "Le joueur doit etre repere")
 	assert_false(message.text.contains("Score"), "Le game over ne doit pas afficher de score")
+
+
+func _digit_key(digit: int) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.physical_keycode = KEY_0 + digit
+	event.keycode = KEY_0 + digit
+	event.pressed = true
+	return event
+
+
+func _type_code(level: Node, code: String) -> void:
+	for digit in code:
+		level._unhandled_input(_digit_key(int(digit)))
+
+
+func _wrong_code(code: String) -> String:
+	return str((int(code[0]) + 1) % 10) + code.substr(1)
+
+
+func _open_keypad(level: Node) -> void:
+	var player: CharacterBody2D = level.get_node("Player")
+	player.position.x = level.get_node("PorteDigicode").position.x + DOOR_CONTACT_OFFSET
+	await wait_physics_frames(5)
+	level._unhandled_input(_pressed("work"))
+
+
+func _move_left_for(frames: int) -> void:
+	Input.action_press("move_left")
+	await wait_physics_frames(frames)
+	Input.action_release("move_left")
+
+
+func test_le_post_it_et_le_digicode_sont_avant_la_zone_du_manager() -> void:
+	var level := _instantiate_level()
+	var post_it: Node2D = level.get_node_or_null("PostIt")
+	var code_door: Node2D = level.get_node_or_null("PorteDigicode")
+	var manager: Node2D = level.get_node("Manager")
+	var half_zone: float = manager.get_node("Zone/CollisionShape2D").shape.size.x / 2.0
+
+	assert_true(post_it is Area2D, "Le niveau doit contenir un post-it")
+	assert_true(code_door is StaticBody2D, "Le niveau doit contenir une porte a digicode")
+	assert_gt(post_it.position.x, level.get_node("Player").position.x, "Le post-it doit etre apres le depart")
+	assert_lt(post_it.position.x, code_door.position.x, "Le post-it doit etre avant le digicode")
+	assert_lt(code_door.position.x, manager.position.x - half_zone, "Le digicode doit etre avant la zone du manager")
+
+
+func test_le_signal_de_sortie_du_post_it_est_connecte() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var post_it: Area2D = level.get_node("PostIt")
+	assert_true(post_it.body_exited.is_connected(level._on_post_it_body_exited), "Le post-it doit prevenir le niveau")
+
+
+func test_le_code_et_le_panneau_sont_caches_au_depart() -> void:
+	var level := _instantiate_level()
+	assert_false(level.get_node("PostIt/Code").visible, "Le code doit etre cache au depart")
+	assert_false(level.get_node("Interface/Digicode").visible, "Le panneau doit etre cache au depart")
+
+
+func test_e_sur_le_post_it_affiche_le_code() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Player").position.x = level.get_node("PostIt").position.x
+	await wait_physics_frames(5)
+
+	level._unhandled_input(_pressed("work"))
+
+	var code_label: Label = level.get_node("PostIt/Code")
+	assert_true(code_label.visible, "Le code doit s'afficher")
+	assert_eq(code_label.text, level._door_code.code(), "Le post-it doit afficher le code de la porte")
+
+
+func test_le_code_se_cache_quand_le_joueur_s_eloigne() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+	player.position.x = level.get_node("PostIt").position.x
+	await wait_physics_frames(5)
+	level._unhandled_input(_pressed("work"))
+
+	player.position.x -= 300.0
+	await wait_physics_frames(5)
+
+	assert_false(level.get_node("PostIt/Code").visible, "Le code doit se cacher loin du post-it")
+
+
+func test_e_contre_la_porte_a_digicode_ouvre_le_panneau() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _open_keypad(level)
+	assert_true(level.get_node("Interface/Digicode").visible, "Le panneau doit s'ouvrir")
+	assert_false(level.get_node("Player").is_working(), "Le panneau ne doit pas faire travailler")
+
+
+func test_le_joueur_ne_bouge_pas_pendant_la_saisie() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+	await _open_keypad(level)
+	var x := player.position.x
+
+	await _move_left_for(10)
+
+	assert_eq(player.position.x, x, "Le joueur doit rester immobile pendant la saisie")
+
+
+func test_echap_ferme_le_panneau() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var player: CharacterBody2D = level.get_node("Player")
+	await _open_keypad(level)
+
+	level._unhandled_input(_pressed("ui_cancel"))
+	var x := player.position.x
+	await _move_left_for(10)
+
+	assert_false(level.get_node("Interface/Digicode").visible, "Echap doit fermer le panneau")
+	assert_lt(player.position.x, x, "Le joueur doit pouvoir bouger apres la fermeture")
+
+
+func test_la_saisie_s_affiche_dans_le_panneau() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _open_keypad(level)
+
+	_type_code(level, "47")
+
+	assert_eq(level.get_node("Interface/Digicode/Saisie").text, "4 7 _ _", "Les chiffres tapes doivent s'afficher")
+
+
+func test_le_bon_code_ouvre_la_porte_a_digicode() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _open_keypad(level)
+
+	_type_code(level, level._door_code.code())
+	level._unhandled_input(_pressed("ui_accept"))
+	await wait_physics_frames(2)
+
+	var door: Node2D = level.get_node("PorteDigicode")
+	assert_false(door.visible, "La porte doit disparaitre")
+	assert_true(door.get_node("CollisionShape2D").disabled, "La porte ne doit plus bloquer")
+	assert_false(level.get_node("Interface/Digicode").visible, "Le panneau doit se fermer")
+
+
+func test_un_mauvais_code_coute_des_points_et_attire_la_patrouille() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _open_keypad(level)
+	var score_before: int = level._score.score()
+
+	_type_code(level, _wrong_code(level._door_code.code()))
+	level._unhandled_input(_pressed("ui_accept"))
+
+	assert_eq(level._score.score(), score_before - LevelScore.WRONG_CODE_PENALTY, "Le mauvais code doit couter des points")
+	assert_true(level.get_node("ManagerPatrouille").is_attracted(), "Le manager doit etre attire")
+	assert_true(level.get_node("Interface/Digicode/Erreur").visible, "Le panneau doit signaler l'erreur")
+	assert_true(level.get_node("PorteDigicode").visible, "La porte doit rester fermee")
+
+
+func test_le_manager_attire_va_vers_le_digicode() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _open_keypad(level)
+	_type_code(level, _wrong_code(level._door_code.code()))
+	level._unhandled_input(_pressed("ui_accept"))
+
+	var patrol: Node2D = level.get_node("ManagerPatrouille")
+	patrol._physics_process(10.0)
+
+	assert_eq(patrol.position.x, level.get_node("PorteDigicode").position.x, "Le manager doit aller au digicode")
+
+
+func test_le_game_over_ferme_le_panneau() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _open_keypad(level)
+
+	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le joueur doit etre repere")
+	assert_false(level.get_node("Interface/Digicode").visible, "Le panneau doit se fermer au game over")

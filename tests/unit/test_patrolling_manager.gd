@@ -80,3 +80,10 @@ func test_un_corps_derriere_le_manager_n_est_pas_repere() -> void:
 	_add_body_at(manager.position.x + 75.0)
 	await wait_physics_frames(5)
 	assert_signal_not_emitted(manager, "body_spotted", "Le manager ne doit pas voir derriere lui")
+
+
+func test_attirer_deplace_le_manager_vers_la_cible() -> void:
+	var manager := _add_manager()
+	manager.attract(manager.left_limit - 100.0)
+	manager._physics_process(5.0)
+	assert_eq(manager.position.x, manager.left_limit - 100.0, "Le manager doit aller vers la cible")

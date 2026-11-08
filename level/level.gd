@@ -5,6 +5,7 @@ const SUCCESS_TEXT := "Well done, you made it to the toilets!\nTime: %s - Score:
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
 var _score := LevelScore.new()
+var _door_code := DoorCode.new(DoorCode.random_code(RandomNumberGenerator.new()))
 
 @onready var _player: CharacterBody2D = $Player
 @onready var _goal: Area2D = $Arrivee
@@ -17,12 +18,20 @@ var _score := LevelScore.new()
 @onready var _success_message: Label = $Interface/MessageSucces
 @onready var _game_over_message: Label = $Interface/MessageGameOver
 @onready var _chrono: Label = $Interface/Chrono
+@onready var _post_it: Area2D = $PostIt
+@onready var _post_it_code: Label = $PostIt/Code
+@onready var _code_door: StaticBody2D = $PorteDigicode
+@onready var _keypad: Panel = $Interface/Digicode
+@onready var _keypad_entry: Label = $Interface/Digicode/Saisie
+@onready var _keypad_error: Label = $Interface/Digicode/Erreur
 
 
 func _ready() -> void:
 	_goal.body_entered.connect(_on_arrivee_body_entered)
 	_manager.body_spotted.connect(_on_manager_body_spotted)
 	_patrolling_manager.body_spotted.connect(_on_manager_body_spotted)
+	_post_it.body_exited.connect(_on_post_it_body_exited)
+	_post_it_code.text = _door_code.code()
 
 
 func _physics_process(delta: float) -> void:
@@ -35,14 +44,23 @@ func _refresh_chrono() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("restart") and _progress.can_restart():
+	if _door_code.is_keypad_open():
+		_keypad_input(event)
+	elif event.is_action_pressed("restart") and _progress.can_restart():
 		get_tree().reload_current_scene()
 	elif event.is_action_pressed("work") and _progress.can_move():
 		_press_work()
 
 
-# La porte et la cle passent avant le travail ; l'appui sert a travailler sinon
+# Le digicode, le post-it, la porte et la cle passent avant le travail
 func _press_work() -> void:
+	if not _door_code.is_door_open() and _code_door.is_body_near(_player):
+		_set_keypad_open(true)
+		return
+	if _post_it.overlaps_body(_player):
+		_door_code.read()
+		_post_it_code.visible = _door_code.is_code_shown()
+		return
 	var on_key := _door_key.is_key_on_desk() and _key.overlaps_body(_player)
 	if _door_key.interact(_door.is_body_near(_player), on_key):
 		_refresh_door_key()
@@ -55,6 +73,68 @@ func _refresh_door_key() -> void:
 	_key_indicator.visible = _door_key.has_key()
 	if _door_key.is_door_open():
 		_door.open()
+
+
+# Pendant la saisie, le panneau prend toutes les touches
+func _keypad_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("work"):
+		_set_keypad_open(false)
+	elif event.is_action_pressed("ui_accept"):
+		_submit_code()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		var digit := _digit_of(event)
+		if digit >= 0:
+			_door_code.type_digit(digit)
+			_keypad_error.visible = false
+		elif event.keycode == KEY_BACKSPACE:
+			_door_code.erase()
+	_refresh_keypad()
+	get_viewport().set_input_as_handled()
+
+
+# Chiffre d'une touche, ou -1 : rangee du haut par position (AZERTY compris) ou pave numerique
+func _digit_of(event: InputEventKey) -> int:
+	if event.physical_keycode >= KEY_0 and event.physical_keycode <= KEY_9:
+		return event.physical_keycode - KEY_0
+	if event.keycode >= KEY_KP_0 and event.keycode <= KEY_KP_9:
+		return event.keycode - KEY_KP_0
+	return -1
+
+
+func _submit_code() -> void:
+	match _door_code.submit():
+		DoorCode.Result.WRONG:
+			_score.add_penalty(LevelScore.WRONG_CODE_PENALTY)
+			_patrolling_manager.attract(_code_door.position.x)
+			_keypad_error.visible = true
+		DoorCode.Result.RIGHT:
+			_code_door.open()
+			_player.set_busy(false)
+
+
+func _set_keypad_open(open: bool) -> void:
+	if open:
+		_door_code.open_keypad()
+	else:
+		_door_code.close_keypad()
+	_player.set_busy(_door_code.is_keypad_open())
+	_keypad_error.visible = false
+	_refresh_keypad()
+
+
+func _refresh_keypad() -> void:
+	_keypad.visible = _door_code.is_keypad_open()
+	var slots := []
+	for i in DoorCode.LENGTH:
+		slots.append(_door_code.entry()[i] if i < _door_code.entry().length() else "_")
+	_keypad_entry.text = " ".join(slots)
+
+
+func _on_post_it_body_exited(body: Node2D) -> void:
+	if body != _player:
+		return
+	_door_code.stop_reading()
+	_post_it_code.visible = _door_code.is_code_shown()
 
 
 func _is_player_on_desk() -> bool:
@@ -84,6 +164,7 @@ func _on_manager_body_spotted(body: Node2D) -> void:
 func _freeze_level() -> void:
 	_score.stop()
 	_refresh_chrono()
+	_set_keypad_open(false)
 	_player.set_physics_process(_progress.can_move())
 	_manager.set_physics_process(_progress.can_move())
 	_patrolling_manager.set_physics_process(_progress.can_move())

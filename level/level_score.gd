@@ -3,9 +3,11 @@ extends RefCounted
 
 const BASE_SCORE := 1000
 const POINTS_PER_SECOND := 10
+const WRONG_CODE_PENALTY := 100
 
 var _elapsed := 0.0
 var _running := true
+var _penalty := 0
 
 
 func update(delta: float) -> void:
@@ -21,9 +23,13 @@ func elapsed() -> float:
 	return _elapsed
 
 
-# Le score baisse avec le temps, sans descendre sous zero
+func add_penalty(points: int) -> void:
+	_penalty += points
+
+
+# Le score baisse avec le temps et les penalites, sans descendre sous zero
 func score() -> int:
-	return maxi(0, BASE_SCORE - int(_elapsed * POINTS_PER_SECOND))
+	return maxi(0, BASE_SCORE - int(_elapsed * POINTS_PER_SECOND) - _penalty)
 
 
 # Temps au format MM:SS.d (dixiemes tronques)
