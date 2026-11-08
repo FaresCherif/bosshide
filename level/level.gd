@@ -1,7 +1,10 @@
 extends Node2D
 
+const SUCCESS_TEXT := "Well done, you made it to the toilets!\nTime: %s - Score: %d\nPress R to play again"
+
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
+var _score := LevelScore.new()
 
 @onready var _player: CharacterBody2D = $Player
 @onready var _goal: Area2D = $Arrivee
@@ -13,12 +16,22 @@ var _door_key := DoorKey.new()
 @onready var _key_indicator: Label = $Interface/IndicateurCle
 @onready var _success_message: Label = $Interface/MessageSucces
 @onready var _game_over_message: Label = $Interface/MessageGameOver
+@onready var _chrono: Label = $Interface/Chrono
 
 
 func _ready() -> void:
 	_goal.body_entered.connect(_on_arrivee_body_entered)
 	_manager.body_spotted.connect(_on_manager_body_spotted)
 	_patrolling_manager.body_spotted.connect(_on_manager_body_spotted)
+
+
+func _physics_process(delta: float) -> void:
+	_score.update(delta)
+	_refresh_chrono()
+
+
+func _refresh_chrono() -> void:
+	_chrono.text = LevelScore.format_time(_score.elapsed())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -55,8 +68,9 @@ func _on_arrivee_body_entered(body: Node2D) -> void:
 	if body != _player:
 		return
 	_progress.reach_goal()
-	_success_message.visible = not _progress.is_game_over()
 	_freeze_level()
+	_success_message.text = SUCCESS_TEXT % [LevelScore.format_time(_score.elapsed()), _score.score()]
+	_success_message.visible = not _progress.is_game_over()
 
 
 func _on_manager_body_spotted(body: Node2D) -> void:
@@ -68,6 +82,8 @@ func _on_manager_body_spotted(body: Node2D) -> void:
 
 
 func _freeze_level() -> void:
+	_score.stop()
+	_refresh_chrono()
 	_player.set_physics_process(_progress.can_move())
 	_manager.set_physics_process(_progress.can_move())
 	_patrolling_manager.set_physics_process(_progress.can_move())

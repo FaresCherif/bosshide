@@ -525,3 +525,59 @@ func test_la_porte_ouverte_laisse_passer_le_joueur() -> void:
 	await _move_right_for(30)
 
 	assert_gt(player.position.x, level.get_node("Porte").position.x, "Le joueur doit traverser la porte ouverte")
+
+
+func test_le_chrono_affiche_zero_au_depart() -> void:
+	var chrono: Label = _instantiate_level().get_node_or_null("Interface/Chrono")
+	assert_not_null(chrono, "Le niveau doit afficher un chrono")
+	assert_eq(chrono.text, "00:00.0", "Le chrono doit partir de zero")
+
+
+func test_le_chrono_avance_pendant_le_jeu() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await wait_physics_frames(10)
+	assert_ne(level.get_node("Interface/Chrono").text, "00:00.0", "Le chrono doit avancer")
+
+
+func test_le_chrono_s_arrete_a_l_arrivee() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Player").position = level.get_node("Arrivee").position
+	await wait_physics_frames(5)
+	var text: String = level.get_node("Interface/Chrono").text
+
+	await wait_physics_frames(10)
+
+	assert_eq(level.get_node("Interface/Chrono").text, text, "Le chrono doit s'arreter a l'arrivee")
+
+
+func test_le_chrono_s_arrete_au_game_over() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le joueur doit etre repere")
+	var text: String = level.get_node("Interface/Chrono").text
+
+	await wait_physics_frames(10)
+
+	assert_eq(level.get_node("Interface/Chrono").text, text, "Le chrono doit s'arreter au game over")
+
+
+func test_le_message_de_succes_affiche_le_temps_et_le_score() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Player").position = level.get_node("Arrivee").position
+	await wait_physics_frames(5)
+
+	var message: Label = level.get_node("Interface/MessageSucces")
+	assert_string_contains(message.text, "Well done, you made it to the toilets!")
+	assert_string_contains(message.text, "Time: " + level.get_node("Interface/Chrono").text)
+	assert_string_contains(message.text, "Score: ")
+
+
+func test_le_message_de_game_over_n_affiche_pas_de_score() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+
+	var message: Label = level.get_node("Interface/MessageGameOver")
+	assert_true(message.visible, "Le joueur doit etre repere")
+	assert_false(message.text.contains("Score"), "Le game over ne doit pas afficher de score")

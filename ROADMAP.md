@@ -29,8 +29,8 @@ Chaque ligne correspond à une tâche du cycle de CLAUDE.md. Priorités : **P1**
 |---|---|---|---|---|
 | [x] | P1 | Porte verrouillée | Une porte bloque le passage tant qu'elle n'est pas ouverte | – |
 | [x] | P1 | Clé à ramasser | Le joueur ramasse une clé avec E ; elle ouvre la porte associée | Porte |
-| [ ] | P1 | Code à lire | Un code affiché quelque part dans le niveau (post-it, écran) se lit avec E | – |
-| [ ] | P1 | Digicode | Une porte s'ouvre en saisissant le bon code ; un mauvais code est refusé | Porte, Code |
+| [ ] | P1 | Code à lire | Un code de 4 chiffres tiré au hasard, sur un post-it : E l'affiche tant que le joueur reste devant (à retenir de tête) | – |
+| [ ] | P1 | Digicode | E ouvre un panneau de saisie au clavier (0-9, Retour arrière, Entrée, Échap) ; le bon code ouvre la porte. Le jeu continue pendant la saisie. Un mauvais code fait perdre des points et attire le manager qui patrouille | Porte, Code |
 | [ ] | P1 | QCM | Un terminal pose une question à choix multiple ; une bonne réponse ouvre la porte | Porte |
 | [ ] | P2 | Le joueur est vulnérable pendant une interaction | Saisir un code ou répondre au QCM n'empêche pas d'être repéré | Digicode, QCM |
 
@@ -38,8 +38,8 @@ Chaque ligne correspond à une tâche du cycle de CLAUDE.md. Priorités : **P1**
 
 | Statut | Prio | Fonctionnalité | Critère de fin | Dépend de |
 |---|---|---|---|---|
-| [ ] | P1 | Chrono | Le temps du niveau s'affiche et s'arrête à l'arrivée | – |
-| [ ] | P1 | Score | Le score est calculé à l'arrivée (règle à définir, voir questions) | Chrono |
+| [x] | P1 | Chrono | Le temps du niveau s'affiche et s'arrête à l'arrivée | – |
+| [x] | P1 | Score | 1000 − 10 par seconde, sans descendre sous 0, affiché seulement à l'arrivée ; pas de score au game over | Chrono |
 | [ ] | P1 | Données de niveau | Un niveau est décrit dans sa propre scène, chargée par un gestionnaire | – |
 | [ ] | P1 | Enchaînement des niveaux | Une réussite mène au niveau suivant ; un échec relance le même | Données de niveau |
 | [ ] | P2 | Sauvegarde | Les niveaux débloqués et les meilleurs scores sont conservés | Score, Enchaînement |
@@ -92,7 +92,7 @@ Idées non planifiées, à piocher quand un jalon se libère :
 ## Questions ouvertes
 
 - **Plateforme cible** : PC seulement, ou aussi le web ?
-- **Score** : comment le calculer à partir du chrono ? Bonus pour les tâches optionnelles ? Malus en cas d'erreur de code ?
-- **Erreurs** : un mauvais code ou une mauvaise réponse au QCM a-t-il une conséquence (temps perdu, alerte du patron) ?
+- **Score** : bonus pour les tâches optionnelles ? Combien de points perdus par mauvais code ?
+- **Erreurs au QCM** : même conséquence qu'un mauvais code (points perdus, manager attiré) ?
 - **Contenu des QCM** : thème des questions (culture d'entreprise, humour, culture générale) et qui les écrit ?
 - **Graphismes** : assets faits main ou packs existants ?
