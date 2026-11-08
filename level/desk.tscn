@@ -3,7 +3,7 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bureau"]
 size = Vector2(80, 96)
 
-[node name="Bureau" type="Area2D"]
+[node name="Bureau" type="Area2D" groups=["desks"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -16)

@@ -40,8 +40,8 @@ Chaque ligne correspond à une tâche du cycle de CLAUDE.md. Priorités : **P1**
 |---|---|---|---|---|
 | [x] | P1 | Chrono | Le temps du niveau s'affiche et s'arrête à l'arrivée | – |
 | [x] | P1 | Score | 1000 − 10 par seconde, sans descendre sous 0, affiché seulement à l'arrivée ; pas de score au game over | Chrono |
-| [ ] | P1 | Données de niveau | Un niveau est décrit dans sa propre scène, chargée par un gestionnaire | – |
-| [ ] | P1 | Enchaînement des niveaux | Une réussite mène au niveau suivant ; un échec relance le même | Données de niveau |
+| [x] | P1 | Données de niveau | Un niveau est décrit dans sa propre scène, chargée par un gestionnaire | – |
+| [x] | P1 | Enchaînement des niveaux | Une réussite mène au niveau suivant ; un échec relance le même | Données de niveau |
 | [ ] | P2 | Sauvegarde | Les niveaux débloqués et les meilleurs scores sont conservés | Score, Enchaînement |
 
 ### M3 – Contenu : les 10 niveaux

@@ -32,3 +32,8 @@ func can_move() -> bool:
 
 func can_restart() -> bool:
 	return _finished
+
+
+# Seule une reussite permet de passer au niveau suivant
+func can_continue() -> bool:
+	return _finished and not _game_over

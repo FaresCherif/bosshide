@@ -1,43 +1,71 @@
 extends Node2D
 
-const SUCCESS_TEXT := "Well done, you made it to the toilets!\nTime: %s - Score: %d\nPress R to play again"
+# Script commun a tous les niveaux. Bureaux et managers sont trouves par groupe ;
+# cle/porte, post-it/digicode et collegue sont optionnels (0 ou 1 par niveau).
+
+signal succeeded(score: int)
+signal restart_requested
+signal next_requested
+
+const SUCCESS_TEXT := "Well done, you made it to the toilets!\nTime: %s - Score: %d\nEnter: next level - R: play again"
 
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
 var _score := LevelScore.new()
 var _door_code := DoorCode.new(DoorCode.random_code(RandomNumberGenerator.new()))
 var _quiz := ColleagueQuiz.new(ColleagueQuiz.pick_question(QuizQuestions.QUESTIONS, RandomNumberGenerator.new()))
+var _managers: Array[Node] = []
+var _patrolling_managers: Array[Node] = []
+var _desks: Array[Node] = []
 
 @onready var _player: CharacterBody2D = $Player
 @onready var _goal: Area2D = $Arrivee
-@onready var _manager: Node2D = $Manager
-@onready var _patrolling_manager: Node2D = $ManagerPatrouille
-@onready var _desks: Node2D = $Bureaux
-@onready var _key: Area2D = $Cle
-@onready var _door: StaticBody2D = $Porte
+@onready var _key: Area2D = get_node_or_null("Cle")
+@onready var _door: StaticBody2D = get_node_or_null("Porte")
+@onready var _post_it: Area2D = get_node_or_null("PostIt")
+@onready var _code_door: StaticBody2D = get_node_or_null("PorteDigicode")
+@onready var _colleague: Area2D = get_node_or_null("Collegue")
 @onready var _key_indicator: Label = $Interface/IndicateurCle
 @onready var _success_message: Label = $Interface/MessageSucces
 @onready var _game_over_message: Label = $Interface/MessageGameOver
 @onready var _chrono: Label = $Interface/Chrono
-@onready var _post_it: Area2D = $PostIt
-@onready var _post_it_code: Label = $PostIt/Code
-@onready var _code_door: StaticBody2D = $PorteDigicode
 @onready var _keypad: Panel = $Interface/Digicode
 @onready var _keypad_entry: Label = $Interface/Digicode/Saisie
 @onready var _keypad_error: Label = $Interface/Digicode/Erreur
-@onready var _colleague: Area2D = $Collegue
 @onready var _quiz_panel: Panel = $Interface/Collegue
 @onready var _quiz_question: Label = $Interface/Collegue/Question
 @onready var _quiz_choices: Label = $Interface/Collegue/Choix
 
 
 func _ready() -> void:
+	_managers = _find_in_group("managers")
+	_patrolling_managers = _find_in_group("patrolling_managers")
+	_desks = _find_in_group("desks")
 	_goal.body_entered.connect(_on_arrivee_body_entered)
-	_manager.body_spotted.connect(_on_manager_body_spotted)
-	_patrolling_manager.body_spotted.connect(_on_manager_body_spotted)
-	_post_it.body_exited.connect(_on_post_it_body_exited)
-	_colleague.body_entered.connect(_on_collegue_body_entered)
-	_post_it_code.text = _door_code.code()
+	for manager in _managers:
+		manager.body_spotted.connect(_on_manager_body_spotted)
+	if _has_code():
+		_post_it.body_exited.connect(_on_post_it_body_exited)
+		_post_it.get_node("Code").text = _door_code.code()
+	if _colleague:
+		_colleague.body_entered.connect(_on_collegue_body_entered)
+
+
+# Cherche dans le niveau seulement, pas dans tout l'arbre
+func _find_in_group(group: String) -> Array[Node]:
+	var found: Array[Node] = []
+	for node in find_children("*", "", true, false):
+		if node.is_in_group(group):
+			found.append(node)
+	return found
+
+
+func _has_key_door() -> bool:
+	return _key != null and _door != null
+
+
+func _has_code() -> bool:
+	return _post_it != null and _code_door != null
 
 
 func _physics_process(delta: float) -> void:
@@ -55,25 +83,28 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _door_code.is_keypad_open():
 		_keypad_input(event)
 	elif event.is_action_pressed("restart") and _progress.can_restart():
-		get_tree().reload_current_scene()
+		restart_requested.emit()
+	elif event.is_action_pressed("next_level") and _progress.can_continue():
+		next_requested.emit()
 	elif event.is_action_pressed("work") and _progress.can_move():
 		_press_work()
 
 
 # Le digicode, le post-it, la porte et la cle passent avant le travail
 func _press_work() -> void:
-	if not _door_code.is_door_open() and _code_door.is_body_near(_player):
+	if _has_code() and not _door_code.is_door_open() and _code_door.is_body_near(_player):
 		_set_keypad_open(true)
 		return
-	if _post_it.overlaps_body(_player):
+	if _has_code() and _post_it.overlaps_body(_player):
 		_door_code.read()
-		_post_it_code.visible = _door_code.is_code_shown()
+		_refresh_post_it()
 		return
-	var on_key := _door_key.is_key_on_desk() and _key.overlaps_body(_player)
-	if _door_key.interact(_door.is_body_near(_player), on_key):
-		_refresh_door_key()
-	else:
-		_player.press_work(_is_player_on_desk())
+	if _has_key_door():
+		var on_key := _door_key.is_key_on_desk() and _key.overlaps_body(_player)
+		if _door_key.interact(_door.is_body_near(_player), on_key):
+			_refresh_door_key()
+			return
+	_player.press_work(_is_player_on_desk())
 
 
 func _refresh_door_key() -> void:
@@ -81,6 +112,10 @@ func _refresh_door_key() -> void:
 	_key_indicator.visible = _door_key.has_key()
 	if _door_key.is_door_open():
 		_door.open()
+
+
+func _refresh_post_it() -> void:
+	_post_it.get_node("Code").visible = _door_code.is_code_shown()
 
 
 # Pendant la saisie, le panneau prend toutes les touches
@@ -113,11 +148,16 @@ func _submit_code() -> void:
 	match _door_code.submit():
 		DoorCode.Result.WRONG:
 			_score.add_penalty(LevelScore.WRONG_CODE_PENALTY)
-			_patrolling_manager.attract(_code_door.position.x)
+			_attract_patrols(_code_door.position.x, 1.0)
 			_keypad_error.visible = true
 		DoorCode.Result.RIGHT:
 			_code_door.open()
 			_player.set_busy(false)
+
+
+func _attract_patrols(target_x: float, speed_factor: float) -> void:
+	for patrol in _patrolling_managers:
+		patrol.attract(target_x, speed_factor)
 
 
 func _set_keypad_open(open: bool) -> void:
@@ -158,7 +198,7 @@ func _quiz_input(event: InputEvent) -> void:
 		var result := _quiz.answer(_digit_of(event) - 1)
 		if result == ColleagueQuiz.Result.WRONG:
 			_score.add_penalty(LevelScore.WRONG_ANSWER_PENALTY)
-			_patrolling_manager.attract(_colleague.position.x, ManagerPatrol.RUSH_FACTOR)
+			_attract_patrols(_colleague.position.x, ManagerPatrol.RUSH_FACTOR)
 		if result != ColleagueQuiz.Result.IGNORED:
 			_player.set_busy(false)
 			_quiz_panel.visible = false
@@ -169,11 +209,11 @@ func _on_post_it_body_exited(body: Node2D) -> void:
 	if body != _player:
 		return
 	_door_code.stop_reading()
-	_post_it_code.visible = _door_code.is_code_shown()
+	_refresh_post_it()
 
 
 func _is_player_on_desk() -> bool:
-	for desk: Area2D in _desks.get_children():
+	for desk: Area2D in _desks:
 		if desk.overlaps_body(_player):
 			return true
 	return false
@@ -185,7 +225,9 @@ func _on_arrivee_body_entered(body: Node2D) -> void:
 	_progress.reach_goal()
 	_freeze_level()
 	_success_message.text = SUCCESS_TEXT % [LevelScore.format_time(_score.elapsed()), _score.score()]
-	_success_message.visible = not _progress.is_game_over()
+	_success_message.visible = _progress.can_continue()
+	if _progress.can_continue():
+		succeeded.emit(_score.score())
 
 
 func _on_manager_body_spotted(body: Node2D) -> void:
@@ -201,5 +243,5 @@ func _freeze_level() -> void:
 	_refresh_chrono()
 	_set_keypad_open(false)
 	_player.set_physics_process(_progress.can_move())
-	_manager.set_physics_process(_progress.can_move())
-	_patrolling_manager.set_physics_process(_progress.can_move())
+	for manager in _managers:
+		manager.set_physics_process(_progress.can_move())

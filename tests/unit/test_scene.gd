@@ -1,6 +1,6 @@
 extends GutTest
 
-const MAIN_SCENE_PATH := "res://Scene.tscn"
+const MAIN_SCENE_PATH := "res://Game.tscn"
 
 
 func test_main_scene_loads() -> void:

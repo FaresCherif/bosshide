@@ -5,7 +5,7 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vision"]
 size = Vector2(150, 96)
 
-[node name="ManagerPatrouille" type="Node2D"]
+[node name="ManagerPatrouille" type="Node2D" groups=["managers", "patrolling_managers"]]
 script = ExtResource("1_patrol")
 
 [node name="ZoneVisuelle" type="ColorRect" parent="."]

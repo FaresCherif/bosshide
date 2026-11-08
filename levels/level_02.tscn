@@ -1,0 +1,78 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://level/level.gd" id="1_level"]
+[ext_resource type="PackedScene" path="res://player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://manager/manager.tscn" id="3_manager"]
+[ext_resource type="PackedScene" path="res://level/desk.tscn" id="4_desk"]
+[ext_resource type="PackedScene" path="res://level/hud.tscn" id="5_hud"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mur"]
+size = Vector2(40, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_arrivee"]
+size = Vector2(40, 96)
+
+[node name="Niveau2" type="Node2D"]
+script = ExtResource("1_level")
+
+[node name="Sol" type="ColorRect" parent="."]
+offset_left = -820.0
+offset_top = 32.0
+offset_right = 820.0
+offset_bottom = 72.0
+color = Color(0.35, 0.35, 0.4, 1)
+
+[node name="MurGauche" type="StaticBody2D" parent="."]
+position = Vector2(-800, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MurGauche"]
+shape = SubResource("RectangleShape2D_mur")
+
+[node name="Visuel" type="ColorRect" parent="MurGauche"]
+offset_left = -20.0
+offset_top = -400.0
+offset_right = 20.0
+offset_bottom = 400.0
+color = Color(0.75, 0.3, 0.3, 1)
+
+[node name="MurDroit" type="StaticBody2D" parent="."]
+position = Vector2(800, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MurDroit"]
+shape = SubResource("RectangleShape2D_mur")
+
+[node name="Visuel" type="ColorRect" parent="MurDroit"]
+offset_left = -20.0
+offset_top = -400.0
+offset_right = 20.0
+offset_bottom = 400.0
+color = Color(0.75, 0.3, 0.3, 1)
+
+[node name="Arrivee" type="Area2D" parent="."]
+position = Vector2(760, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Arrivee"]
+position = Vector2(0, -16)
+shape = SubResource("RectangleShape2D_arrivee")
+
+[node name="Visuel" type="ColorRect" parent="Arrivee"]
+offset_left = -20.0
+offset_top = -64.0
+offset_right = 20.0
+offset_bottom = 32.0
+color = Color(0.3, 0.75, 0.4, 1)
+
+[node name="Bureaux" type="Node2D" parent="."]
+
+[node name="Bureau1" parent="Bureaux" instance=ExtResource("4_desk")]
+position = Vector2(-150, 0)
+
+[node name="Bureau2" parent="Bureaux" instance=ExtResource("4_desk")]
+position = Vector2(150, 0)
+
+[node name="Manager" parent="." instance=ExtResource("3_manager")]
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(-740, 0)
+
+[node name="Interface" parent="." instance=ExtResource("5_hud")]

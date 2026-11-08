@@ -1,11 +1,12 @@
 extends GutTest
 
-const MAIN_SCENE_PATH := "res://Scene.tscn"
+const LEVEL_PATH := "res://levels/level_01.tscn"
+const MAIN_SCENE_PATH := "res://Game.tscn"
 const LEFT_SECTOR_OFFSET := Vector2(-200, 0)
 
 
 func _load_level() -> Node:
-	var scene: PackedScene = load(MAIN_SCENE_PATH)
+	var scene: PackedScene = load(LEVEL_PATH)
 	return scene.instantiate()
 
 
@@ -883,3 +884,63 @@ func test_repasser_devant_le_collegue_ne_relance_pas_la_question() -> void:
 
 	assert_false(level.get_node("Interface/Collegue").visible, "Le collegue ne doit parler qu'une fois")
 	assert_false(level._quiz.is_talking(), "Le joueur doit pouvoir passer")
+
+
+func test_action_niveau_suivant_a_sa_touche() -> void:
+	assert_true(InputMap.has_action("next_level"), "L'action next_level doit exister")
+	assert_has(_action_keycodes("next_level"), KEY_ENTER, "Entree doit passer au niveau suivant")
+
+
+func test_l_arrivee_emet_la_reussite_avec_le_score() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level.get_node("Player").position = level.get_node("Arrivee").position
+	await wait_physics_frames(5)
+	assert_signal_emitted_with_parameters(level, "succeeded", [level._score.score()])
+
+
+func test_le_message_de_succes_propose_le_niveau_suivant() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Player").position = level.get_node("Arrivee").position
+	await wait_physics_frames(5)
+	assert_string_contains(level.get_node("Interface/MessageSucces").text, "Enter")
+
+
+func test_r_ne_relance_pas_pendant_le_jeu() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level._unhandled_input(_pressed("restart"))
+	assert_signal_not_emitted(level, "restart_requested", "R ne doit rien faire pendant le jeu")
+
+
+func test_r_apres_la_fin_demande_la_relance() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+
+	level._unhandled_input(_pressed("restart"))
+
+	assert_signal_emitted(level, "restart_requested", "R apres un game over doit relancer")
+
+
+func test_entree_apres_la_reussite_demande_le_niveau_suivant() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level.get_node("Player").position = level.get_node("Arrivee").position
+	await wait_physics_frames(5)
+
+	level._unhandled_input(_pressed("next_level"))
+
+	assert_signal_emitted(level, "next_requested", "Entree apres une reussite doit passer au suivant")
+
+
+func test_entree_apres_un_game_over_ne_passe_pas_au_suivant() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+
+	level._unhandled_input(_pressed("next_level"))
+
+	assert_signal_not_emitted(level, "next_requested", "Un echec ne doit pas mener au niveau suivant")

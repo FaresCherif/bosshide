@@ -1,0 +1,159 @@
+[gd_scene format=3]
+
+[node name="Interface" type="CanvasLayer"]
+
+[node name="MessageSucces" type="Label" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Well done, you made it to the toilets!
+Enter: next level - R: play again"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MessageGameOver" type="Label" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Game over, the manager saw you!
+Press R to play again"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IndicateurCle" type="Label" parent="."]
+visible = false
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 116.0
+offset_bottom = 56.0
+theme_override_colors/font_color = Color(0.95, 0.8, 0.1, 1)
+theme_override_font_sizes/font_size = 28
+text = "Key"
+
+[node name="Chrono" type="Label" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -176.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 56.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 28
+text = "00:00.0"
+horizontal_alignment = 2
+
+[node name="Digicode" type="Panel" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -110.0
+offset_right = 160.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Titre" type="Label" parent="Digicode"]
+layout_mode = 0
+offset_top = 16.0
+offset_right = 320.0
+offset_bottom = 52.0
+theme_override_font_sizes/font_size = 24
+text = "Enter code"
+horizontal_alignment = 1
+
+[node name="Saisie" type="Label" parent="Digicode"]
+layout_mode = 0
+offset_top = 64.0
+offset_right = 320.0
+offset_bottom = 124.0
+theme_override_font_sizes/font_size = 40
+text = "_ _ _ _"
+horizontal_alignment = 1
+
+[node name="Erreur" type="Label" parent="Digicode"]
+visible = false
+layout_mode = 0
+offset_top = 128.0
+offset_right = 320.0
+offset_bottom = 160.0
+theme_override_colors/font_color = Color(0.95, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 22
+text = "Wrong code"
+horizontal_alignment = 1
+
+[node name="Aide" type="Label" parent="Digicode"]
+layout_mode = 0
+offset_top = 172.0
+offset_right = 320.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 16
+text = "Enter: confirm - Esc: close"
+horizontal_alignment = 1
+
+[node name="Collegue" type="Panel" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -120.0
+offset_right = 260.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Titre" type="Label" parent="Collegue"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 504.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.3, 0.7, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "Hey! Quick question..."
+
+[node name="Question" type="Label" parent="Collegue"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 44.0
+offset_right = 504.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 24
+text = "Question"
+autowrap_mode = 3
+
+[node name="Choix" type="Label" parent="Collegue"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 108.0
+offset_right = 504.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 20
+text = "1.
+2.
+3."
+
+[node name="Aide" type="Label" parent="Collegue"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 208.0
+offset_right = 504.0
+offset_bottom = 232.0
+theme_override_font_sizes/font_size = 14
+text = "Answer with 1, 2 or 3"
+horizontal_alignment = 1

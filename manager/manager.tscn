@@ -5,7 +5,7 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_zone"]
 size = Vector2(600, 96)
 
-[node name="Manager" type="Node2D"]
+[node name="Manager" type="Node2D" groups=["managers"]]
 script = ExtResource("1_manager")
 
 [node name="ZoneVisuelle" type="ColorRect" parent="."]

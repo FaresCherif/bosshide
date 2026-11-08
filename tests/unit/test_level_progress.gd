@@ -85,3 +85,20 @@ func test_atteindre_l_arrivee_apres_un_game_over_ne_change_rien() -> void:
 	progress.fail()
 	progress.reach_goal()
 	assert_true(progress.is_game_over(), "Le game over doit rester acquis")
+
+
+func test_au_depart_on_ne_peut_pas_continuer() -> void:
+	assert_false(LevelProgress.new().can_continue(), "On ne passe pas au niveau suivant avant l'arrivee")
+
+
+func test_apres_une_reussite_on_peut_continuer() -> void:
+	var progress := LevelProgress.new()
+	progress.reach_goal()
+	assert_true(progress.can_continue(), "Une reussite doit permettre de continuer")
+
+
+func test_apres_un_echec_on_ne_peut_pas_continuer() -> void:
+	var progress := LevelProgress.new()
+	progress.fail()
+	progress.reach_goal()
+	assert_false(progress.can_continue(), "Un echec ne doit pas permettre de continuer")
