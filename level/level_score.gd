@@ -9,6 +9,8 @@ const WRONG_ANSWER_PENALTY := 100
 var _elapsed := 0.0
 var _running := true
 var _penalty := 0
+var _wrong_codes := 0
+var _wrong_answers := 0
 
 
 func update(delta: float) -> void:
@@ -26,6 +28,24 @@ func elapsed() -> float:
 
 func add_penalty(points: int) -> void:
 	_penalty += points
+
+
+func add_wrong_code() -> void:
+	_wrong_codes += 1
+	add_penalty(WRONG_CODE_PENALTY)
+
+
+func add_wrong_answer() -> void:
+	_wrong_answers += 1
+	add_penalty(WRONG_ANSWER_PENALTY)
+
+
+func wrong_codes() -> int:
+	return _wrong_codes
+
+
+func wrong_answers() -> int:
+	return _wrong_answers
 
 
 # Le score baisse avec le temps et les penalites, sans descendre sous zero

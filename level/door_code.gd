@@ -8,6 +8,7 @@ const LENGTH := 4
 var _code: String
 var _entry := ""
 var _code_shown := false
+var _code_read := false
 var _keypad_open := false
 var _door_open := false
 
@@ -30,6 +31,12 @@ func code() -> String:
 # Le code n'est visible que pendant que le joueur est devant le post-it
 func read() -> void:
 	_code_shown = true
+	_code_read = true
+
+
+# Le joueur a deja lu le post-it au moins une fois
+func has_read_code() -> bool:
+	return _code_read
 
 
 func stop_reading() -> void:

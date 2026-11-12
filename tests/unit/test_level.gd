@@ -1157,3 +1157,76 @@ func test_le_game_over_est_une_note_beige_signee_du_patron() -> void:
 	assert_eq(screen.get_node("Signature").text, "- The Boss")
 	for button in screen.get_node("Boutons").get_children():
 		assert_eq(button.theme_type_variation, &"", "%s doit reprendre le post-it du theme" % button.name)
+
+
+func _spot_with(level: Node, manager_name: String) -> void:
+	level.get_node(manager_name).body_spotted.emit(level.get_node("Player"))
+	await wait_frames(2)
+
+
+func _form(level: Node) -> String:
+	return level.get_node("Interface/MessageGameOver/Formulaire").text
+
+
+func test_le_formulaire_dit_quel_manager_a_repere_le_joueur() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _spot_with(level, "ManagerPatrouille")
+	assert_string_contains(_form(level), "[X] The boss (patrolling)")
+	assert_string_contains(_form(level), "[  ] The boss (watching)")
+
+
+func test_le_formulaire_coche_le_manager_fixe() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _spot_with(level, "Manager")
+	assert_string_contains(_form(level), "[X] The boss (watching)")
+
+
+func test_la_cle_en_poche_est_un_motif() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level._door_key.take_key()
+	await _spot_with(level, "Manager")
+	assert_string_contains(_form(level), "[X] In possession of a stolen key")
+	assert_string_contains(_form(level), "[  ] Knows confidential codes")
+
+
+func test_un_mauvais_code_apparait_dans_les_statistiques() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _open_keypad(level)
+	_type_code(level, _wrong_code(level._door_code.code()))
+	level._unhandled_input(_pressed("ui_accept"))
+	await _spot_with(level, "Manager")
+	assert_string_contains(level.get_node("Interface/MessageGameOver/Details").text, "Wrong codes: 1 - Wrong answers: 0")
+
+
+func test_la_sanction_depend_du_niveau() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.configure(2, false)
+	await _spot_with(level, "Manager")
+	assert_string_contains(_form(level), "Sanction: " + HrWarning.sanction(2))
+
+
+func test_le_game_over_a_une_capture_de_surveillance() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _spot_with(level, "Manager")
+	var photo: TextureRect = level.get_node("Interface/MessageGameOver/Photo")
+	var no_signal: Label = photo.get_node("PasDeSignal")
+	assert_true(photo.texture != null or no_signal.visible, "La photo doit montrer la capture, ou NO SIGNAL sans rendu")
+	assert_eq(photo.get_node("Legende").text, SurveillanceShot.caption(level.get_node("Interface/Chrono").text))
+	assert_true(photo.material is ShaderMaterial, "La capture doit avoir le look camera de surveillance")
+
+
+func test_le_tampon_busted_ne_couvre_pas_les_boutons() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	var screen: Control = level.get_node("Interface/MessageGameOver")
+	screen.visible = true
+	await wait_frames(2)
+	var stamp: Control = screen.get_node("Titre")
+	var tween := UiFx.stamp(stamp, level.STAMP_ANGLE)
+	await tween.finished
+	var transform := stamp.get_global_transform()
+	var stamp_box := Rect2(transform * Vector2.ZERO, Vector2.ZERO)
+	for corner in [Vector2(stamp.size.x, 0), stamp.size, Vector2(0, stamp.size.y)]:
+		stamp_box = stamp_box.expand(transform * corner)
+	# Le contour du focus deborde de 5 px autour des boutons
+	var buttons := (screen.get_node("Boutons") as Control).get_global_rect().grow(6.0)
+	assert_false(stamp_box.intersects(buttons), "Le tampon %s ne doit pas couvrir les boutons %s" % [stamp_box, buttons])

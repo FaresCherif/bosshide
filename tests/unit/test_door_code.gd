@@ -124,3 +124,11 @@ func test_un_code_avec_des_zeros_fonctionne() -> void:
 	door_code.open_keypad()
 	_type(door_code, "0070")
 	assert_eq(door_code.submit(), DoorCode.Result.RIGHT, "Les zeros doivent compter")
+
+
+func test_lire_le_post_it_reste_en_memoire() -> void:
+	var door_code := DoorCode.new(CODE)
+	assert_false(door_code.has_read_code(), "Au depart le joueur ne connait pas le code")
+	door_code.read()
+	door_code.stop_reading()
+	assert_true(door_code.has_read_code(), "Le joueur se souvient d'avoir lu le code")

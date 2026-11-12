@@ -11,6 +11,7 @@ signal pause_requested
 
 const SUCCESS_PHRASE := "You reached the toilets. Productivity: 0%."
 const STAMP_ANGLE := -0.14
+const SURVEILLANCE_CROP := Vector2i(480, 300)
 
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
@@ -20,6 +21,8 @@ var _quiz := ColleagueQuiz.new(ColleagueQuiz.pick_question(QuizQuestions.QUESTIO
 var _managers: Array[Node] = []
 var _patrolling_managers: Array[Node] = []
 var _desks: Array[Node] = []
+var _level_number := 0
+var _spotter := HrWarning.Spotter.WATCHING
 
 @onready var _player: CharacterBody2D = $Player
 @onready var _goal: Area2D = $Arrivee
@@ -41,6 +44,11 @@ var _desks: Array[Node] = []
 @onready var _game_over_stamp: Label = $Interface/MessageGameOver/Titre
 @onready var _game_over_sheet: Panel = $Interface/MessageGameOver/Fiche
 @onready var _game_over_replay_button: Button = $Interface/MessageGameOver/Boutons/Rejouer
+@onready var _game_over_form: Label = $Interface/MessageGameOver/Formulaire
+@onready var _photo: TextureRect = $Interface/MessageGameOver/Photo
+@onready var _photo_frame: ReferenceRect = $Interface/MessageGameOver/Photo/Cadre
+@onready var _photo_caption: Label = $Interface/MessageGameOver/Photo/Legende
+@onready var _photo_no_signal: Label = $Interface/MessageGameOver/Photo/PasDeSignal
 @onready var _chrono: Label = $Interface/Chrono
 @onready var _keypad: Panel = $Interface/Digicode
 @onready var _keypad_entry: Label = $Interface/Digicode/Saisie
@@ -56,6 +64,8 @@ func _ready() -> void:
 	_desks = _find_in_group("desks")
 	_goal.body_entered.connect(_on_arrivee_body_entered)
 	for manager in _managers:
+		# Connecte avant le game over pour savoir quel manager a repere le joueur
+		manager.body_spotted.connect(_remember_spotter.bind(manager))
 		manager.body_spotted.connect(_on_manager_body_spotted)
 	if _has_code():
 		_post_it.body_exited.connect(_on_post_it_body_exited)
@@ -71,6 +81,7 @@ func _ready() -> void:
 
 # Appele par le jeu au chargement : numero du niveau et bouton Next ou Finish
 func configure(number: int, is_last: bool) -> void:
+	_level_number = number
 	_success_title.text = LevelResult.success_title(number) + "\n" + SUCCESS_PHRASE
 	_next_button.text = LevelResult.next_label(is_last)
 
@@ -184,7 +195,7 @@ func _digit_of(event: InputEventKey) -> int:
 func _submit_code() -> void:
 	match _door_code.submit():
 		DoorCode.Result.WRONG:
-			_score.add_penalty(LevelScore.WRONG_CODE_PENALTY)
+			_score.add_wrong_code()
 			_attract_patrols(_code_door.position.x, 1.0)
 			_keypad_error.visible = true
 		DoorCode.Result.RIGHT:
@@ -234,7 +245,7 @@ func _quiz_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		var result := _quiz.answer(_digit_of(event) - 1)
 		if result == ColleagueQuiz.Result.WRONG:
-			_score.add_penalty(LevelScore.WRONG_ANSWER_PENALTY)
+			_score.add_wrong_answer()
 			_attract_patrols(_colleague.position.x, ManagerPatrol.RUSH_FACTOR)
 		if result != ColleagueQuiz.Result.IGNORED:
 			_player.set_busy(false)
@@ -271,17 +282,54 @@ func _on_arrivee_body_entered(body: Node2D) -> void:
 		succeeded.emit(_score.score())
 
 
+func _remember_spotter(body: Node2D, manager: Node) -> void:
+	if body == _player and _progress.can_move():
+		_spotter = HrWarning.Spotter.PATROLLING if manager in _patrolling_managers else HrWarning.Spotter.WATCHING
+
+
 func _on_manager_body_spotted(body: Node2D) -> void:
 	if body != _player or _player.is_working() or _quiz.is_talking():
 		return
+	# Une fois le niveau fini, une autre detection ne doit rien changer
+	if not _progress.can_move():
+		return
 	_progress.fail()
 	_freeze_level()
-	_game_over_details.text = LevelResult.time_only(LevelScore.format_time(_score.elapsed()))
+	_take_surveillance_shot()
+	_fill_hr_warning()
 	_game_over_message.visible = _progress.is_game_over()
 	if _progress.is_game_over():
 		_game_over_replay_button.call_deferred("grab_focus")
 		UiFx.stamp(_game_over_stamp, STAMP_ANGLE)
 		UiFx.shake(_game_over_sheet)
+
+
+func _fill_hr_warning() -> void:
+	var has_key := _has_key_door() and _door_key.has_key()
+	var knows_code := _has_code() and _door_code.has_read_code()
+	_game_over_form.text = HrWarning.form_text(_spotter, has_key, knows_code, _level_number)
+	var time_text := LevelScore.format_time(_score.elapsed())
+	_game_over_details.text = HrWarning.stats(time_text, _score.wrong_codes(), _score.wrong_answers())
+	_photo_caption.text = SurveillanceShot.caption(time_text)
+
+
+# Derniere image dessinee (donc sans l'ecran de game over), recadree sur le joueur.
+# Sans rendu (headless), la photo affiche NO SIGNAL.
+func _take_surveillance_shot() -> void:
+	var image: Image = null
+	if DisplayServer.get_name() != "headless":
+		image = get_viewport().get_texture().get_image()
+	var has_image := image != null and not image.is_empty()
+	_photo_no_signal.visible = not has_image
+	_photo_frame.visible = has_image
+	if not has_image:
+		_photo.texture = null
+		return
+	var focus := _player.get_global_transform_with_canvas().origin
+	var crop := SurveillanceShot.crop_rect(focus, image.get_size(), SURVEILLANCE_CROP)
+	_photo.texture = ImageTexture.create_from_image(image.get_region(crop))
+	var center := SurveillanceShot.frame_position(focus, crop, _photo.size)
+	_photo_frame.position = center - _photo_frame.size / 2.0
 
 
 func _freeze_level() -> void:

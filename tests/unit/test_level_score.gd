@@ -57,3 +57,20 @@ func test_les_penalites_ne_rendent_pas_le_score_negatif() -> void:
 	score.update(95.0)
 	score.add_penalty(LevelScore.WRONG_CODE_PENALTY)
 	assert_eq(score.score(), 0, "Le score ne doit pas etre negatif")
+
+
+func test_un_mauvais_code_est_compte_et_penalise() -> void:
+	var score := LevelScore.new()
+	score.add_wrong_code()
+	score.add_wrong_code()
+	assert_eq(score.wrong_codes(), 2, "Les mauvais codes doivent etre comptes")
+	assert_eq(score.wrong_answers(), 0)
+	assert_eq(score.score(), LevelScore.BASE_SCORE - 2 * LevelScore.WRONG_CODE_PENALTY)
+
+
+func test_une_mauvaise_reponse_est_comptee_et_penalisee() -> void:
+	var score := LevelScore.new()
+	score.add_wrong_answer()
+	assert_eq(score.wrong_answers(), 1, "Les mauvaises reponses doivent etre comptees")
+	assert_eq(score.wrong_codes(), 0)
+	assert_eq(score.score(), LevelScore.BASE_SCORE - LevelScore.WRONG_ANSWER_PENALTY)
