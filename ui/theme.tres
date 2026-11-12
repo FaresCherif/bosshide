@@ -1,8 +1,23 @@
-[gd_resource type="Theme" load_steps=16 format=3 uid="uid://c3xd83oqks3uo"]
+[gd_resource type="Theme" load_steps=17 format=3 uid="uid://c3xd83oqks3uo"]
 
 [ext_resource type="FontFile" uid="uid://bfvdcvtih7db8" path="res://assets/fonts/PatrickHand-Regular.ttf" id="1_hand"]
 [ext_resource type="FontFile" uid="uid://dq1qk1l4is342" path="res://assets/fonts/PermanentMarker-Regular.ttf" id="2_marker"]
 [ext_resource type="Script" path="res://ui/ruled_sticky_style.gd" id="3_sticky"]
+
+[sub_resource type="StyleBoxFlat" id="BadgeCardStyle"]
+bg_color = Color(0.98, 0.98, 0.96, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.8, 0.84, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 10
+shadow_offset = Vector2(8, 10)
 
 [sub_resource type="StyleBoxFlat" id="PostItDisabled"]
 content_margin_left = 20.0
@@ -199,6 +214,8 @@ corner_radius_bottom_left = 12
 [resource]
 default_font = ExtResource("1_hand")
 default_font_size = 26
+BadgeCard/base_type = &"Panel"
+BadgeCard/styles/panel = SubResource("BadgeCardStyle")
 Button/colors/font_color = Color(0.17, 0.17, 0.17, 1)
 Button/colors/font_disabled_color = Color(0.48, 0.46, 0.42, 1)
 Button/colors/font_focus_color = Color(0.17, 0.17, 0.17, 1)

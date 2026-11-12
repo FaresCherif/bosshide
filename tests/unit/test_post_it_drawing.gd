@@ -44,3 +44,22 @@ func test_les_grains_du_liege_sont_fixes_et_dans_le_liege() -> void:
 	assert_eq(grains, board.speckles(), "Les grains ne doivent pas bouger d'une image a l'autre")
 	for grain in grains:
 		assert_true(board.cork_rect().has_point(grain), "Chaque grain doit etre dans le liege")
+
+
+func test_le_code_barre_est_fixe_et_tient_dans_sa_largeur() -> void:
+	var barcode: Barcode = autofree(Barcode.new())
+	barcode.size = Vector2(170, 30)
+	var widths := barcode.bar_widths()
+	assert_gt(widths.size(), 10, "Le code-barre doit avoir des barres")
+	assert_eq(widths, barcode.bar_widths(), "Le code-barre ne doit pas changer")
+	var total := 0.0
+	for width in widths:
+		total += width
+	assert_lte(total, barcode.size.x, "Les barres doivent tenir dans la largeur")
+
+
+func test_la_photo_d_identite_s_instancie() -> void:
+	var photo: IdPhoto = autofree(IdPhoto.new())
+	photo.size = Vector2(120, 150)
+	assert_gt(photo.head_radius(), 0.0, "La silhouette doit avoir une tete")
+	assert_lt(photo.head_radius() * 2.0, photo.size.x, "La tete doit tenir dans la photo")

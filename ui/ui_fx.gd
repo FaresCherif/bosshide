@@ -8,8 +8,7 @@ const POP_DURATION := 0.35
 const STAMP_DURATION := 0.25
 const SHAKE_DURATION := 0.3
 const SHAKE_DISTANCE := 12.0
-const WOBBLE_DURATION := 1.4
-const WOBBLE_ANGLE := 0.04
+const SWING_DURATION := 2.4
 
 
 # Apparait en grossissant depuis le centre, avec un petit rebond
@@ -47,12 +46,12 @@ static func shake(control: Control) -> Tween:
 	return tween
 
 
-# Legere oscillation sans fin
-static func wobble(control: Control) -> Tween:
-	control.pivot_offset = control.size / 2.0
+# Balancement sans fin autour d'un pivot (le haut d'un cordon, par exemple)
+static func swing(control: Control, pivot: Vector2, angle: float) -> Tween:
+	control.pivot_offset = pivot
 	var tween := control.create_tween().set_loops()
-	tween.tween_property(control, "rotation", WOBBLE_ANGLE, WOBBLE_DURATION / 2.0) \
+	tween.tween_property(control, "rotation", angle, SWING_DURATION / 2.0) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(control, "rotation", -WOBBLE_ANGLE, WOBBLE_DURATION / 2.0) \
+	tween.tween_property(control, "rotation", -angle, SWING_DURATION / 2.0) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	return tween

@@ -3,9 +3,12 @@ extends GutTest
 const GAME_SCENE_PATH := "res://Game.tscn"
 
 
+# Clock in demarre le niveau tout de suite : le delai du badge a son propre test
 func _add_game() -> Node:
 	var scene: PackedScene = load(GAME_SCENE_PATH)
-	return add_child_autofree(scene.instantiate())
+	var game: Node = add_child_autofree(scene.instantiate())
+	game.clock_in_delay = 0.0
+	return game
 
 
 # Appuie sur Play : le jeu demarre sur le menu, sans niveau charge
@@ -119,7 +122,7 @@ func test_au_lancement_le_menu_est_affiche() -> void:
 	assert_false(game.get_node("Interface/Niveau").visible, "Le numero de niveau doit etre cache")
 	assert_null(_level(game), "Aucun niveau ne doit etre charge")
 	assert_eq(game.get_viewport().gui_get_focus_owner(), _button(game, "MenuPrincipal/Boutons/Jouer"), "Play doit avoir le focus")
-	assert_eq(game.get_node("Interface/MenuPrincipal/Titre").text, "BossHide")
+	assert_eq(game.get_node("Interface/MenuPrincipal/Badge/Titre").text, "BossHide")
 
 
 func test_les_signaux_des_boutons_sont_connectes() -> void:
@@ -505,3 +508,66 @@ func test_les_post_its_sont_centres() -> void:
 	var grid: Control = game.get_node("Interface/Selecteur/Niveaux")
 	var center := grid.get_global_rect().get_center().x
 	assert_almost_eq(center, _screen_size().x / 2.0, 1.0, "La grille de niveaux doit etre centree")
+
+
+func _badge(game: Node) -> Control:
+	return game.get_node("Interface/MenuPrincipal/Badge")
+
+
+func test_le_menu_est_un_badge_d_employe() -> void:
+	var game := _add_game()
+	var badge := _badge(game)
+	assert_true(badge.get_node("Photo") is IdPhoto, "Le badge doit avoir une photo d'identite")
+	assert_true(badge.get_node("CodeBarre") is Barcode, "Le badge doit avoir un code-barre")
+	assert_string_contains(badge.get_node("Infos").text, "Employee #4012")
+	assert_eq(badge.get_node("Voyant").color, Game.LED_RED, "Le voyant doit etre rouge au depart")
+	assert_false(badge.get_node("Acces").visible, "ACCESS GRANTED doit etre cache au depart")
+
+
+func test_le_badge_se_balance_au_bout_du_cordon() -> void:
+	var game := _add_game()
+	assert_eq(_badge(game).pivot_offset, Game.BADGE_PIVOT, "Le badge doit pendre au haut de son cordon")
+
+
+func test_clock_in_valide_le_badge_avant_de_lancer_le_niveau() -> void:
+	var game := _add_game()
+	game.clock_in_delay = 0.2
+	var play := _button(game, "MenuPrincipal/Boutons/Jouer")
+	play.pressed.emit()
+	assert_null(_level(game), "Le niveau ne doit pas demarrer avant la fin du bip")
+	assert_true(_badge(game).get_node("Acces").visible, "ACCESS GRANTED doit s'afficher")
+	assert_eq(_badge(game).get_node("Voyant").color, Game.LED_GREEN, "Le voyant doit passer au vert")
+	for path in ["Jouer", "Choisir", "Quitter"]:
+		assert_true(_button(game, "MenuPrincipal/Boutons/" + path).disabled, path + " doit etre inactif pendant le bip")
+	await wait_seconds(0.4)
+	assert_not_null(_level(game), "Le niveau 1 doit demarrer apres le bip")
+	assert_eq(_level(game).scene_file_path, Game.LEVELS[0])
+	assert_false(_screen(game, "MenuPrincipal").visible, "Le menu doit se cacher")
+
+
+func test_un_double_clock_in_ne_lance_qu_un_niveau() -> void:
+	var game := _add_game()
+	game.clock_in_delay = 0.1
+	game._on_jouer_pressed()
+	game._on_jouer_pressed()
+	await wait_seconds(0.3)
+	var levels := game.get_children().filter(func(child): return child.name.begins_with(Game.LEVEL_NODE_NAME))
+	assert_eq(levels.size(), 1, "Un seul niveau doit etre charge")
+
+
+func test_revenir_au_menu_remet_le_badge_a_zero() -> void:
+	var game := _add_game_playing()
+	_pause(game)
+	_button(game, "Pause/Boutons/Menu").pressed.emit()
+	assert_eq(_badge(game).get_node("Voyant").color, Game.LED_RED, "Le voyant doit redevenir rouge")
+	assert_false(_badge(game).get_node("Acces").visible, "ACCESS GRANTED doit se cacher")
+	assert_false(_button(game, "MenuPrincipal/Boutons/Jouer").disabled, "Clock in doit etre de nouveau actif")
+
+
+func test_les_boutons_du_menu_sont_en_ligne() -> void:
+	var game := _add_game_in_viewport()
+	await wait_frames(2)
+	var play := _button(game, "MenuPrincipal/Boutons/Jouer").get_global_rect()
+	var quit := _button(game, "MenuPrincipal/Boutons/Quitter").get_global_rect()
+	assert_eq(play.position.y, quit.position.y, "Les boutons doivent etre sur la meme ligne")
+	assert_lt(play.position.x, quit.position.x, "Clock in doit etre a gauche de Resign")

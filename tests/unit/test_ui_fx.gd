@@ -35,9 +35,10 @@ func test_shake_revient_a_sa_place() -> void:
 	assert_eq(control.position, Vector2(40, 30), "La secousse doit revenir a la position de depart")
 
 
-func test_wobble_tourne_en_boucle() -> void:
+func test_swing_se_balance_autour_du_pivot_en_boucle() -> void:
 	var control := _add_control()
-	var tween := UiFx.wobble(control)
-	assert_true(tween.is_valid(), "L'oscillation doit tourner")
+	var tween := UiFx.swing(control, Vector2(100, -40), 0.05)
+	assert_eq(control.pivot_offset, Vector2(100, -40), "Le balancement doit tourner autour du pivot donne")
+	assert_true(tween.is_valid(), "Le balancement doit tourner")
 	assert_eq(tween.get_loops_left(), -1, "L'oscillation doit boucler sans fin")
 	tween.kill()

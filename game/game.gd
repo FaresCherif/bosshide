@@ -11,6 +11,16 @@ const LEVEL_NODE_NAME := "Niveau"
 const TILTS := [-0.05, 0.035, -0.02, 0.045, -0.03]
 const END_TEXT := "Annual review: %d points.\nYour reward: more work.\nR: play again - Esc: level select"
 
+# Badge du menu : le niveau demarre apres le bip de la pointeuse
+const CLOCK_IN_DELAY := 0.5
+const BADGE_PIVOT := Vector2(220, -64)
+const BADGE_SWING := 0.035
+const LED_RED := Color(0.85, 0.15, 0.2, 1)
+const LED_GREEN := Color(0.25, 0.85, 0.4, 1)
+
+# Reglable pour que les tests n'attendent pas le bip
+var clock_in_delay := CLOCK_IN_DELAY
+var _clocking_in := false
 var _sequence := LevelSequence.new(LEVELS)
 var _level: Node = null
 var _screen := Screen.MENU
@@ -22,6 +32,9 @@ var _screen := Screen.MENU
 @onready var _play_button: Button = $Interface/MenuPrincipal/Boutons/Jouer
 @onready var _select_button: Button = $Interface/MenuPrincipal/Boutons/Choisir
 @onready var _quit_button: Button = $Interface/MenuPrincipal/Boutons/Quitter
+@onready var _badge: Control = $Interface/MenuPrincipal/Badge
+@onready var _badge_led: ColorRect = $Interface/MenuPrincipal/Badge/Voyant
+@onready var _access_granted: Label = $Interface/MenuPrincipal/Badge/Acces
 @onready var _selector: Control = $Interface/Selecteur
 @onready var _level_buttons: GridContainer = $Interface/Selecteur/Niveaux
 @onready var _back_button: Button = $Interface/Selecteur/Retour
@@ -45,7 +58,7 @@ func _ready() -> void:
 	# La grille remet la rotation a zero a chaque tri : on repenche les post-its ensuite
 	_level_buttons.sort_children.connect(_tilt_level_post_its)
 	_show_menu()
-	UiFx.wobble(_menu.get_node("Titre"))
+	UiFx.swing(_badge, BADGE_PIVOT, BADGE_SWING)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -113,7 +126,17 @@ func _set_screen(screen: Screen) -> void:
 func _show_menu() -> void:
 	_unload_level()
 	_set_screen(Screen.MENU)
+	_reset_badge()
 	_play_button.call_deferred("grab_focus")
+
+
+# Badge pret a etre passe : voyant rouge, boutons actifs
+func _reset_badge() -> void:
+	_clocking_in = false
+	_badge_led.color = LED_RED
+	_access_granted.visible = false
+	for button in [_play_button, _select_button, _quit_button]:
+		button.disabled = false
 
 
 func _show_selector() -> void:
@@ -165,7 +188,25 @@ func _unload_level() -> void:
 	_level = null
 
 
+# Le badge est accepte (voyant vert, ACCESS GRANTED), puis le niveau 1 demarre
 func _on_jouer_pressed() -> void:
+	if _clocking_in:
+		return
+	_clocking_in = true
+	for button in [_play_button, _select_button, _quit_button]:
+		button.disabled = true
+	_badge_led.color = LED_GREEN
+	_access_granted.visible = true
+	UiFx.stamp(_access_granted, _access_granted.rotation)
+	if clock_in_delay <= 0.0:
+		_start_first_level()
+		return
+	var tween := create_tween()
+	tween.tween_interval(clock_in_delay)
+	tween.tween_callback(_start_first_level)
+
+
+func _start_first_level() -> void:
 	_sequence.select(1)
 	_load_current_level()
 
