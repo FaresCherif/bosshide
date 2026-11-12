@@ -7,6 +7,8 @@ enum Screen { MENU, SELECTOR, LEVEL, PAUSE, END }
 
 const LEVELS := ["res://levels/level_01.tscn", "res://levels/level_02.tscn"]
 const LEVEL_NODE_NAME := "Niveau"
+# Angle de chaque post-it du selecteur : toujours le meme pour un niveau donne
+const TILTS := [-0.05, 0.035, -0.02, 0.045, -0.03]
 const END_TEXT := "Annual review: %d points.\nYour reward: more work.\nR: play again - Esc: level select"
 
 var _sequence := LevelSequence.new(LEVELS)
@@ -39,11 +41,9 @@ func _ready() -> void:
 	_pause_select_button.pressed.connect(_on_selection_pressed)
 	_pause_menu_button.pressed.connect(_on_menu_pressed)
 	for i in LEVELS.size():
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(190, 86)
-		button.add_theme_font_size_override("font_size", 22)
-		button.pressed.connect(_on_level_button_pressed.bind(i + 1))
-		_level_buttons.add_child(button)
+		_level_buttons.add_child(_new_level_post_it(i + 1))
+	# La grille remet la rotation a zero a chaque tri : on repenche les post-its ensuite
+	_level_buttons.sort_children.connect(_tilt_level_post_its)
 	_show_menu()
 	UiFx.wobble(_menu.get_node("Titre"))
 
@@ -63,6 +63,40 @@ func _unhandled_input(event: InputEvent) -> void:
 				_load_current_level()
 			elif event.is_action_pressed("ui_cancel"):
 				_show_selector()
+
+
+# Post-it de niveau : bouton ligne, punaise au coin, tampon LOCKED si verrouille
+func _new_level_post_it(number: int) -> Button:
+	var button := Button.new()
+	button.theme_type_variation = &"StickyButton"
+	button.custom_minimum_size = Vector2(180, 130)
+	button.add_theme_font_size_override("font_size", 22)
+	button.pressed.connect(_on_level_button_pressed.bind(number))
+	var pin := PushPin.new()
+	pin.name = "Punaise"
+	pin.position = Vector2(-10, -12)
+	pin.size = Vector2(34, 34)
+	pin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(pin)
+	var stamp := Label.new()
+	stamp.name = "Tampon"
+	stamp.text = "LOCKED"
+	stamp.theme_type_variation = &"StampLabel"
+	# Dans la marge du haut, pour laisser lisible le texte du niveau
+	stamp.add_theme_font_size_override("font_size", 20)
+	stamp.position = Vector2(56, -4)
+	stamp.rotation = -0.12
+	stamp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stamp.visible = false
+	button.add_child(stamp)
+	return button
+
+
+func _tilt_level_post_its() -> void:
+	for i in _level_buttons.get_child_count():
+		var button: Control = _level_buttons.get_child(i)
+		button.pivot_offset = button.size / 2.0
+		button.rotation = TILTS[i % TILTS.size()]
 
 
 # Un seul ecran visible a la fois
@@ -90,6 +124,7 @@ func _show_selector() -> void:
 		var unlocked := _sequence.is_unlocked(i + 1)
 		button.disabled = not unlocked
 		button.text = _level_button_text(i + 1, unlocked)
+		button.get_node("Tampon").visible = not unlocked
 	_level_buttons.get_child(0).call_deferred("grab_focus")
 
 

@@ -451,3 +451,57 @@ func test_les_menus_tiennent_dans_l_ecran() -> void:
 	_pause(game)
 	await wait_frames(2)
 	_assert_inside_screen(_screen(game, "Pause"))
+
+
+func _add_game_in_viewport() -> Node:
+	var scene: PackedScene = load(GAME_SCENE_PATH)
+	return _add_in_game_viewport(scene.instantiate())
+
+
+func test_la_selection_est_un_tableau_en_liege() -> void:
+	var game := _add_game_in_viewport()
+	_open_selector(game)
+	await wait_frames(2)
+	var board: CorkBoard = game.get_node("Interface/Selecteur/Tableau")
+	var cork := board.cork_rect()
+	cork.position += board.global_position
+	var grid: Control = game.get_node("Interface/Selecteur/Niveaux")
+	assert_true(cork.encloses(grid.get_global_rect()), "Les post-its doivent etre sur le liege")
+	assert_lt(board.get_index(), grid.get_index(), "Le tableau doit etre derriere les post-its")
+
+
+func test_chaque_niveau_est_un_post_it_punaise_et_penche() -> void:
+	var game := _add_game_in_viewport()
+	_open_selector(game)
+	await wait_frames(2)
+	for i in Game.LEVELS.size():
+		var button := _level_button(game, i + 1)
+		assert_eq(button.theme_type_variation, &"StickyButton", "Le niveau %d doit etre un post-it" % (i + 1))
+		assert_true(button.get_node_or_null("Punaise") is PushPin, "Le niveau %d doit etre punaise" % (i + 1))
+		assert_ne(button.rotation, 0.0, "Le post-it %d doit etre penche" % (i + 1))
+		assert_almost_eq(button.rotation, Game.TILTS[i % Game.TILTS.size()], 0.0001, "Chaque niveau a toujours le meme angle")
+		assert_eq(button.pivot_offset, button.size / 2.0, "Le post-it doit pencher autour de son centre")
+
+
+func test_le_tampon_locked_suit_le_verrouillage() -> void:
+	var game := _add_game()
+	_open_selector(game)
+	var stamp_1: Label = _level_button(game, 1).get_node("Tampon")
+	var stamp_2: Label = _level_button(game, 2).get_node("Tampon")
+	assert_eq(stamp_2.text, "LOCKED")
+	assert_false(stamp_1.visible, "Le niveau 1 est debloque : pas de tampon")
+	assert_true(stamp_2.visible, "Le niveau 2 est verrouille : tampon LOCKED")
+	_button(game, "Selecteur/Retour").pressed.emit()
+	_button(game, "MenuPrincipal/Boutons/Jouer").pressed.emit()
+	_level(game).succeeded.emit(500)
+	_level(game).menu_requested.emit()
+	assert_false(stamp_2.visible, "Une fois debloque, le niveau 2 perd son tampon")
+
+
+func test_les_post_its_sont_centres() -> void:
+	var game := _add_game_in_viewport()
+	_open_selector(game)
+	await wait_frames(2)
+	var grid: Control = game.get_node("Interface/Selecteur/Niveaux")
+	var center := grid.get_global_rect().get_center().x
+	assert_almost_eq(center, _screen_size().x / 2.0, 1.0, "La grille de niveaux doit etre centree")

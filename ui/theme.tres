@@ -1,7 +1,8 @@
-[gd_resource type="Theme" load_steps=11 format=3 uid="uid://c3xd83oqks3uo"]
+[gd_resource type="Theme" load_steps=16 format=3 uid="uid://c3xd83oqks3uo"]
 
 [ext_resource type="FontFile" uid="uid://bfvdcvtih7db8" path="res://assets/fonts/PatrickHand-Regular.ttf" id="1_hand"]
 [ext_resource type="FontFile" uid="uid://dq1qk1l4is342" path="res://assets/fonts/PermanentMarker-Regular.ttf" id="2_marker"]
+[ext_resource type="Script" path="res://ui/ruled_sticky_style.gd" id="3_sticky"]
 
 [sub_resource type="StyleBoxFlat" id="PostItDisabled"]
 content_margin_left = 20.0
@@ -111,6 +112,74 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
+[sub_resource type="StyleBox" id="StickyDisabled"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 36.0
+content_margin_right = 12.0
+content_margin_bottom = 14.0
+script = ExtResource("3_sticky")
+bg_color = Color(0.86, 0.83, 0.7, 1)
+line_color = Color(0.3, 0.45, 0.8, 0.35)
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_offset = Vector2(5, 6)
+top_margin = 34.0
+bottom_margin = 24.0
+spacing = 22.0
+fold_size = 18.0
+
+[sub_resource type="StyleBox" id="StickyHover"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 36.0
+content_margin_right = 12.0
+content_margin_bottom = 14.0
+script = ExtResource("3_sticky")
+bg_color = Color(1, 0.93, 0.6, 1)
+line_color = Color(0.3, 0.45, 0.8, 0.35)
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_offset = Vector2(5, 6)
+top_margin = 34.0
+bottom_margin = 24.0
+spacing = 22.0
+fold_size = 18.0
+
+[sub_resource type="StyleBox" id="StickyNormal"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 36.0
+content_margin_right = 12.0
+content_margin_bottom = 14.0
+script = ExtResource("3_sticky")
+bg_color = Color(1, 0.878, 0.4, 1)
+line_color = Color(0.3, 0.45, 0.8, 0.35)
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_offset = Vector2(5, 6)
+top_margin = 34.0
+bottom_margin = 24.0
+spacing = 22.0
+fold_size = 18.0
+
+[sub_resource type="StyleBox" id="StickyPressed"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 38.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+script = ExtResource("3_sticky")
+bg_color = Color(0.95, 0.81, 0.23, 1)
+line_color = Color(0.3, 0.45, 0.8, 0.35)
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_offset = Vector2(5, 6)
+top_margin = 34.0
+bottom_margin = 24.0
+spacing = 22.0
+fold_size = 18.0
+
 [sub_resource type="StyleBoxFlat" id="VacantSign"]
 content_margin_left = 18.0
 content_margin_top = 2.0
@@ -152,6 +221,11 @@ StampLabel/colors/font_color = Color(0.843, 0.149, 0.239, 1)
 StampLabel/font_sizes/font_size = 72
 StampLabel/fonts/font = ExtResource("2_marker")
 StampLabel/styles/normal = SubResource("StampBorder")
+StickyButton/base_type = &"Button"
+StickyButton/styles/disabled = SubResource("StickyDisabled")
+StickyButton/styles/hover = SubResource("StickyHover")
+StickyButton/styles/normal = SubResource("StickyNormal")
+StickyButton/styles/pressed = SubResource("StickyPressed")
 TitleLabel/base_type = &"Label"
 TitleLabel/colors/font_color = Color(1, 0.878, 0.4, 1)
 TitleLabel/colors/font_outline_color = Color(0.17, 0.17, 0.17, 1)

@@ -31,3 +31,17 @@ func test_les_variations_de_texte_existent() -> void:
 func test_les_titres_utilisent_le_marqueur() -> void:
 	var font: Font = _theme().get_font("font", "TitleLabel")
 	assert_string_contains(font.resource_path, "PermanentMarker", "Les titres doivent etre au marqueur")
+
+
+func test_le_bouton_post_it_ligne_existe() -> void:
+	assert_eq(_theme().get_type_variation_base("StickyButton"), &"Button", "StickyButton doit etre une variation de Button")
+	var normal: StyleBox = _theme().get_stylebox("normal", "StickyButton")
+	assert_true(normal is RuledStickyStyle, "Le post-it de niveau doit etre ligne")
+	assert_eq(normal.bg_color, Color(1, 0.878, 0.4, 1), "Le post-it doit etre jaune")
+	var disabled: RuledStickyStyle = _theme().get_stylebox("disabled", "StickyButton")
+	assert_lt(disabled.bg_color.s, normal.bg_color.s, "Un post-it verrouille doit etre plus pale")
+
+
+func test_les_anciennes_variations_du_post_it_ont_disparu() -> void:
+	for variation in ["StickyPanel", "MemoButton"]:
+		assert_eq(_theme().get_type_variation_base(variation), &"", variation + " ne sert plus")

@@ -1130,3 +1130,30 @@ func test_les_ecrans_de_fin_tiennent_dans_l_ecran() -> void:
 		await wait_frames(2)
 		_assert_inside_screen(screen)
 		screen.visible = false
+
+
+func test_le_tampon_busted_reste_dans_la_fiche() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	var screen: Control = level.get_node("Interface/MessageGameOver")
+	screen.visible = true
+	await wait_frames(2)
+	var stamp: Control = screen.get_node("Titre")
+	var tween := UiFx.stamp(stamp, level.STAMP_ANGLE)
+	await tween.finished
+	var sheet := (screen.get_node("Fiche") as Control).get_global_rect()
+	var transform := stamp.get_global_transform()
+	for corner in [Vector2.ZERO, Vector2(stamp.size.x, 0), stamp.size, Vector2(0, stamp.size.y)]:
+		var point: Vector2 = transform * corner
+		assert_true(sheet.has_point(point), "Le coin %s du tampon penche doit rester dans la fiche %s" % [point, sheet])
+
+
+func test_le_game_over_est_une_note_beige_signee_du_patron() -> void:
+	var screen: Control = _instantiate_level().get_node("Interface/MessageGameOver")
+	var sheet: Panel = screen.get_node("Fiche")
+	assert_eq(sheet.theme_type_variation, &"", "La fiche du game over doit etre la note beige du theme")
+	assert_eq(sheet.rotation, 0.0, "La note beige doit etre droite")
+	for name in ["Tableau", "Punaise", "Fiche/Lignes", "Scotch"]:
+		assert_null(screen.get_node_or_null(name), "Le game over ne doit plus avoir de " + name)
+	assert_eq(screen.get_node("Signature").text, "- The Boss")
+	for button in screen.get_node("Boutons").get_children():
+		assert_eq(button.theme_type_variation, &"", "%s doit reprendre le post-it du theme" % button.name)
