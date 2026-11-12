@@ -27,5 +27,22 @@ func test_sans_nouveau_record_seul_le_meilleur_score_est_affiche() -> void:
 
 
 func test_le_bouton_suivant_devient_finish_au_dernier_niveau() -> void:
-	assert_eq(LevelResult.next_label(false), "Next")
-	assert_eq(LevelResult.next_label(true), "Finish")
+	assert_eq(LevelResult.next_label(false), "Next mission")
+	assert_eq(LevelResult.next_label(true), "Clock out")
+
+
+func test_le_rang_suit_le_score() -> void:
+	assert_eq(LevelResult.rank(1000), "Toilet Ninja")
+	assert_eq(LevelResult.rank(900), "Toilet Ninja")
+	assert_eq(LevelResult.rank(899), "Professional Slacker")
+	assert_eq(LevelResult.rank(700), "Professional Slacker")
+	assert_eq(LevelResult.rank(699), "Coffee Break Specialist")
+	assert_eq(LevelResult.rank(500), "Coffee Break Specialist")
+	assert_eq(LevelResult.rank(499), "Overworked Intern")
+	assert_eq(LevelResult.rank(250), "Overworked Intern")
+	assert_eq(LevelResult.rank(249), "Employee of the Month")
+	assert_eq(LevelResult.rank(0), "Employee of the Month", "Le pire score est le chouchou du patron")
+
+
+func test_la_ligne_du_rang() -> void:
+	assert_eq(LevelResult.rank_line(950), "Rank: Toilet Ninja")

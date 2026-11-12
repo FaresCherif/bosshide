@@ -1,0 +1,165 @@
+[gd_resource type="Theme" load_steps=11 format=3 uid="uid://c3xd83oqks3uo"]
+
+[ext_resource type="FontFile" uid="uid://bfvdcvtih7db8" path="res://assets/fonts/PatrickHand-Regular.ttf" id="1_hand"]
+[ext_resource type="FontFile" uid="uid://dq1qk1l4is342" path="res://assets/fonts/PermanentMarker-Regular.ttf" id="2_marker"]
+
+[sub_resource type="StyleBoxFlat" id="PostItDisabled"]
+content_margin_left = 20.0
+content_margin_top = 6.0
+content_margin_right = 20.0
+content_margin_bottom = 6.0
+bg_color = Color(0.81, 0.79, 0.75, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="FocusMarker"]
+draw_center = false
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.843, 0.149, 0.239, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+
+[sub_resource type="StyleBoxFlat" id="PostItHover"]
+content_margin_left = 20.0
+content_margin_top = 6.0
+content_margin_right = 20.0
+content_margin_bottom = 6.0
+bg_color = Color(1, 0.93, 0.6, 1)
+border_width_bottom = 4
+border_color = Color(0.88, 0.72, 0.1, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 1
+shadow_offset = Vector2(7, 7)
+
+[sub_resource type="StyleBoxFlat" id="PostIt"]
+content_margin_left = 20.0
+content_margin_top = 6.0
+content_margin_right = 20.0
+content_margin_bottom = 6.0
+bg_color = Color(1, 0.878, 0.4, 1)
+border_width_bottom = 4
+border_color = Color(0.88, 0.72, 0.1, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 1
+shadow_offset = Vector2(5, 5)
+
+[sub_resource type="StyleBoxFlat" id="PostItPressed"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 20.0
+content_margin_bottom = 4.0
+bg_color = Color(0.95, 0.81, 0.23, 1)
+border_width_top = 2
+border_color = Color(0.88, 0.72, 0.1, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 1
+shadow_offset = Vector2(1, 1)
+
+[sub_resource type="StyleBoxFlat" id="Memo"]
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+bg_color = Color(0.953, 0.922, 0.827, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.68, 0.58, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 8
+shadow_offset = Vector2(6, 6)
+
+[sub_resource type="StyleBoxFlat" id="StampBorder"]
+content_margin_left = 16.0
+content_margin_right = 16.0
+draw_center = false
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.843, 0.149, 0.239, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="VacantSign"]
+content_margin_left = 18.0
+content_margin_top = 2.0
+content_margin_right = 18.0
+content_margin_bottom = 2.0
+bg_color = Color(0.231, 0.698, 0.451, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.118, 0.478, 0.282, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[resource]
+default_font = ExtResource("1_hand")
+default_font_size = 26
+Button/colors/font_color = Color(0.17, 0.17, 0.17, 1)
+Button/colors/font_disabled_color = Color(0.48, 0.46, 0.42, 1)
+Button/colors/font_focus_color = Color(0.17, 0.17, 0.17, 1)
+Button/colors/font_hover_color = Color(0.17, 0.17, 0.17, 1)
+Button/colors/font_hover_pressed_color = Color(0.17, 0.17, 0.17, 1)
+Button/colors/font_pressed_color = Color(0.17, 0.17, 0.17, 1)
+Button/styles/disabled = SubResource("PostItDisabled")
+Button/styles/focus = SubResource("FocusMarker")
+Button/styles/hover = SubResource("PostItHover")
+Button/styles/normal = SubResource("PostIt")
+Button/styles/pressed = SubResource("PostItPressed")
+HudLabel/base_type = &"Label"
+HudLabel/colors/font_color = Color(1, 1, 1, 1)
+HudLabel/colors/font_outline_color = Color(0.17, 0.17, 0.17, 1)
+HudLabel/constants/outline_size = 8
+Label/colors/font_color = Color(0.17, 0.17, 0.17, 1)
+Panel/styles/panel = SubResource("Memo")
+StampLabel/base_type = &"Label"
+StampLabel/colors/font_color = Color(0.843, 0.149, 0.239, 1)
+StampLabel/font_sizes/font_size = 72
+StampLabel/fonts/font = ExtResource("2_marker")
+StampLabel/styles/normal = SubResource("StampBorder")
+TitleLabel/base_type = &"Label"
+TitleLabel/colors/font_color = Color(1, 0.878, 0.4, 1)
+TitleLabel/colors/font_outline_color = Color(0.17, 0.17, 0.17, 1)
+TitleLabel/constants/outline_size = 12
+TitleLabel/font_sizes/font_size = 52
+TitleLabel/fonts/font = ExtResource("2_marker")
+VacantLabel/base_type = &"Label"
+VacantLabel/colors/font_color = Color(1, 1, 1, 1)
+VacantLabel/font_sizes/font_size = 30
+VacantLabel/fonts/font = ExtResource("2_marker")
+VacantLabel/styles/normal = SubResource("VacantSign")

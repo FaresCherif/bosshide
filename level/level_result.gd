@@ -26,4 +26,25 @@ static func best_line(best: int, is_new: bool) -> String:
 
 
 static func next_label(is_last: bool) -> String:
-	return "Finish" if is_last else "Next"
+	return "Clock out" if is_last else "Next mission"
+
+
+# Grade d'employe selon le score : le pire score est le chouchou du patron
+const RANKS := [
+	[900, "Toilet Ninja"],
+	[700, "Professional Slacker"],
+	[500, "Coffee Break Specialist"],
+	[250, "Overworked Intern"],
+]
+const WORST_RANK := "Employee of the Month"
+
+
+static func rank(score: int) -> String:
+	for entry in RANKS:
+		if score >= entry[0]:
+			return entry[1]
+	return WORST_RANK
+
+
+static func rank_line(score: int) -> String:
+	return "Rank: %s" % rank(score)

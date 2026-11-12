@@ -18,6 +18,7 @@ color = Color(1, 0.95, 0.55, 1)
 
 [node name="Code" type="Label" parent="."]
 visible = false
+theme_type_variation = &"HudLabel"
 offset_left = -60.0
 offset_top = -120.0
 offset_right = 60.0

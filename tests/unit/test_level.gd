@@ -76,7 +76,7 @@ func test_le_signal_de_l_arrivee_est_connecte() -> void:
 func test_le_message_de_succes_est_cache_au_depart() -> void:
 	var message: Control = _instantiate_level().get_node("Interface/MessageSucces")
 	assert_false(message.visible, "Le message de succes doit etre cache au depart")
-	assert_string_contains(message.get_node("Titre").text, "Well done, you made it to the toilets!")
+	assert_string_contains(message.get_node("Titre").text, "You reached the toilets.")
 
 
 func test_un_autre_corps_ne_declenche_pas_le_succes() -> void:
@@ -115,7 +115,7 @@ func test_le_manager_est_dessine_derriere_le_joueur() -> void:
 func test_le_message_de_game_over_est_cache_au_depart() -> void:
 	var message: Control = _instantiate_level().get_node("Interface/MessageGameOver")
 	assert_false(message.visible, "Le message de game over doit etre cache au depart")
-	assert_string_contains(message.get_node("Titre").text, "Game over")
+	assert_eq(message.get_node("Titre").text, "BUSTED!")
 
 
 func test_le_signal_du_manager_est_connecte() -> void:
@@ -569,7 +569,7 @@ func test_le_message_de_succes_affiche_le_temps_et_le_score() -> void:
 	await wait_physics_frames(5)
 
 	var message: Control = level.get_node("Interface/MessageSucces")
-	assert_string_contains(message.get_node("Titre").text, "Well done, you made it to the toilets!")
+	assert_string_contains(message.get_node("Titre").text, "You reached the toilets.")
 	assert_string_contains(message.get_node("Details").text, "Time: " + level.get_node("Interface/Chrono").text)
 	assert_string_contains(message.get_node("Details").text, "Score: ")
 
@@ -1011,16 +1011,16 @@ func _get_spotted(level: Node) -> void:
 
 func test_l_ecran_de_reussite_propose_trois_boutons() -> void:
 	var screen: Control = _instantiate_level().get_node("Interface/MessageSucces")
-	assert_eq(screen.get_node("Boutons/Suivant").text, "Next")
-	assert_eq(screen.get_node("Boutons/Rejouer").text, "Replay")
-	assert_eq(screen.get_node("Boutons/Selection").text, "Level select")
+	assert_eq(screen.get_node("Boutons/Suivant").text, "Next mission")
+	assert_eq(screen.get_node("Boutons/Rejouer").text, "Redo it (unpaid)")
+	assert_eq(screen.get_node("Boutons/Selection").text, "Mission list")
 
 
 func test_l_ecran_de_game_over_propose_rejouer_et_la_selection() -> void:
 	var screen: Control = _instantiate_level().get_node("Interface/MessageGameOver")
 	assert_eq(screen.get_node("Boutons").get_child_count(), 2, "Le game over n'a pas de bouton suivant")
-	assert_eq(screen.get_node("Boutons/Rejouer").text, "Replay")
-	assert_eq(screen.get_node("Boutons/Selection").text, "Level select")
+	assert_eq(screen.get_node("Boutons/Rejouer").text, "Try again")
+	assert_eq(screen.get_node("Boutons/Selection").text, "Mission list")
 
 
 func test_les_boutons_de_reussite_emettent_les_signaux() -> void:
@@ -1055,13 +1055,13 @@ func test_l_ecran_de_reussite_affiche_le_numero_du_niveau() -> void:
 	var level: Node = add_child_autofree(_load_level())
 	level.configure(4, false)
 	assert_string_contains(level.get_node("Interface/MessageSucces/Titre").text, "Level 4 complete!")
-	assert_eq(level.get_node("Interface/MessageSucces/Boutons/Suivant").text, "Next")
+	assert_eq(level.get_node("Interface/MessageSucces/Boutons/Suivant").text, "Next mission")
 
 
 func test_au_dernier_niveau_le_bouton_suivant_devient_finish() -> void:
 	var level: Node = add_child_autofree(_load_level())
 	level.configure(2, true)
-	assert_eq(level.get_node("Interface/MessageSucces/Boutons/Suivant").text, "Finish")
+	assert_eq(level.get_node("Interface/MessageSucces/Boutons/Suivant").text, "Clock out")
 
 
 func test_le_meilleur_score_est_cache_tant_que_le_jeu_ne_l_a_pas_donne() -> void:
@@ -1076,3 +1076,57 @@ func test_le_meilleur_score_s_affiche_avec_le_record() -> void:
 	var record: Label = level.get_node("Interface/MessageSucces/Record")
 	assert_true(record.visible, "Le meilleur score doit s'afficher")
 	assert_eq(record.text, "New best! Best: 780")
+
+
+func test_la_reussite_affiche_la_plaque_vacant_et_le_rang() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _reach_goal(level)
+	var screen: Control = level.get_node("Interface/MessageSucces")
+	assert_eq(screen.get_node("Plaque").text, "VACANT")
+	assert_eq(screen.get_node("Rang").text, LevelResult.rank_line(level._score.score()), "Le rang doit suivre le score")
+
+
+func test_le_game_over_explique_ou_le_joueur_va_finir() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _get_spotted(level)
+	assert_eq(level.get_node("Interface/MessageGameOver/SousTitre").text, "The boss saw you. His office. Now.")
+
+
+func test_les_textes_du_niveau_restent_lisibles_sur_le_decor() -> void:
+	var level := _instantiate_level()
+	for path in ["Interface/Chrono", "Interface/IndicateurCle", "PostIt/Code"]:
+		assert_eq(level.get_node(path).theme_type_variation, &"HudLabel", path + " doit etre en blanc avec contour")
+
+
+# En headless la fenetre est minuscule : on place la scene dans un viewport a la taille du jeu
+func _screen_size() -> Vector2i:
+	return Vector2i(
+		ProjectSettings.get_setting("display/window/size/viewport_width"),
+		ProjectSettings.get_setting("display/window/size/viewport_height"))
+
+
+func _add_in_game_viewport(node: Node) -> Node:
+	var viewport: SubViewport = add_child_autofree(SubViewport.new())
+	viewport.size = _screen_size()
+	viewport.add_child(node)
+	return node
+
+
+func _assert_inside_screen(screen: Control) -> void:
+	var bounds := Rect2(Vector2.ZERO, Vector2(_screen_size()))
+	for node in screen.find_children("*", "Control", true, false):
+		var control := node as Control
+		if control.is_visible_in_tree():
+			assert_true(bounds.encloses(control.get_global_rect()), "%s doit rester dans l'ecran : %s" % [control.name, control.get_global_rect()])
+
+
+func test_les_ecrans_de_fin_tiennent_dans_l_ecran() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	for path in ["Interface/MessageSucces", "Interface/MessageGameOver"]:
+		var screen: Control = level.get_node(path)
+		screen.visible = true
+		if screen.has_node("Record"):
+			screen.get_node("Record").visible = true
+		await wait_frames(2)
+		_assert_inside_screen(screen)
+		screen.visible = false

@@ -9,6 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="Voile" type="ColorRect" parent="MessageSucces"]
 layout_mode = 1
@@ -17,45 +18,108 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.6)
+color = Color(0.18, 0.227, 0.294, 0.75)
 
-[node name="Titre" type="Label" parent="MessageSucces"]
+[node name="Fiche" type="Panel" parent="MessageSucces"]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 60.0
-offset_bottom = 180.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -340.0
+offset_top = -262.0
+offset_right = 340.0
+offset_bottom = 300.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 40
-text = "Level complete!
-Well done, you made it to the toilets!"
+grow_vertical = 2
+mouse_filter = 2
+[node name="Plaque" type="Label" parent="MessageSucces"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -110.0
+offset_top = -250.0
+offset_right = 110.0
+offset_bottom = -200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"VacantLabel"
+text = "VACANT"
 horizontal_alignment = 1
 vertical_alignment = 1
-
+[node name="Titre" type="Label" parent="MessageSucces"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -194.0
+offset_right = 320.0
+offset_bottom = -76.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 30
+text = "Level complete!
+You reached the toilets. Productivity: 0%."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
 [node name="Details" type="Label" parent="MessageSucces"]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 190.0
-offset_bottom = 230.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -72.0
+offset_right = 320.0
+offset_bottom = -38.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 28
+grow_vertical = 2
 text = "Time: 00:00.0 - Score: 0"
 horizontal_alignment = 1
-
-[node name="Record" type="Label" parent="MessageSucces"]
-visible = false
+[node name="Rang" type="Label" parent="MessageSucces"]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 236.0
-offset_bottom = 272.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -36.0
+offset_right = 320.0
+offset_bottom = 4.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(0.95, 0.8, 0.1, 1)
-theme_override_font_sizes/font_size = 24
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.843, 0.149, 0.239, 1)
+theme_override_font_sizes/font_size = 30
+text = "Rank: Employee of the Month"
+horizontal_alignment = 1
+[node name="Record" type="Label" parent="MessageSucces"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = 6.0
+offset_right = 320.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+visible = false
+theme_override_colors/font_color = Color(0.78, 0.47, 0, 1)
 text = "Best: 0"
 horizontal_alignment = 1
-
 [node name="Boutons" type="VBoxContainer" parent="MessageSucces"]
 layout_mode = 1
 anchors_preset = 8
@@ -63,43 +127,42 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -140.0
-offset_top = -20.0
-offset_right = 140.0
-offset_bottom = 160.0
+offset_left = -170.0
+offset_top = 50.0
+offset_right = 170.0
+offset_bottom = 230.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
-
+theme_override_constants/separation = 14
 [node name="Suivant" type="Button" parent="MessageSucces/Boutons"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Next"
+text = "Next mission"
 
 [node name="Rejouer" type="Button" parent="MessageSucces/Boutons"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Replay"
+text = "Redo it (unpaid)"
 
 [node name="Selection" type="Button" parent="MessageSucces/Boutons"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Level select"
+text = "Mission list"
 
 [node name="Aide" type="Label" parent="MessageSucces"]
 layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -60.0
-offset_bottom = -24.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = 250.0
+offset_right = 320.0
+offset_bottom = 286.0
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.45, 0.42, 0.36, 1)
 theme_override_font_sizes/font_size = 20
 text = "R: play again - Esc: level select"
 horizontal_alignment = 1
-
 [node name="MessageGameOver" type="Control" parent="."]
 visible = false
 anchors_preset = 15
@@ -107,6 +170,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="Voile" type="ColorRect" parent="MessageGameOver"]
 layout_mode = 1
@@ -115,31 +179,70 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.6)
+color = Color(0.3, 0.05, 0.08, 0.7)
 
+[node name="Fiche" type="Panel" parent="MessageGameOver"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -236.0
+offset_right = 300.0
+offset_bottom = 236.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 [node name="Titre" type="Label" parent="MessageGameOver"]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 60.0
-offset_bottom = 180.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -212.0
+offset_right = 180.0
+offset_bottom = -112.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 40
-text = "Game over, the manager saw you!"
+grow_vertical = 2
+theme_type_variation = &"StampLabel"
+text = "BUSTED!"
 horizontal_alignment = 1
 vertical_alignment = 1
-
+[node name="SousTitre" type="Label" parent="MessageGameOver"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -72.0
+offset_right = 280.0
+offset_bottom = -38.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 28
+text = "The boss saw you. His office. Now."
+horizontal_alignment = 1
 [node name="Details" type="Label" parent="MessageGameOver"]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 190.0
-offset_bottom = 230.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -36.0
+offset_right = 280.0
+offset_bottom = -2.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 28
+grow_vertical = 2
 text = "Time: 00:00.0"
 horizontal_alignment = 1
-
 [node name="Boutons" type="VBoxContainer" parent="MessageGameOver"]
 layout_mode = 1
 anchors_preset = 8
@@ -147,39 +250,40 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -140.0
-offset_top = -20.0
-offset_right = 140.0
-offset_bottom = 160.0
+offset_left = -170.0
+offset_top = 22.0
+offset_right = 170.0
+offset_bottom = 142.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
-
+theme_override_constants/separation = 14
 [node name="Rejouer" type="Button" parent="MessageGameOver/Boutons"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Replay"
+text = "Try again"
 
 [node name="Selection" type="Button" parent="MessageGameOver/Boutons"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Level select"
+text = "Mission list"
 
 [node name="Aide" type="Label" parent="MessageGameOver"]
 layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -60.0
-offset_bottom = -24.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = 182.0
+offset_right = 280.0
+offset_bottom = 218.0
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.45, 0.42, 0.36, 1)
 theme_override_font_sizes/font_size = 20
 text = "R: play again - Esc: level select"
 horizontal_alignment = 1
-
 [node name="IndicateurCle" type="Label" parent="."]
+theme_type_variation = &"HudLabel"
 visible = false
 offset_left = 16.0
 offset_top = 16.0
@@ -190,6 +294,7 @@ theme_override_font_sizes/font_size = 28
 text = "Key"
 
 [node name="Chrono" type="Label" parent="."]
+theme_type_variation = &"HudLabel"
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -276,7 +381,7 @@ offset_right = 504.0
 offset_bottom = 40.0
 theme_override_colors/font_color = Color(0.3, 0.7, 0.35, 1)
 theme_override_font_sizes/font_size = 18
-text = "Hey! Quick question..."
+text = "Hey! Got a minute? (It won't be a minute.)"
 
 [node name="Question" type="Label" parent="Collegue"]
 layout_mode = 0

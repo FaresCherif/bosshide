@@ -342,7 +342,7 @@ func test_l_ecran_de_reussite_connait_le_numero_du_niveau() -> void:
 	var game := _add_game_playing()
 	var screen: Control = _level(game).get_node("Interface/MessageSucces")
 	assert_string_contains(screen.get_node("Titre").text, "Level 1 complete!")
-	assert_eq(screen.get_node("Boutons/Suivant").text, "Next", "Le niveau 1 n'est pas le dernier")
+	assert_eq(screen.get_node("Boutons/Suivant").text, "Next mission", "Le niveau 1 n'est pas le dernier")
 
 
 func test_le_dernier_niveau_propose_finish() -> void:
@@ -350,7 +350,7 @@ func test_le_dernier_niveau_propose_finish() -> void:
 	for i in Game.LEVELS.size() - 1:
 		_level(game).succeeded.emit(500)
 		_level(game).next_requested.emit()
-	assert_eq(_level(game).get_node("Interface/MessageSucces/Boutons/Suivant").text, "Finish")
+	assert_eq(_level(game).get_node("Interface/MessageSucces/Boutons/Suivant").text, "Clock out")
 
 
 func test_la_premiere_reussite_affiche_un_record() -> void:
@@ -368,3 +368,86 @@ func test_un_score_plus_faible_n_affiche_pas_de_record() -> void:
 	_level(game).succeeded.emit(400)
 	var record: Label = _level(game).get_node("Interface/MessageSucces/Record")
 	assert_eq(record.text, "Best: 700", "Le record de la session doit rester affiche sans New best")
+
+
+# En headless la fenetre est minuscule : on place la scene dans un viewport a la taille du jeu
+func _screen_size() -> Vector2i:
+	return Vector2i(
+		ProjectSettings.get_setting("display/window/size/viewport_width"),
+		ProjectSettings.get_setting("display/window/size/viewport_height"))
+
+
+func _add_in_game_viewport(node: Node) -> Node:
+	var viewport: SubViewport = add_child_autofree(SubViewport.new())
+	viewport.size = _screen_size()
+	viewport.add_child(node)
+	return node
+
+
+func _assert_inside_screen(screen: Control) -> void:
+	var bounds := Rect2(Vector2.ZERO, Vector2(_screen_size()))
+	for node in screen.find_children("*", "Control", true, false):
+		var control := node as Control
+		if control.is_visible_in_tree():
+			assert_true(bounds.encloses(control.get_global_rect()), "%s doit rester dans l'ecran : %s" % [control.name, control.get_global_rect()])
+
+
+func test_le_menu_a_un_slogan_et_des_boutons_a_theme() -> void:
+	var game := _add_game()
+	assert_eq(game.get_node("Interface/MenuPrincipal/Slogan").text, "Productivity is a state of mind. Yours is in the toilets.")
+	assert_eq(_button(game, "MenuPrincipal/Boutons/Jouer").text, "Clock in")
+	assert_eq(_button(game, "MenuPrincipal/Boutons/Choisir").text, "Pick a mission")
+	assert_eq(_button(game, "MenuPrincipal/Boutons/Quitter").text, "Resign")
+
+
+func test_le_selecteur_a_des_textes_a_theme() -> void:
+	var game := _add_game()
+	_open_selector(game)
+	assert_eq(game.get_node("Interface/Selecteur/Titre").text, "Today's missions")
+	assert_eq(_button(game, "Selecteur/Retour").text, "Back to lobby")
+	assert_string_contains(_level_button(game, 2).text, "locked by HR")
+
+
+func test_la_pause_est_une_pause_cafe() -> void:
+	var game := _add_game()
+	assert_eq(game.get_node("Interface/Pause/Titre").text, "Coffee break")
+	assert_eq(_button(game, "Pause/Boutons/Reprendre").text, "Back to work")
+	assert_eq(_button(game, "Pause/Boutons/Selection").text, "Change mission")
+	assert_eq(_button(game, "Pause/Boutons/Menu").text, "Go home early")
+
+
+func test_l_ecran_final_est_un_bilan_annuel() -> void:
+	var game := _add_game_playing()
+	_finish_all_levels(game, 300)
+	var text: String = game.get_node("Interface/FinDuJeu").text
+	assert_string_contains(text, "Annual review: %d points." % (300 * Game.LEVELS.size()))
+	assert_string_contains(text, "Your reward: more work.")
+
+
+func test_le_fond_moquette_cache_le_vide_hors_des_niveaux() -> void:
+	var game := _add_game()
+	var background: Control = game.get_node("Interface/Fond")
+	assert_true(background.visible, "Le menu doit avoir un fond")
+	_open_selector(game)
+	assert_true(background.visible, "Le selecteur doit avoir un fond")
+	_level_button(game, 1).pressed.emit()
+	assert_false(background.visible, "Le fond ne doit pas cacher le niveau")
+
+
+func test_le_numero_de_niveau_reste_lisible_sur_le_decor() -> void:
+	var game := _add_game()
+	assert_eq(game.get_node("Interface/Niveau").theme_type_variation, &"HudLabel")
+
+
+func test_les_menus_tiennent_dans_l_ecran() -> void:
+	var scene: PackedScene = load(GAME_SCENE_PATH)
+	var game: Node = _add_in_game_viewport(scene.instantiate())
+	await wait_frames(2)
+	_assert_inside_screen(_screen(game, "MenuPrincipal"))
+	_open_selector(game)
+	await wait_frames(2)
+	_assert_inside_screen(_screen(game, "Selecteur"))
+	_level_button(game, 1).pressed.emit()
+	_pause(game)
+	await wait_frames(2)
+	_assert_inside_screen(_screen(game, "Pause"))

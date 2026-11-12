@@ -7,12 +7,13 @@ enum Screen { MENU, SELECTOR, LEVEL, PAUSE, END }
 
 const LEVELS := ["res://levels/level_01.tscn", "res://levels/level_02.tscn"]
 const LEVEL_NODE_NAME := "Niveau"
-const END_TEXT := "All levels done! Total score: %d\nR: play again - Esc: level select"
+const END_TEXT := "Annual review: %d points.\nYour reward: more work.\nR: play again - Esc: level select"
 
 var _sequence := LevelSequence.new(LEVELS)
 var _level: Node = null
 var _screen := Screen.MENU
 
+@onready var _background: ColorRect = $Interface/Fond
 @onready var _level_label: Label = $Interface/Niveau
 @onready var _end_screen: Label = $Interface/FinDuJeu
 @onready var _menu: Control = $Interface/MenuPrincipal
@@ -23,6 +24,7 @@ var _screen := Screen.MENU
 @onready var _level_buttons: GridContainer = $Interface/Selecteur/Niveaux
 @onready var _back_button: Button = $Interface/Selecteur/Retour
 @onready var _pause: Control = $Interface/Pause
+@onready var _pause_title: Label = $Interface/Pause/Titre
 @onready var _resume_button: Button = $Interface/Pause/Boutons/Reprendre
 @onready var _pause_select_button: Button = $Interface/Pause/Boutons/Selection
 @onready var _pause_menu_button: Button = $Interface/Pause/Boutons/Menu
@@ -38,11 +40,12 @@ func _ready() -> void:
 	_pause_menu_button.pressed.connect(_on_menu_pressed)
 	for i in LEVELS.size():
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(150, 80)
+		button.custom_minimum_size = Vector2(190, 86)
 		button.add_theme_font_size_override("font_size", 22)
 		button.pressed.connect(_on_level_button_pressed.bind(i + 1))
 		_level_buttons.add_child(button)
 	_show_menu()
+	UiFx.wobble(_menu.get_node("Titre"))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -65,6 +68,7 @@ func _unhandled_input(event: InputEvent) -> void:
 # Un seul ecran visible a la fois
 func _set_screen(screen: Screen) -> void:
 	_screen = screen
+	_background.visible = screen == Screen.MENU or screen == Screen.SELECTOR or screen == Screen.END
 	_menu.visible = screen == Screen.MENU
 	_selector.visible = screen == Screen.SELECTOR
 	_level_label.visible = screen == Screen.LEVEL or screen == Screen.PAUSE
@@ -91,7 +95,7 @@ func _show_selector() -> void:
 
 func _level_button_text(number: int, unlocked: bool) -> String:
 	if not unlocked:
-		return "Level %d (locked)" % number
+		return "Level %d\n(locked by HR)" % number
 	if _sequence.has_best_score(number):
 		return "Level %d\nBest: %d" % [number, _sequence.best_score(number)]
 	return "Level %d" % number
@@ -170,6 +174,7 @@ func _on_level_menu_requested() -> void:
 func _on_level_pause_requested() -> void:
 	_level.process_mode = Node.PROCESS_MODE_DISABLED
 	_set_screen(Screen.PAUSE)
+	UiFx.pop_in(_pause_title)
 	_resume_button.call_deferred("grab_focus")
 
 

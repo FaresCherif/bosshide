@@ -9,7 +9,8 @@ signal next_requested
 signal menu_requested
 signal pause_requested
 
-const SUCCESS_PHRASE := "Well done, you made it to the toilets!"
+const SUCCESS_PHRASE := "You reached the toilets. Productivity: 0%."
+const STAMP_ANGLE := -0.14
 
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
@@ -32,9 +33,13 @@ var _desks: Array[Node] = []
 @onready var _success_title: Label = $Interface/MessageSucces/Titre
 @onready var _success_details: Label = $Interface/MessageSucces/Details
 @onready var _success_record: Label = $Interface/MessageSucces/Record
+@onready var _success_sign: Label = $Interface/MessageSucces/Plaque
+@onready var _success_rank: Label = $Interface/MessageSucces/Rang
 @onready var _next_button: Button = $Interface/MessageSucces/Boutons/Suivant
 @onready var _game_over_message: Control = $Interface/MessageGameOver
 @onready var _game_over_details: Label = $Interface/MessageGameOver/Details
+@onready var _game_over_stamp: Label = $Interface/MessageGameOver/Titre
+@onready var _game_over_sheet: Panel = $Interface/MessageGameOver/Fiche
 @onready var _game_over_replay_button: Button = $Interface/MessageGameOver/Boutons/Rejouer
 @onready var _chrono: Label = $Interface/Chrono
 @onready var _keypad: Panel = $Interface/Digicode
@@ -257,9 +262,12 @@ func _on_arrivee_body_entered(body: Node2D) -> void:
 	_progress.reach_goal()
 	_freeze_level()
 	_success_details.text = LevelResult.details(LevelScore.format_time(_score.elapsed()), _score.score())
+	_success_rank.text = LevelResult.rank_line(_score.score())
 	_success_message.visible = _progress.can_continue()
 	if _progress.can_continue():
 		_next_button.call_deferred("grab_focus")
+		UiFx.pop_in(_success_sign)
+		UiFx.pop_in(_success_rank, 0.3)
 		succeeded.emit(_score.score())
 
 
@@ -272,6 +280,8 @@ func _on_manager_body_spotted(body: Node2D) -> void:
 	_game_over_message.visible = _progress.is_game_over()
 	if _progress.is_game_over():
 		_game_over_replay_button.call_deferred("grab_focus")
+		UiFx.stamp(_game_over_stamp, STAMP_ANGLE)
+		UiFx.shake(_game_over_sheet)
 
 
 func _freeze_level() -> void:

@@ -66,7 +66,7 @@ Progression indicative, à ajuster en jouant :
 
 - [x] P1 – Menu principal et sélection de niveau (déblocage et meilleur score par niveau affiché dans le sélecteur, limités à la session en attendant la sauvegarde)
 - [x] P1 – Écrans de fin de niveau (score, chrono, meilleur score et « New best! », boutons Next/Finish, Replay, Level select ; l'écran du score total reste à habiller)
-- [ ] P2 – Graphismes : joueur, managers, décor de bureau
+- [ ] P2 – Graphismes : joueur, managers, décor de bureau (interface faite : thème « open space sarcastique », polices, rangs, animations)
 - [ ] P2 – Sons : pas, alerte de détection, porte, réussite
 - [ ] P3 – Musique
 
