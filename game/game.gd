@@ -113,6 +113,7 @@ func _load_current_level() -> void:
 	_level.menu_requested.connect(_on_level_menu_requested)
 	_level.pause_requested.connect(_on_level_pause_requested)
 	add_child(_level)
+	_level.configure(_sequence.level_number(), _sequence.is_last())
 	_level_label.text = "Level %d/%d" % [_sequence.level_number(), _sequence.level_count()]
 
 
@@ -148,7 +149,8 @@ func _on_level_button_pressed(number: int) -> void:
 
 
 func _on_level_succeeded(score: int) -> void:
-	_sequence.record_score(score)
+	var is_new := _sequence.record_score(score)
+	_level.show_best(_sequence.best_score(_sequence.level_number()), is_new)
 
 
 func _on_level_restart_requested() -> void:

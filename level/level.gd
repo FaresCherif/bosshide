@@ -9,7 +9,7 @@ signal next_requested
 signal menu_requested
 signal pause_requested
 
-const SUCCESS_TEXT := "Well done, you made it to the toilets!\nTime: %s - Score: %d\nEnter: next level - R: play again - Esc: level select"
+const SUCCESS_PHRASE := "Well done, you made it to the toilets!"
 
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
@@ -28,8 +28,14 @@ var _desks: Array[Node] = []
 @onready var _code_door: StaticBody2D = get_node_or_null("PorteDigicode")
 @onready var _colleague: Area2D = get_node_or_null("Collegue")
 @onready var _key_indicator: Label = $Interface/IndicateurCle
-@onready var _success_message: Label = $Interface/MessageSucces
-@onready var _game_over_message: Label = $Interface/MessageGameOver
+@onready var _success_message: Control = $Interface/MessageSucces
+@onready var _success_title: Label = $Interface/MessageSucces/Titre
+@onready var _success_details: Label = $Interface/MessageSucces/Details
+@onready var _success_record: Label = $Interface/MessageSucces/Record
+@onready var _next_button: Button = $Interface/MessageSucces/Boutons/Suivant
+@onready var _game_over_message: Control = $Interface/MessageGameOver
+@onready var _game_over_details: Label = $Interface/MessageGameOver/Details
+@onready var _game_over_replay_button: Button = $Interface/MessageGameOver/Boutons/Rejouer
 @onready var _chrono: Label = $Interface/Chrono
 @onready var _keypad: Panel = $Interface/Digicode
 @onready var _keypad_entry: Label = $Interface/Digicode/Saisie
@@ -51,6 +57,23 @@ func _ready() -> void:
 		_post_it.get_node("Code").text = _door_code.code()
 	if _colleague:
 		_colleague.body_entered.connect(_on_collegue_body_entered)
+	_next_button.pressed.connect(next_requested.emit)
+	for screen in [_success_message, _game_over_message]:
+		screen.get_node("Boutons/Rejouer").pressed.connect(restart_requested.emit)
+		screen.get_node("Boutons/Selection").pressed.connect(menu_requested.emit)
+	configure(0, false)
+
+
+# Appele par le jeu au chargement : numero du niveau et bouton Next ou Finish
+func configure(number: int, is_last: bool) -> void:
+	_success_title.text = LevelResult.success_title(number) + "\n" + SUCCESS_PHRASE
+	_next_button.text = LevelResult.next_label(is_last)
+
+
+# Appele par le jeu une fois le score enregistre
+func show_best(best: int, is_new: bool) -> void:
+	_success_record.text = LevelResult.best_line(best, is_new)
+	_success_record.visible = true
 
 
 # Cherche dans le niveau seulement, pas dans tout l'arbre
@@ -233,9 +256,10 @@ func _on_arrivee_body_entered(body: Node2D) -> void:
 		return
 	_progress.reach_goal()
 	_freeze_level()
-	_success_message.text = SUCCESS_TEXT % [LevelScore.format_time(_score.elapsed()), _score.score()]
+	_success_details.text = LevelResult.details(LevelScore.format_time(_score.elapsed()), _score.score())
 	_success_message.visible = _progress.can_continue()
 	if _progress.can_continue():
+		_next_button.call_deferred("grab_focus")
 		succeeded.emit(_score.score())
 
 
@@ -243,8 +267,11 @@ func _on_manager_body_spotted(body: Node2D) -> void:
 	if body != _player or _player.is_working() or _quiz.is_talking():
 		return
 	_progress.fail()
-	_game_over_message.visible = _progress.is_game_over()
 	_freeze_level()
+	_game_over_details.text = LevelResult.time_only(LevelScore.format_time(_score.elapsed()))
+	_game_over_message.visible = _progress.is_game_over()
+	if _progress.is_game_over():
+		_game_over_replay_button.call_deferred("grab_focus")
 
 
 func _freeze_level() -> void:

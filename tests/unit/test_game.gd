@@ -336,3 +336,35 @@ func test_un_vrai_appui_sur_echap_ouvre_la_pause_sans_la_refermer() -> void:
 
 	assert_true(_screen(game, "Pause").visible, "Un seul appui doit laisser la pause ouverte")
 	assert_eq(_level(game).process_mode, Node.PROCESS_MODE_DISABLED, "Le niveau doit rester fige")
+
+
+func test_l_ecran_de_reussite_connait_le_numero_du_niveau() -> void:
+	var game := _add_game_playing()
+	var screen: Control = _level(game).get_node("Interface/MessageSucces")
+	assert_string_contains(screen.get_node("Titre").text, "Level 1 complete!")
+	assert_eq(screen.get_node("Boutons/Suivant").text, "Next", "Le niveau 1 n'est pas le dernier")
+
+
+func test_le_dernier_niveau_propose_finish() -> void:
+	var game := _add_game_playing()
+	for i in Game.LEVELS.size() - 1:
+		_level(game).succeeded.emit(500)
+		_level(game).next_requested.emit()
+	assert_eq(_level(game).get_node("Interface/MessageSucces/Boutons/Suivant").text, "Finish")
+
+
+func test_la_premiere_reussite_affiche_un_record() -> void:
+	var game := _add_game_playing()
+	_level(game).succeeded.emit(700)
+	var record: Label = _level(game).get_node("Interface/MessageSucces/Record")
+	assert_true(record.visible, "Le meilleur score doit s'afficher")
+	assert_eq(record.text, "New best! Best: 700")
+
+
+func test_un_score_plus_faible_n_affiche_pas_de_record() -> void:
+	var game := _add_game_playing()
+	_level(game).succeeded.emit(700)
+	_level(game).restart_requested.emit()
+	_level(game).succeeded.emit(400)
+	var record: Label = _level(game).get_node("Interface/MessageSucces/Record")
+	assert_eq(record.text, "Best: 700", "Le record de la session doit rester affiche sans New best")

@@ -151,3 +151,21 @@ func test_recommencer_garde_les_meilleurs_scores() -> void:
 	sequence.record_score(500)
 	sequence.restart_all()
 	assert_eq(sequence.best_score(1), 500, "Les meilleurs scores doivent durer toute la session")
+
+
+func test_la_premiere_reussite_est_un_record() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	assert_true(sequence.record_score(500), "La premiere reussite doit compter comme un record")
+
+
+func test_battre_le_meilleur_score_est_un_record() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.record_score(500)
+	assert_true(sequence.record_score(501), "Un score plus fort doit etre un record")
+
+
+func test_egaler_ou_rater_le_meilleur_score_n_est_pas_un_record() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.record_score(500)
+	assert_false(sequence.record_score(500), "Egaler le meilleur score n'est pas un record")
+	assert_false(sequence.record_score(300), "Un score plus faible n'est pas un record")

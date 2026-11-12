@@ -74,9 +74,9 @@ func test_le_signal_de_l_arrivee_est_connecte() -> void:
 
 
 func test_le_message_de_succes_est_cache_au_depart() -> void:
-	var message: Label = _instantiate_level().get_node("Interface/MessageSucces")
+	var message: Control = _instantiate_level().get_node("Interface/MessageSucces")
 	assert_false(message.visible, "Le message de succes doit etre cache au depart")
-	assert_string_contains(message.text, "Well done, you made it to the toilets!")
+	assert_string_contains(message.get_node("Titre").text, "Well done, you made it to the toilets!")
 
 
 func test_un_autre_corps_ne_declenche_pas_le_succes() -> void:
@@ -113,9 +113,9 @@ func test_le_manager_est_dessine_derriere_le_joueur() -> void:
 
 
 func test_le_message_de_game_over_est_cache_au_depart() -> void:
-	var message: Label = _instantiate_level().get_node("Interface/MessageGameOver")
+	var message: Control = _instantiate_level().get_node("Interface/MessageGameOver")
 	assert_false(message.visible, "Le message de game over doit etre cache au depart")
-	assert_string_contains(message.text, "Game over")
+	assert_string_contains(message.get_node("Titre").text, "Game over")
 
 
 func test_le_signal_du_manager_est_connecte() -> void:
@@ -568,10 +568,10 @@ func test_le_message_de_succes_affiche_le_temps_et_le_score() -> void:
 	level.get_node("Player").position = level.get_node("Arrivee").position
 	await wait_physics_frames(5)
 
-	var message: Label = level.get_node("Interface/MessageSucces")
-	assert_string_contains(message.text, "Well done, you made it to the toilets!")
-	assert_string_contains(message.text, "Time: " + level.get_node("Interface/Chrono").text)
-	assert_string_contains(message.text, "Score: ")
+	var message: Control = level.get_node("Interface/MessageSucces")
+	assert_string_contains(message.get_node("Titre").text, "Well done, you made it to the toilets!")
+	assert_string_contains(message.get_node("Details").text, "Time: " + level.get_node("Interface/Chrono").text)
+	assert_string_contains(message.get_node("Details").text, "Score: ")
 
 
 func test_le_message_de_game_over_n_affiche_pas_de_score() -> void:
@@ -579,9 +579,10 @@ func test_le_message_de_game_over_n_affiche_pas_de_score() -> void:
 	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
 	await wait_physics_frames(5)
 
-	var message: Label = level.get_node("Interface/MessageGameOver")
+	var message: Control = level.get_node("Interface/MessageGameOver")
 	assert_true(message.visible, "Le joueur doit etre repere")
-	assert_false(message.text.contains("Score"), "Le game over ne doit pas afficher de score")
+	assert_string_contains(message.get_node("Details").text, "Time: " + level.get_node("Interface/Chrono").text)
+	assert_false(message.get_node("Details").text.contains("Score"), "Le game over ne doit pas afficher de score")
 
 
 func _digit_key(digit: int) -> InputEventKey:
@@ -903,7 +904,10 @@ func test_le_message_de_succes_propose_le_niveau_suivant() -> void:
 	var level: Node = add_child_autofree(_load_level())
 	level.get_node("Player").position = level.get_node("Arrivee").position
 	await wait_physics_frames(5)
-	assert_string_contains(level.get_node("Interface/MessageSucces").text, "Enter")
+	await wait_frames(2)
+	var next: Button = level.get_node("Interface/MessageSucces/Boutons/Suivant")
+	assert_true(next.is_visible_in_tree(), "Le bouton du niveau suivant doit s'afficher")
+	assert_true(next.has_focus(), "Entree doit activer le bouton du niveau suivant")
 
 
 func test_r_ne_relance_pas_pendant_le_jeu() -> void:
@@ -989,5 +993,86 @@ func test_echap_pendant_la_question_est_ignore() -> void:
 
 func test_les_messages_de_fin_mentionnent_echap() -> void:
 	var level := _instantiate_level()
-	assert_string_contains(level.get_node("Interface/MessageGameOver").text, "Esc")
-	assert_string_contains(level.SUCCESS_TEXT, "Esc")
+	assert_string_contains(level.get_node("Interface/MessageGameOver/Aide").text, "Esc")
+	assert_string_contains(level.get_node("Interface/MessageSucces/Aide").text, "Esc")
+
+
+func _reach_goal(level: Node) -> void:
+	level.get_node("Player").position = level.get_node("Arrivee").position
+	await wait_physics_frames(5)
+	await wait_frames(2)
+
+
+func _get_spotted(level: Node) -> void:
+	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+	await wait_frames(2)
+
+
+func test_l_ecran_de_reussite_propose_trois_boutons() -> void:
+	var screen: Control = _instantiate_level().get_node("Interface/MessageSucces")
+	assert_eq(screen.get_node("Boutons/Suivant").text, "Next")
+	assert_eq(screen.get_node("Boutons/Rejouer").text, "Replay")
+	assert_eq(screen.get_node("Boutons/Selection").text, "Level select")
+
+
+func test_l_ecran_de_game_over_propose_rejouer_et_la_selection() -> void:
+	var screen: Control = _instantiate_level().get_node("Interface/MessageGameOver")
+	assert_eq(screen.get_node("Boutons").get_child_count(), 2, "Le game over n'a pas de bouton suivant")
+	assert_eq(screen.get_node("Boutons/Rejouer").text, "Replay")
+	assert_eq(screen.get_node("Boutons/Selection").text, "Level select")
+
+
+func test_les_boutons_de_reussite_emettent_les_signaux() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level.get_node("Interface/MessageSucces/Boutons/Suivant").pressed.emit()
+	level.get_node("Interface/MessageSucces/Boutons/Rejouer").pressed.emit()
+	level.get_node("Interface/MessageSucces/Boutons/Selection").pressed.emit()
+	assert_signal_emitted(level, "next_requested", "Next doit passer au niveau suivant")
+	assert_signal_emitted(level, "restart_requested", "Replay doit relancer le niveau")
+	assert_signal_emitted(level, "menu_requested", "Level select doit ramener au selecteur")
+
+
+func test_les_boutons_de_game_over_emettent_les_signaux() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	watch_signals(level)
+	level.get_node("Interface/MessageGameOver/Boutons/Rejouer").pressed.emit()
+	level.get_node("Interface/MessageGameOver/Boutons/Selection").pressed.emit()
+	assert_signal_emitted(level, "restart_requested", "Replay doit relancer le niveau")
+	assert_signal_emitted(level, "menu_requested", "Level select doit ramener au selecteur")
+
+
+func test_apres_un_game_over_rejouer_a_le_focus() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _get_spotted(level)
+	var replay: Button = level.get_node("Interface/MessageGameOver/Boutons/Rejouer")
+	assert_true(replay.is_visible_in_tree(), "Le bouton rejouer doit s'afficher")
+	assert_true(replay.has_focus(), "Entree doit activer le bouton rejouer")
+
+
+func test_l_ecran_de_reussite_affiche_le_numero_du_niveau() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.configure(4, false)
+	assert_string_contains(level.get_node("Interface/MessageSucces/Titre").text, "Level 4 complete!")
+	assert_eq(level.get_node("Interface/MessageSucces/Boutons/Suivant").text, "Next")
+
+
+func test_au_dernier_niveau_le_bouton_suivant_devient_finish() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.configure(2, true)
+	assert_eq(level.get_node("Interface/MessageSucces/Boutons/Suivant").text, "Finish")
+
+
+func test_le_meilleur_score_est_cache_tant_que_le_jeu_ne_l_a_pas_donne() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _reach_goal(level)
+	assert_false(level.get_node("Interface/MessageSucces/Record").visible, "Sans le jeu, aucun meilleur score n'est connu")
+
+
+func test_le_meilleur_score_s_affiche_avec_le_record() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.show_best(780, true)
+	var record: Label = level.get_node("Interface/MessageSucces/Record")
+	assert_true(record.visible, "Le meilleur score doit s'afficher")
+	assert_eq(record.text, "New best! Best: 780")

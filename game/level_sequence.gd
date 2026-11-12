@@ -49,13 +49,17 @@ func select(number: int) -> bool:
 	return true
 
 
-# Rejouer un niveau remplace son score ; une reussite debloque le niveau suivant
-func record_score(score: int) -> void:
+# Rejouer un niveau remplace son score ; une reussite debloque le niveau suivant.
+# Renvoie vrai si c'est un nouveau record (premiere reussite ou meilleur score battu).
+func record_score(score: int) -> bool:
 	if is_finished():
-		return
+		return false
+	var is_new: bool = not _best_scores.has(_index) or score > _best_scores[_index]
 	_scores[_index] = score
-	_best_scores[_index] = maxi(score, _best_scores.get(_index, score))
+	if is_new:
+		_best_scores[_index] = score
 	_unlocked = clampi(_index + 2, _unlocked, _paths.size())
+	return is_new
 
 
 func has_best_score(number: int) -> bool:
