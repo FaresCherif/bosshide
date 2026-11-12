@@ -147,6 +147,27 @@ clip_contents = true
 mouse_filter = 2
 script = ExtResource("3_photo")
 
+[node name="BoutonPhoto" type="Button" parent="Interface/MenuPrincipal/Badge"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 58.0
+offset_right = 140.0
+offset_bottom = 210.0
+focus_neighbor_bottom = NodePath("../../Boutons/Jouer")
+mouse_default_cursor_shape = 2
+flat = true
+
+[node name="MentionPhoto" type="Label" parent="Interface/MenuPrincipal/Badge"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 212.0
+offset_right = 140.0
+offset_bottom = 236.0
+theme_override_colors/font_color = Color(0.45, 0.45, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "Change photo"
+horizontal_alignment = 1
+
 [node name="Titre" type="Label" parent="Interface/MenuPrincipal/Badge"]
 layout_mode = 0
 offset_left = 156.0
@@ -221,15 +242,102 @@ alignment = 1
 
 [node name="Jouer" type="Button" parent="Interface/MenuPrincipal/Boutons"]
 layout_mode = 2
+focus_neighbor_top = NodePath("../../Badge/BoutonPhoto")
 text = "Clock in"
 
 [node name="Choisir" type="Button" parent="Interface/MenuPrincipal/Boutons"]
 layout_mode = 2
+focus_neighbor_top = NodePath("../../Badge/BoutonPhoto")
 text = "Pick a mission"
 
 [node name="Quitter" type="Button" parent="Interface/MenuPrincipal/Boutons"]
 layout_mode = 2
+focus_neighbor_top = NodePath("../../Badge/BoutonPhoto")
 text = "Resign"
+
+[node name="ChoixPhoto" type="Control" parent="Interface/MenuPrincipal"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Voile" type="ColorRect" parent="Interface/MenuPrincipal/ChoixPhoto"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.18, 0.227, 0.294, 0.8)
+
+[node name="Fiche" type="Panel" parent="Interface/MenuPrincipal/ChoixPhoto"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -260.0
+offset_right = 400.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Titre" type="Label" parent="Interface/MenuPrincipal/ChoixPhoto"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -250.0
+offset_right = 380.0
+offset_bottom = -192.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 40
+text = "Pick your ID photo"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Icones" type="GridContainer" parent="Interface/MenuPrincipal/ChoixPhoto"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 0.0
+offset_top = -14.0
+offset_right = 0.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 5
+
+[node name="Garder" type="Button" parent="Interface/MenuPrincipal/ChoixPhoto"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 178.0
+offset_right = 120.0
+offset_bottom = 228.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Keep this one"
 
 [node name="Selecteur" type="Control" parent="Interface"]
 visible = false

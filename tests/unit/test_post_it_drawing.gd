@@ -63,3 +63,23 @@ func test_la_photo_d_identite_s_instancie() -> void:
 	photo.size = Vector2(120, 150)
 	assert_gt(photo.head_radius(), 0.0, "La silhouette doit avoir une tete")
 	assert_lt(photo.head_radius() * 2.0, photo.size.x, "La tete doit tenir dans la photo")
+
+
+func test_une_icone_inconnue_retombe_sur_la_silhouette() -> void:
+	var photo: IdPhoto = autofree(IdPhoto.new())
+	photo.icon_id = "mug"
+	assert_eq(photo.icon_id, "mug")
+	photo.icon_id = "dragon"
+	assert_eq(photo.icon_id, "classic", "Une icone inconnue doit retomber sur la silhouette")
+
+
+func test_chaque_icone_se_dessine() -> void:
+	var viewport: SubViewport = add_child_autofree(SubViewport.new())
+	viewport.size = Vector2i(200, 200)
+	var photo := IdPhoto.new()
+	photo.size = Vector2(120, 150)
+	viewport.add_child(photo)
+	for icon in EmployeeProfile.ICONS:
+		photo.icon_id = icon["id"]
+		await wait_frames(1)
+		assert_eq(photo.icon_id, icon["id"], icon["id"] + " doit se dessiner")

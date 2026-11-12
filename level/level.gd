@@ -86,6 +86,11 @@ func configure(number: int, is_last: bool) -> void:
 	_next_button.text = LevelResult.next_label(is_last)
 
 
+# Appele par le jeu au chargement : la photo choisie pour le badge, agrafee a l'avertissement RH
+func set_employee_icon(id: String) -> void:
+	$Interface/MessageGameOver/PhotoIdentite.icon_id = id
+
+
 # Appele par le jeu une fois le score enregistre
 func show_best(best: int, is_new: bool) -> void:
 	_success_record.text = LevelResult.best_line(best, is_new)

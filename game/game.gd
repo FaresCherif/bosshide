@@ -3,7 +3,7 @@ extends Node
 
 # Menu principal, selecteur de niveau, puis niveaux charges un par un avec leurs scores
 
-enum Screen { MENU, SELECTOR, LEVEL, PAUSE, END }
+enum Screen { MENU, PHOTO, SELECTOR, LEVEL, PAUSE, END }
 
 const LEVELS := ["res://levels/level_01.tscn", "res://levels/level_02.tscn"]
 const LEVEL_NODE_NAME := "Niveau"
@@ -22,6 +22,7 @@ const LED_GREEN := Color(0.25, 0.85, 0.4, 1)
 var clock_in_delay := CLOCK_IN_DELAY
 var _clocking_in := false
 var _sequence := LevelSequence.new(LEVELS)
+var _profile := EmployeeProfile.new()
 var _level: Node = null
 var _screen := Screen.MENU
 
@@ -35,6 +36,11 @@ var _screen := Screen.MENU
 @onready var _badge: Control = $Interface/MenuPrincipal/Badge
 @onready var _badge_led: ColorRect = $Interface/MenuPrincipal/Badge/Voyant
 @onready var _access_granted: Label = $Interface/MenuPrincipal/Badge/Acces
+@onready var _badge_photo: IdPhoto = $Interface/MenuPrincipal/Badge/Photo
+@onready var _photo_button: Button = $Interface/MenuPrincipal/Badge/BoutonPhoto
+@onready var _picker: Control = $Interface/MenuPrincipal/ChoixPhoto
+@onready var _picker_icons: GridContainer = $Interface/MenuPrincipal/ChoixPhoto/Icones
+@onready var _keep_button: Button = $Interface/MenuPrincipal/ChoixPhoto/Garder
 @onready var _selector: Control = $Interface/Selecteur
 @onready var _level_buttons: GridContainer = $Interface/Selecteur/Niveaux
 @onready var _back_button: Button = $Interface/Selecteur/Retour
@@ -53,6 +59,10 @@ func _ready() -> void:
 	_resume_button.pressed.connect(_on_reprendre_pressed)
 	_pause_select_button.pressed.connect(_on_selection_pressed)
 	_pause_menu_button.pressed.connect(_on_menu_pressed)
+	_photo_button.pressed.connect(_open_photo_picker)
+	_keep_button.pressed.connect(_close_photo_picker)
+	for icon in EmployeeProfile.ICONS:
+		_picker_icons.add_child(_new_icon_choice(icon["id"], icon["name"]))
 	for i in LEVELS.size():
 		_level_buttons.add_child(_new_level_post_it(i + 1))
 	# La grille remet la rotation a zero a chaque tri : on repenche les post-its ensuite
@@ -63,6 +73,10 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	match _screen:
+		Screen.PHOTO:
+			if event.is_action_pressed("ui_cancel"):
+				get_viewport().set_input_as_handled()
+				_close_photo_picker()
 		Screen.SELECTOR:
 			if event.is_action_pressed("ui_cancel"):
 				_show_menu()
@@ -76,6 +90,54 @@ func _unhandled_input(event: InputEvent) -> void:
 				_load_current_level()
 			elif event.is_action_pressed("ui_cancel"):
 				_show_selector()
+
+
+# Choix d'icone : post-it avec la photo dessinee et son nom
+func _new_icon_choice(id: String, icon_name: String) -> Button:
+	var button := Button.new()
+	button.name = id
+	button.custom_minimum_size = Vector2(140, 150)
+	button.pressed.connect(_choose_icon.bind(id))
+	var photo := IdPhoto.new()
+	photo.icon_id = id
+	photo.position = Vector2(30, 10)
+	photo.size = Vector2(80, 100)
+	photo.clip_contents = true
+	photo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(photo)
+	var label := Label.new()
+	label.text = icon_name
+	label.position = Vector2(0, 112)
+	label.size = Vector2(140, 30)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 16)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(label)
+	return button
+
+
+# Le menu reste visible sous le choix, mais ses boutons sont inactifs
+func _open_photo_picker() -> void:
+	_set_screen(Screen.PHOTO)
+	_set_menu_enabled(false)
+	_picker_icons.get_node(_profile.icon_id()).call_deferred("grab_focus")
+
+
+func _close_photo_picker() -> void:
+	_set_screen(Screen.MENU)
+	_set_menu_enabled(true)
+	_photo_button.call_deferred("grab_focus")
+
+
+func _choose_icon(id: String) -> void:
+	if _profile.select(id):
+		_badge_photo.icon_id = id
+	_close_photo_picker()
+
+
+func _set_menu_enabled(enabled: bool) -> void:
+	for button in [_play_button, _select_button, _quit_button, _photo_button]:
+		button.disabled = not enabled
 
 
 # Post-it de niveau : bouton ligne, punaise au coin, tampon LOCKED si verrouille
@@ -115,8 +177,9 @@ func _tilt_level_post_its() -> void:
 # Un seul ecran visible a la fois
 func _set_screen(screen: Screen) -> void:
 	_screen = screen
-	_background.visible = screen == Screen.MENU or screen == Screen.SELECTOR or screen == Screen.END
-	_menu.visible = screen == Screen.MENU
+	_background.visible = screen in [Screen.MENU, Screen.PHOTO, Screen.SELECTOR, Screen.END]
+	_menu.visible = screen == Screen.MENU or screen == Screen.PHOTO
+	_picker.visible = screen == Screen.PHOTO
 	_selector.visible = screen == Screen.SELECTOR
 	_level_label.visible = screen == Screen.LEVEL or screen == Screen.PAUSE
 	_pause.visible = screen == Screen.PAUSE
@@ -135,8 +198,7 @@ func _reset_badge() -> void:
 	_clocking_in = false
 	_badge_led.color = LED_RED
 	_access_granted.visible = false
-	for button in [_play_button, _select_button, _quit_button]:
-		button.disabled = false
+	_set_menu_enabled(true)
 
 
 func _show_selector() -> void:
@@ -176,6 +238,7 @@ func _load_current_level() -> void:
 	_level.pause_requested.connect(_on_level_pause_requested)
 	add_child(_level)
 	_level.configure(_sequence.level_number(), _sequence.is_last())
+	_level.set_employee_icon(_profile.icon_id())
 	_level_label.text = "Level %d/%d" % [_sequence.level_number(), _sequence.level_count()]
 
 
@@ -193,8 +256,7 @@ func _on_jouer_pressed() -> void:
 	if _clocking_in:
 		return
 	_clocking_in = true
-	for button in [_play_button, _select_button, _quit_button]:
-		button.disabled = true
+	_set_menu_enabled(false)
 	_badge_led.color = LED_GREEN
 	_access_granted.visible = true
 	UiFx.stamp(_access_granted, _access_granted.rotation)

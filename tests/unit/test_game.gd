@@ -571,3 +571,78 @@ func test_les_boutons_du_menu_sont_en_ligne() -> void:
 	var quit := _button(game, "MenuPrincipal/Boutons/Quitter").get_global_rect()
 	assert_eq(play.position.y, quit.position.y, "Les boutons doivent etre sur la meme ligne")
 	assert_lt(play.position.x, quit.position.x, "Clock in doit etre a gauche de Resign")
+
+
+func _photo_button(game: Node) -> Button:
+	return game.get_node("Interface/MenuPrincipal/Badge/BoutonPhoto")
+
+
+func _picker(game: Node) -> Control:
+	return game.get_node("Interface/MenuPrincipal/ChoixPhoto")
+
+
+func _icon_button(game: Node, id: String) -> Button:
+	var index := EmployeeProfile.ICONS.map(func(icon): return icon["id"]).find(id)
+	return _picker(game).get_node("Icones").get_child(index)
+
+
+func test_cliquer_la_photo_ouvre_le_choix_des_icones() -> void:
+	var game := _add_game()
+	assert_false(_picker(game).visible, "Le choix doit etre cache au depart")
+	_photo_button(game).pressed.emit()
+	await wait_frames(2)
+	assert_true(_picker(game).visible, "Le choix doit s'ouvrir")
+	assert_eq(_picker(game).get_node("Icones").get_child_count(), EmployeeProfile.ICONS.size(), "Une icone par bouton")
+	assert_eq(game.get_viewport().gui_get_focus_owner(), _icon_button(game, "classic"), "Le focus doit etre sur l'icone actuelle")
+	for path in ["Jouer", "Choisir", "Quitter"]:
+		assert_true(_button(game, "MenuPrincipal/Boutons/" + path).disabled, path + " doit etre inactif pendant le choix")
+	assert_true(_photo_button(game).disabled, "La photo doit etre inactive pendant le choix")
+
+
+func test_choisir_une_icone_change_la_photo_du_badge() -> void:
+	var game := _add_game()
+	_photo_button(game).pressed.emit()
+	_icon_button(game, "mug").pressed.emit()
+	await wait_frames(2)
+	assert_eq(_badge(game).get_node("Photo").icon_id, "mug", "Le badge doit montrer le mug")
+	assert_false(_picker(game).visible, "Le choix doit se fermer")
+	assert_false(_button(game, "MenuPrincipal/Boutons/Jouer").disabled, "Le menu doit redevenir actif")
+	assert_eq(game.get_viewport().gui_get_focus_owner(), _photo_button(game), "Le focus doit revenir sur la photo")
+
+
+func test_echap_et_keep_this_one_ferment_sans_rien_changer() -> void:
+	var game := _add_game()
+	_photo_button(game).pressed.emit()
+	game._unhandled_input(_pressed("ui_cancel"))
+	assert_false(_picker(game).visible, "Echap doit fermer le choix")
+	assert_true(_screen(game, "MenuPrincipal").visible, "Le menu doit rester affiche")
+	_photo_button(game).pressed.emit()
+	_picker(game).get_node("Garder").pressed.emit()
+	assert_false(_picker(game).visible, "Keep this one doit fermer le choix")
+	assert_eq(_badge(game).get_node("Photo").icon_id, "classic", "L'icone ne doit pas changer")
+
+
+func test_l_icone_est_gardee_et_passee_au_niveau() -> void:
+	var game := _add_game()
+	_photo_button(game).pressed.emit()
+	_icon_button(game, "mug").pressed.emit()
+	_button(game, "MenuPrincipal/Boutons/Jouer").pressed.emit()
+	assert_eq(_level(game).get_node("Interface/MessageGameOver/PhotoIdentite").icon_id, "mug", "L'avertissement RH doit montrer l'icone choisie")
+	_pause(game)
+	_button(game, "Pause/Boutons/Menu").pressed.emit()
+	assert_eq(_badge(game).get_node("Photo").icon_id, "mug", "Le choix doit durer toute la session")
+
+
+func test_haut_depuis_le_menu_mene_a_la_photo() -> void:
+	var game := _add_game()
+	var play := _button(game, "MenuPrincipal/Boutons/Jouer")
+	assert_eq(play.get_node(play.focus_neighbor_top), _photo_button(game), "Haut depuis Clock in doit mener a la photo")
+	assert_eq(_photo_button(game).get_node(_photo_button(game).focus_neighbor_bottom), play, "Bas depuis la photo doit revenir a Clock in")
+
+
+func test_le_choix_des_icones_tient_dans_l_ecran() -> void:
+	var game := _add_game_in_viewport()
+	await wait_frames(1)
+	game._open_photo_picker()
+	await wait_frames(2)
+	_assert_inside_screen(_picker(game))

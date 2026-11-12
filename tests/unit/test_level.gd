@@ -1230,3 +1230,11 @@ func test_le_tampon_busted_ne_couvre_pas_les_boutons() -> void:
 	# Le contour du focus deborde de 5 px autour des boutons
 	var buttons := (screen.get_node("Boutons") as Control).get_global_rect().grow(6.0)
 	assert_false(stamp_box.intersects(buttons), "Le tampon %s ne doit pas couvrir les boutons %s" % [stamp_box, buttons])
+
+
+func test_l_avertissement_rh_montre_la_photo_de_l_employe() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var photo: IdPhoto = level.get_node("Interface/MessageGameOver/PhotoIdentite")
+	assert_eq(photo.icon_id, "classic", "Un niveau lance seul garde la silhouette")
+	level.set_employee_icon("plant")
+	assert_eq(photo.icon_id, "plant", "Le jeu doit pouvoir changer la photo de l'employe")

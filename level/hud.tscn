@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/PermanentMarker-Regular.ttf" id="1_marker"]
 [ext_resource type="Shader" path="res://ui/cctv.gdshader" id="2_cctv"]
+[ext_resource type="Script" path="res://ui/id_photo.gd" id="3_photo"]
 
 [sub_resource type="ShaderMaterial" id="Cctv"]
 shader = ExtResource("2_cctv")
@@ -320,6 +321,42 @@ rotation = -0.03
 pivot_offset = Vector2(30.0, 5.0)
 mouse_filter = 2
 color = Color(0.6, 0.6, 0.64, 1)
+[node name="PhotoIdentite" type="Control" parent="MessageGameOver"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 300.0
+offset_top = -214.0
+offset_right = 390.0
+offset_bottom = -100.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 0.05
+pivot_offset = Vector2(45, 57)
+clip_contents = true
+mouse_filter = 2
+script = ExtResource("3_photo")
+
+[node name="AgrafeIdentite" type="ColorRect" parent="MessageGameOver"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 325.0
+offset_top = -219.0
+offset_right = 365.0
+offset_bottom = -210.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 0.05
+mouse_filter = 2
+color = Color(0.6, 0.6, 0.64, 1)
+
 [node name="Titre" type="Label" parent="MessageGameOver"]
 layout_mode = 1
 anchors_preset = 8
