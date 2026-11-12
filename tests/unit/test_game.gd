@@ -646,3 +646,34 @@ func test_le_choix_des_icones_tient_dans_l_ecran() -> void:
 	game._open_photo_picker()
 	await wait_frames(2)
 	_assert_inside_screen(_picker(game))
+
+
+func _decor(game: Node) -> Control:
+	return game.get_node("Interface/MenuPrincipal/Decor")
+
+
+func test_le_menu_est_accroche_a_un_mur_de_bureau() -> void:
+	var game := _add_game()
+	var decor := _decor(game)
+	assert_lt(decor.get_index(), _badge(game).get_index(), "Le mur doit etre derriere le badge")
+	assert_true(decor.get_node("Horloge") is OfficeClock, "Le mur doit avoir une horloge")
+	assert_string_contains(decor.get_node("Affiche/Titre").text, "TEAMWORK")
+	assert_eq(decor.get_node("EmployeDuMois/Photo").icon_id, "tie", "L'employe du mois est le patron")
+	assert_string_contains(decor.get_node("EmployeDuMois/Nom").text, "The Boss (again)")
+	assert_string_contains(decor.get_node("PanneauWC/Texte").text, "TOILETS")
+	assert_string_contains(decor.get_node("PanneauWC/Scotch").text, "OUT OF ORDER")
+
+
+func test_les_objets_du_mur_ne_cachent_pas_le_menu() -> void:
+	var game := _add_game_in_viewport()
+	await wait_frames(2)
+	var menu := "Interface/MenuPrincipal/"
+	var busy := [
+		game.get_node(menu + "Badge/Carte").get_global_rect(),
+		game.get_node(menu + "Slogan").get_global_rect(),
+		game.get_node(menu + "Boutons").get_global_rect(),
+	]
+	for object_name in ["Horloge", "EmployeDuMois", "Affiche", "PanneauWC"]:
+		var rect: Rect2 = _decor(game).get_node(object_name).get_global_rect()
+		for zone in busy:
+			assert_false(rect.intersects(zone), "%s ne doit pas cacher le menu %s" % [object_name, zone])
