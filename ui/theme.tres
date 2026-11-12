@@ -1,8 +1,84 @@
-[gd_resource type="Theme" load_steps=17 format=3 uid="uid://c3xd83oqks3uo"]
+[gd_resource type="Theme" load_steps=29 format=3 uid="uid://c3xd83oqks3uo"]
 
 [ext_resource type="FontFile" uid="uid://bfvdcvtih7db8" path="res://assets/fonts/PatrickHand-Regular.ttf" id="1_hand"]
 [ext_resource type="FontFile" uid="uid://dq1qk1l4is342" path="res://assets/fonts/PermanentMarker-Regular.ttf" id="2_marker"]
 [ext_resource type="Script" path="res://ui/ruled_sticky_style.gd" id="3_sticky"]
+
+[sub_resource type="StyleBoxFlat" id="AlarmDisabled"]
+content_margin_left = 22.0
+content_margin_top = 46.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.62, 0.4, 0.4, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.75, 0.3, 0.33, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="AlarmHover"]
+content_margin_left = 22.0
+content_margin_top = 46.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.88, 0.2, 0.22, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.05, 0.08, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="AlarmNormal"]
+content_margin_left = 22.0
+content_margin_top = 46.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.8, 0.12, 0.15, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.05, 0.08, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="AlarmPressed"]
+content_margin_left = 22.0
+content_margin_top = 46.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.68, 0.08, 0.1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.05, 0.08, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(1, 1)
 
 [sub_resource type="StyleBoxFlat" id="BadgeCardStyle"]
 bg_color = Color(0.98, 0.98, 0.96, 1)
@@ -92,6 +168,82 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 2
 shadow_color = Color(0, 0, 0, 0.35)
 shadow_size = 1
+shadow_offset = Vector2(1, 1)
+
+[sub_resource type="StyleBoxFlat" id="ClipboardDisabled"]
+content_margin_left = 22.0
+content_margin_top = 40.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.9, 0.9, 0.88, 1)
+border_width_left = 10
+border_width_top = 30
+border_width_right = 10
+border_width_bottom = 12
+border_color = Color(0.87, 0.7, 0.52, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="ClipboardHover"]
+content_margin_left = 22.0
+content_margin_top = 40.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 10
+border_width_top = 30
+border_width_right = 10
+border_width_bottom = 12
+border_color = Color(0.62, 0.45, 0.27, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="ClipboardNormal"]
+content_margin_left = 22.0
+content_margin_top = 40.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.98, 0.98, 0.95, 1)
+border_width_left = 10
+border_width_top = 30
+border_width_right = 10
+border_width_bottom = 12
+border_color = Color(0.62, 0.45, 0.27, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="ClipboardPressed"]
+content_margin_left = 22.0
+content_margin_top = 40.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.92, 0.92, 0.88, 1)
+border_width_left = 10
+border_width_top = 30
+border_width_right = 10
+border_width_bottom = 12
+border_color = Color(0.62, 0.45, 0.27, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
 shadow_offset = Vector2(1, 1)
 
 [sub_resource type="StyleBoxFlat" id="Memo"]
@@ -195,6 +347,82 @@ bottom_margin = 24.0
 spacing = 22.0
 fold_size = 18.0
 
+[sub_resource type="StyleBoxFlat" id="TimeClockDisabled"]
+content_margin_left = 18.0
+content_margin_top = 58.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.66, 0.66, 0.66, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6, 0.61, 0.65, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="TimeClockHover"]
+content_margin_left = 18.0
+content_margin_top = 58.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.7, 0.72, 0.76, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.35, 0.36, 0.4, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="TimeClockNormal"]
+content_margin_left = 18.0
+content_margin_top = 58.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.62, 0.64, 0.68, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.35, 0.36, 0.4, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(5, 6)
+
+[sub_resource type="StyleBoxFlat" id="TimeClockPressed"]
+content_margin_left = 18.0
+content_margin_top = 58.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.55, 0.57, 0.61, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.35, 0.36, 0.4, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 2
+shadow_offset = Vector2(1, 1)
+
 [sub_resource type="StyleBoxFlat" id="VacantSign"]
 content_margin_left = 18.0
 content_margin_top = 2.0
@@ -214,6 +442,17 @@ corner_radius_bottom_left = 12
 [resource]
 default_font = ExtResource("1_hand")
 default_font_size = 26
+AlarmButton/base_type = &"Button"
+AlarmButton/colors/font_color = Color(1, 1, 1, 1)
+AlarmButton/colors/font_disabled_color = Color(0.4, 0.4, 0.42, 1)
+AlarmButton/colors/font_focus_color = Color(1, 1, 1, 1)
+AlarmButton/colors/font_hover_color = Color(1, 1, 1, 1)
+AlarmButton/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+AlarmButton/colors/font_pressed_color = Color(1, 1, 1, 1)
+AlarmButton/styles/disabled = SubResource("AlarmDisabled")
+AlarmButton/styles/hover = SubResource("AlarmHover")
+AlarmButton/styles/normal = SubResource("AlarmNormal")
+AlarmButton/styles/pressed = SubResource("AlarmPressed")
 BadgeCard/base_type = &"Panel"
 BadgeCard/styles/panel = SubResource("BadgeCardStyle")
 Button/colors/font_color = Color(0.17, 0.17, 0.17, 1)
@@ -227,6 +466,17 @@ Button/styles/focus = SubResource("FocusMarker")
 Button/styles/hover = SubResource("PostItHover")
 Button/styles/normal = SubResource("PostIt")
 Button/styles/pressed = SubResource("PostItPressed")
+ClipboardButton/base_type = &"Button"
+ClipboardButton/colors/font_color = Color(0.12, 0.12, 0.14, 1)
+ClipboardButton/colors/font_disabled_color = Color(0.4, 0.4, 0.42, 1)
+ClipboardButton/colors/font_focus_color = Color(0.12, 0.12, 0.14, 1)
+ClipboardButton/colors/font_hover_color = Color(0.12, 0.12, 0.14, 1)
+ClipboardButton/colors/font_hover_pressed_color = Color(0.12, 0.12, 0.14, 1)
+ClipboardButton/colors/font_pressed_color = Color(0.12, 0.12, 0.14, 1)
+ClipboardButton/styles/disabled = SubResource("ClipboardDisabled")
+ClipboardButton/styles/hover = SubResource("ClipboardHover")
+ClipboardButton/styles/normal = SubResource("ClipboardNormal")
+ClipboardButton/styles/pressed = SubResource("ClipboardPressed")
 HudLabel/base_type = &"Label"
 HudLabel/colors/font_color = Color(1, 1, 1, 1)
 HudLabel/colors/font_outline_color = Color(0.17, 0.17, 0.17, 1)
@@ -243,6 +493,17 @@ StickyButton/styles/disabled = SubResource("StickyDisabled")
 StickyButton/styles/hover = SubResource("StickyHover")
 StickyButton/styles/normal = SubResource("StickyNormal")
 StickyButton/styles/pressed = SubResource("StickyPressed")
+TimeClockButton/base_type = &"Button"
+TimeClockButton/colors/font_color = Color(0.12, 0.12, 0.14, 1)
+TimeClockButton/colors/font_disabled_color = Color(0.4, 0.4, 0.42, 1)
+TimeClockButton/colors/font_focus_color = Color(0.12, 0.12, 0.14, 1)
+TimeClockButton/colors/font_hover_color = Color(0.12, 0.12, 0.14, 1)
+TimeClockButton/colors/font_hover_pressed_color = Color(0.12, 0.12, 0.14, 1)
+TimeClockButton/colors/font_pressed_color = Color(0.12, 0.12, 0.14, 1)
+TimeClockButton/styles/disabled = SubResource("TimeClockDisabled")
+TimeClockButton/styles/hover = SubResource("TimeClockHover")
+TimeClockButton/styles/normal = SubResource("TimeClockNormal")
+TimeClockButton/styles/pressed = SubResource("TimeClockPressed")
 TitleLabel/base_type = &"Label"
 TitleLabel/colors/font_color = Color(1, 0.878, 0.4, 1)
 TitleLabel/colors/font_outline_color = Color(0.17, 0.17, 0.17, 1)

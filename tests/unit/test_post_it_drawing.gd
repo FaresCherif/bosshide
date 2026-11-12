@@ -83,3 +83,11 @@ func test_chaque_icone_se_dessine() -> void:
 		photo.icon_id = icon["id"]
 		await wait_frames(1)
 		assert_eq(photo.icon_id, icon["id"], icon["id"] + " doit se dessiner")
+
+
+func test_un_objet_du_mur_inconnu_retombe_sur_la_pointeuse() -> void:
+	var button: WallDeviceButton = autofree(WallDeviceButton.new())
+	button.device = "alarm"
+	assert_eq(button.device, "alarm")
+	button.device = "coffee_machine"
+	assert_eq(button.device, "time_clock", "Un objet inconnu doit retomber sur la pointeuse")

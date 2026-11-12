@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://game/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://ui/cork_board.gd" id="2_cork"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://ui/push_pin.gd" id="5_pin"]
 [ext_resource type="Script" path="res://ui/office_clock.gd" id="6_clock"]
 [ext_resource type="FontFile" path="res://assets/fonts/PermanentMarker-Regular.ttf" id="7_marker"]
+[ext_resource type="Script" path="res://ui/wall_device_button.gd" id="8_device"]
 
 [sub_resource type="StyleBoxFlat" id="GrantedBorder"]
 content_margin_left = 14.0
@@ -476,27 +477,39 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -340.0
-offset_top = 398.0
+offset_top = 392.0
 offset_right = 340.0
-offset_bottom = 450.0
+offset_bottom = 512.0
 grow_horizontal = 2
 theme_override_constants/separation = 24
 alignment = 1
 
 [node name="Jouer" type="Button" parent="Interface/MenuPrincipal/Boutons"]
 layout_mode = 2
+custom_minimum_size = Vector2(170, 116)
+theme_type_variation = &"TimeClockButton"
 focus_neighbor_top = NodePath("../../Badge/BoutonPhoto")
 text = "Clock in"
+script = ExtResource("8_device")
+device = "time_clock"
 
 [node name="Choisir" type="Button" parent="Interface/MenuPrincipal/Boutons"]
 layout_mode = 2
+custom_minimum_size = Vector2(190, 116)
+theme_type_variation = &"ClipboardButton"
 focus_neighbor_top = NodePath("../../Badge/BoutonPhoto")
 text = "Pick a mission"
+script = ExtResource("8_device")
+device = "clipboard"
 
 [node name="Quitter" type="Button" parent="Interface/MenuPrincipal/Boutons"]
 layout_mode = 2
+custom_minimum_size = Vector2(190, 116)
+theme_type_variation = &"AlarmButton"
 focus_neighbor_top = NodePath("../../Badge/BoutonPhoto")
 text = "Resign"
+script = ExtResource("8_device")
+device = "alarm"
 
 [node name="ChoixPhoto" type="Control" parent="Interface/MenuPrincipal"]
 visible = false

@@ -45,3 +45,10 @@ func test_le_bouton_post_it_ligne_existe() -> void:
 func test_les_anciennes_variations_du_post_it_ont_disparu() -> void:
 	for variation in ["StickyPanel", "MemoButton"]:
 		assert_eq(_theme().get_type_variation_base(variation), &"", variation + " ne sert plus")
+
+
+func test_les_objets_du_mur_ont_leurs_styles() -> void:
+	for variation in ["TimeClockButton", "ClipboardButton", "AlarmButton"]:
+		assert_eq(_theme().get_type_variation_base(variation), &"Button", variation + " doit etre une variation de Button")
+		for style in ["normal", "hover", "pressed", "disabled"]:
+			assert_true(_theme().has_stylebox(style, variation), "%s doit avoir le style %s" % [variation, style])

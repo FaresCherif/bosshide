@@ -677,3 +677,24 @@ func test_les_objets_du_mur_ne_cachent_pas_le_menu() -> void:
 		var rect: Rect2 = _decor(game).get_node(object_name).get_global_rect()
 		for zone in busy:
 			assert_false(rect.intersects(zone), "%s ne doit pas cacher le menu %s" % [object_name, zone])
+
+
+func test_les_boutons_du_menu_sont_des_objets_du_mur() -> void:
+	var game := _add_game_in_viewport()
+	await wait_frames(2)
+	var expected := {
+		"Jouer": ["time_clock", &"TimeClockButton", "Clock in"],
+		"Choisir": ["clipboard", &"ClipboardButton", "Pick a mission"],
+		"Quitter": ["alarm", &"AlarmButton", "Resign"],
+	}
+	var heights := []
+	for name in expected:
+		var button := _button(game, "MenuPrincipal/Boutons/" + name)
+		assert_true(button is WallDeviceButton, name + " doit etre un objet du mur")
+		assert_eq(button.device, expected[name][0])
+		assert_eq(button.theme_type_variation, expected[name][1])
+		assert_eq(button.text, expected[name][2], "Le texte du bouton ne change pas")
+		heights.append(button.size.y)
+	assert_gte(heights[0], 100.0, "Les objets doivent etre assez grands")
+	assert_eq(heights[0], heights[1], "Les objets doivent avoir la meme hauteur")
+	assert_eq(heights[1], heights[2], "Les objets doivent avoir la meme hauteur")
