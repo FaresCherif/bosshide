@@ -1,8 +1,8 @@
 @tool
 class_name WallDeviceButton
-extends Button
+extends GlowButton
 
-# Bouton du menu dessine comme un objet fixe au mur. Le fond vient du theme
+# Bouton du menu dessine comme un objet fixe au mur, avec le halo de GlowButton. Le fond vient du theme
 # (TimeClockButton, ClipboardButton, AlarmButton) ; ce script ajoute les details
 # dans le haut de l'objet, au-dessus du texte (affichage seulement).
 
@@ -22,6 +22,8 @@ func _draw() -> void:
 			_draw_clipboard()
 		"alarm":
 			_draw_alarm()
+	# Halo d'interaction par-dessus l'objet
+	super()
 
 
 # Ecran IN, voyant vert et fente a carte
@@ -30,7 +32,9 @@ func _draw_time_clock() -> void:
 	draw_rect(screen, Color(0.08, 0.12, 0.1, 1))
 	draw_string(get_theme_font("font"), Vector2(screen.position.x, screen.end.y - 6), "IN",
 		HORIZONTAL_ALIGNMENT_CENTER, screen.size.x, 20, Color(0.35, 0.95, 0.45, 1))
-	draw_circle(Vector2(size.x - 26, 25), 6.0, Color(0.3, 0.85, 0.4, 1))
+	# Le voyant clignote doucement
+	var lit := fmod(Time.get_ticks_msec() / 1000.0, 1.2) < 0.8
+	draw_circle(Vector2(size.x - 26, 25), 6.0, Color(0.3, 0.85, 0.4, 1) if lit else Color(0.15, 0.35, 0.2, 1))
 	draw_rect(Rect2(16, 46, size.x - 32, 6), Color(0.15, 0.15, 0.18, 1))
 
 

@@ -91,3 +91,11 @@ func test_un_objet_du_mur_inconnu_retombe_sur_la_pointeuse() -> void:
 	assert_eq(button.device, "alarm")
 	button.device = "coffee_machine"
 	assert_eq(button.device, "time_clock", "Un objet inconnu doit retomber sur la pointeuse")
+
+
+func test_le_halo_brille_au_survol_et_pulse_au_repos() -> void:
+	assert_eq(GlowButton.glow_alpha(0.0, true), 1.0, "Au survol le halo est plein")
+	for i in 40:
+		var alpha := GlowButton.glow_alpha(i * 0.1, false)
+		assert_between(alpha, GlowButton.IDLE_MIN, GlowButton.IDLE_MAX, "Au repos le halo pulse doucement")
+	assert_ne(GlowButton.glow_alpha(0.0, false), GlowButton.glow_alpha(0.7, false), "Le halo doit varier au repos")

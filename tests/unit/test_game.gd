@@ -698,3 +698,12 @@ func test_les_boutons_du_menu_sont_des_objets_du_mur() -> void:
 	assert_gte(heights[0], 100.0, "Les objets doivent etre assez grands")
 	assert_eq(heights[0], heights[1], "Les objets doivent avoir la meme hauteur")
 	assert_eq(heights[1], heights[2], "Les objets doivent avoir la meme hauteur")
+
+
+func test_les_objets_interactifs_du_menu_brillent() -> void:
+	var game := _add_game()
+	for path in ["Boutons/Jouer", "Boutons/Choisir", "Boutons/Quitter", "Badge/BoutonPhoto"]:
+		var button: Button = game.get_node("Interface/MenuPrincipal/" + path)
+		assert_true(button is GlowButton, path + " doit briller au survol")
+		assert_eq(button.mouse_default_cursor_shape, Control.CURSOR_POINTING_HAND, path + " doit montrer une main")
+	assert_string_contains(_badge(game).get_node("MentionPhoto").text, "Click to change")

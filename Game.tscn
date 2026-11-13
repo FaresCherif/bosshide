@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://game/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://ui/cork_board.gd" id="2_cork"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://ui/office_clock.gd" id="6_clock"]
 [ext_resource type="FontFile" path="res://assets/fonts/PermanentMarker-Regular.ttf" id="7_marker"]
 [ext_resource type="Script" path="res://ui/wall_device_button.gd" id="8_device"]
+[ext_resource type="Script" path="res://ui/glow_button.gd" id="9_glow"]
 
 [sub_resource type="StyleBoxFlat" id="GrantedBorder"]
 content_margin_left = 14.0
@@ -400,6 +401,7 @@ offset_bottom = 210.0
 focus_neighbor_bottom = NodePath("../../Boutons/Jouer")
 mouse_default_cursor_shape = 2
 flat = true
+script = ExtResource("9_glow")
 
 [node name="MentionPhoto" type="Label" parent="Interface/MenuPrincipal/Badge"]
 layout_mode = 0
@@ -407,9 +409,9 @@ offset_left = 20.0
 offset_top = 212.0
 offset_right = 140.0
 offset_bottom = 236.0
-theme_override_colors/font_color = Color(0.45, 0.45, 0.5, 1)
-theme_override_font_sizes/font_size = 14
-text = "Change photo"
+theme_override_colors/font_color = Color(0.12, 0.2, 0.55, 1)
+theme_override_font_sizes/font_size = 16
+text = "Click to change ^"
 horizontal_alignment = 1
 
 [node name="Titre" type="Label" parent="Interface/MenuPrincipal/Badge"]

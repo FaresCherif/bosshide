@@ -1238,3 +1238,16 @@ func test_l_avertissement_rh_montre_la_photo_de_l_employe() -> void:
 	assert_eq(photo.icon_id, "classic", "Un niveau lance seul garde la silhouette")
 	level.set_employee_icon("plant")
 	assert_eq(photo.icon_id, "plant", "Le jeu doit pouvoir changer la photo de l'employe")
+
+
+# Les indices d'interaction ont ete retires des niveaux : rien ne s'affiche ni ne bouge
+func test_le_niveau_n_affiche_pas_d_indice_d_interaction() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _place_player_on_key_behind_manager(level)
+	assert_null(level.get_node_or_null("Interface/BulleAction"), "Le niveau ne doit plus avoir de bulle")
+	assert_null(level.get_node_or_null("Interface/Surbrillance"), "Le niveau ne doit plus avoir de contour")
+	var key: Control = level.get_node("Cle/Visuel")
+	var key_y := key.position.y
+	await wait_seconds(0.4)
+	assert_eq(key.position.y, key_y, "La cle ne doit plus flotter")
+	assert_eq(level.get_node("PostIt/Visuel").rotation, 0.0, "Le post-it ne doit plus osciller")

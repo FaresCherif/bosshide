@@ -119,6 +119,7 @@ func _physics_process(delta: float) -> void:
 	_refresh_chrono()
 
 
+
 func _refresh_chrono() -> void:
 	_chrono.text = LevelScore.format_time(_score.elapsed())
 
@@ -143,21 +144,37 @@ func _unhandled_input(event: InputEvent) -> void:
 		_press_work()
 
 
-# Le digicode, le post-it, la porte et la cle passent avant le travail
+# Le digicode, le post-it, la porte et la cle passent avant le travail (voir InteractionHint)
 func _press_work() -> void:
-	if _has_code() and not _door_code.is_door_open() and _code_door.is_body_near(_player):
-		_set_keypad_open(true)
-		return
-	if _has_code() and _post_it.overlaps_body(_player):
-		_door_code.read()
-		_refresh_post_it()
-		return
-	if _has_key_door():
-		var on_key := _door_key.is_key_on_desk() and _key.overlaps_body(_player)
-		if _door_key.interact(_door.is_body_near(_player), on_key):
+	var state := _interaction_state()
+	match InteractionHint.resolve(state):
+		InteractionHint.Action.TYPE_CODE:
+			_set_keypad_open(true)
+		InteractionHint.Action.READ_CODE:
+			_door_code.read()
+			_refresh_post_it()
+		InteractionHint.Action.OPEN_DOOR, InteractionHint.Action.TAKE_KEY:
+			_door_key.interact(state["at_door"], state["on_key"])
 			_refresh_door_key()
-			return
-	_player.press_work(_is_player_on_desk())
+		_:
+			_player.press_work(state["on_desk"])
+
+
+# Ce qui est a portee du joueur, pour InteractionHint
+func _interaction_state() -> Dictionary:
+	return {
+		"can_act": _progress.can_move() and not _door_code.is_keypad_open() and not _quiz.is_talking(),
+		"at_keypad": _has_code() and not _door_code.is_door_open() and _code_door.is_body_near(_player),
+		"on_post_it": _has_code() and _post_it.overlaps_body(_player),
+		"at_door": _has_key_door() and _door.is_body_near(_player),
+		"door_open": _has_key_door() and _door_key.is_door_open(),
+		"has_key": _has_key_door() and _door_key.has_key(),
+		"on_key": _has_key_door() and _door_key.is_key_on_desk() and _key.overlaps_body(_player),
+		"working": _player.is_working(),
+		"on_desk": _is_player_on_desk(),
+	}
+
+
 
 
 func _refresh_door_key() -> void:
