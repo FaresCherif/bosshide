@@ -167,9 +167,9 @@ func _physics_process(delta: float) -> void:
 	_update_quiz_reaction(delta)
 
 
-# La question ou la reaction qui la suit : le joueur est bloque et protege
+# Pendant la question, le joueur est bloque et protege ; la reaction qui suit n'est qu'affichee
 func _in_conversation() -> bool:
-	return _quiz.is_talking() or _reaction.is_active()
+	return _quiz.is_talking()
 
 
 
@@ -386,6 +386,7 @@ func _quiz_input(event: InputEvent) -> void:
 # La reponse choisie passe en vert (rebond) ou en rouge barre (secousse), les autres s'estompent
 func _start_quiz_reaction(choice: int, result: ColleagueQuiz.Result) -> void:
 	_reaction.start(result)
+	_player.set_busy(false)
 	for i in QUIZ_CHOICES:
 		var style := QuizReaction.row_style(i, choice, result)
 		var label := _quiz_choice_label(i)
@@ -409,7 +410,6 @@ func _update_quiz_reaction(delta: float) -> void:
 	_reaction.update(delta)
 	if not _reaction.is_active():
 		_quiz_panel.visible = false
-		_player.set_busy(false)
 		for i in QUIZ_CHOICES:
 			_quiz_choice_label(i).remove_theme_color_override("font_color")
 			_quiz_choice_label(i).modulate.a = 1.0

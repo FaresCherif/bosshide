@@ -2,8 +2,8 @@ class_name QuizReaction
 extends RefCounted
 
 # Reaction apres la reponse au collegue : un court moment ou la reponse choisie
-# s'affiche en vert ou en rouge barre avant de fermer les bulles. Le joueur reste
-# bloque et protege pendant ce temps.
+# s'affiche en vert ou en rouge barre avant de fermer les bulles. Le joueur est deja
+# libre et peut etre repere pendant ce temps.
 
 const DURATION := 1.2
 const RIGHT_COLOR := Color(0.15, 0.6, 0.3, 1)

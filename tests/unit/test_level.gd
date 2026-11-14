@@ -881,7 +881,6 @@ func test_apres_une_mauvaise_reponse_le_joueur_n_est_plus_protege() -> void:
 	await _start_talk(level)
 
 	level._unhandled_input(_answer_key(level, false))
-	await _finish_reaction()
 	await wait_physics_frames(5)
 
 	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le manager qui regarde a gauche doit reperer le joueur")
@@ -1347,14 +1346,13 @@ func test_une_bonne_reponse_colore_la_ligne_en_vert_avant_de_fermer() -> void:
 	for i in 3:
 		if i != right:
 			assert_lt(quiz.get_node("Choix%d" % (i + 1)).modulate.a, 0.5, "Les autres reponses s'estompent")
-	assert_true(level.get_node("Player").is_busy(), "Le joueur reste bloque pendant la reaction")
+	assert_false(level.get_node("Player").is_busy(), "Le joueur repart des qu'il a repondu")
 	await _finish_reaction()
 	assert_false(quiz.visible, "Les bulles se ferment apres la reaction")
-	assert_false(level.get_node("Player").is_busy(), "Le joueur repart apres la reaction")
 	assert_eq(chosen.modulate.a, 1.0, "Les styles sont remis a zero")
 
 
-func test_une_mauvaise_reponse_est_rouge_barree_et_protege_pendant_la_reaction() -> void:
+func test_une_mauvaise_reponse_est_rouge_barree_sans_proteger_le_joueur() -> void:
 	var level: Node = add_child_autofree(_load_level())
 	await _start_talk(level)
 	var key := _answer_key(level, false)
@@ -1364,7 +1362,7 @@ func test_une_mauvaise_reponse_est_rouge_barree_et_protege_pendant_la_reaction()
 	assert_eq(quiz.get_node("Choix%d" % (chosen_index + 1)).get_theme_color("font_color"), QuizReaction.WRONG_COLOR, "La mauvaise reponse doit etre rouge")
 	assert_true(quiz.get_node("Rature%d" % (chosen_index + 1)).visible, "La mauvaise reponse doit etre barree")
 	level.get_node("Manager").body_spotted.emit(level.get_node("Player"))
-	assert_false(level.get_node("Interface/MessageGameOver").visible, "Pendant la reaction le joueur reste protege")
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Une fois la reponse donnee, le joueur n'est plus protege")
 
 
 func test_au_depart_le_joueur_est_a_gauche_de_l_ecran() -> void:
