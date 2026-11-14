@@ -19,6 +19,10 @@ func stop() -> void:
 
 
 # Occupe (par exemple au digicode), le joueur ne bouge pas mais reste visible
+func is_busy() -> bool:
+	return _busy
+
+
 func set_busy(busy: bool) -> void:
 	_busy = busy
 

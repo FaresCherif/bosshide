@@ -99,3 +99,13 @@ func test_le_halo_brille_au_survol_et_pulse_au_repos() -> void:
 		var alpha := GlowButton.glow_alpha(i * 0.1, false)
 		assert_between(alpha, GlowButton.IDLE_MIN, GlowButton.IDLE_MAX, "Au repos le halo pulse doucement")
 	assert_ne(GlowButton.glow_alpha(0.0, false), GlowButton.glow_alpha(0.7, false), "Le halo doit varier au repos")
+
+
+func test_le_trait_pointille_se_dessine() -> void:
+	var viewport: SubViewport = add_child_autofree(SubViewport.new())
+	viewport.size = Vector2i(200, 40)
+	var line := DashedLine.new()
+	line.size = Vector2(180, 4)
+	viewport.add_child(line)
+	await wait_frames(1)
+	assert_gt(line.dash, 0.0, "Le trait doit etre en pointilles")

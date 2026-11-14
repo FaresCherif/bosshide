@@ -69,3 +69,10 @@ func test_stop_ne_libere_pas_le_joueur_occupe() -> void:
 	work.set_busy(true)
 	work.stop()
 	assert_eq(work.allowed_direction(-1.0), 0.0, "Une touche de deplacement ne doit pas fermer le panneau")
+
+
+func test_le_joueur_occupe_est_signale() -> void:
+	var work := PlayerWork.new()
+	assert_false(work.is_busy(), "Au depart le joueur est libre")
+	work.set_busy(true)
+	assert_true(work.is_busy(), "Le joueur occupe doit etre signale")

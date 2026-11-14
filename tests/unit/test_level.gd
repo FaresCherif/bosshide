@@ -757,6 +757,11 @@ func test_le_game_over_ferme_le_panneau() -> void:
 	assert_false(level.get_node("Interface/Digicode").visible, "Le panneau doit se fermer au game over")
 
 
+# La reaction du collegue dure QuizReaction.DURATION avant de fermer les bulles
+func _finish_reaction() -> void:
+	await wait_seconds(QuizReaction.DURATION + 0.15)
+
+
 func _start_talk(level: Node) -> void:
 	level.get_node("Player").position.x = level.get_node("Collegue").position.x
 	await wait_physics_frames(5)
@@ -802,7 +807,11 @@ func test_passer_devant_le_collegue_lance_la_question() -> void:
 	var question: Dictionary = level._quiz.question()
 	assert_true(level.get_node("Interface/Collegue").visible, "Le panneau doit s'ouvrir")
 	assert_eq(level.get_node("Interface/Collegue/Question").text, question["text"], "La question doit s'afficher")
-	assert_string_contains(level.get_node("Interface/Collegue/Choix").text, "1. " + question["choices"][0])
+	for i in 3:
+		var label: Label = level.get_node("Interface/Collegue/Choix%d" % (i + 1))
+		var key: Label = level.get_node("Interface/Collegue/Touche%d" % (i + 1))
+		assert_eq(label.text, question["choices"][i], "Chaque reponse doit s'afficher")
+		assert_eq(key.text, str(i + 1), "Chaque reponse a sa touche")
 
 
 func test_le_joueur_ne_bouge_pas_pendant_la_question() -> void:
@@ -843,9 +852,10 @@ func test_la_bonne_reponse_ferme_la_question_sans_penalite() -> void:
 
 	level._unhandled_input(_answer_key(level, true))
 
-	assert_false(level.get_node("Interface/Collegue").visible, "Le panneau doit se fermer")
 	assert_eq(level._score.score(), score_before, "La bonne reponse ne doit rien couter")
 	assert_false(level.get_node("ManagerPatrouille").is_attracted(), "Le manager ne doit pas foncer")
+	await _finish_reaction()
+	assert_false(level.get_node("Interface/Collegue").visible, "Le panneau doit se fermer")
 
 
 func test_une_mauvaise_reponse_coute_des_points_et_fait_foncer_la_patrouille() -> void:
@@ -858,9 +868,10 @@ func test_une_mauvaise_reponse_coute_des_points_et_fait_foncer_la_patrouille() -
 	var x_before := patrol.position.x
 	patrol._physics_process(0.5)
 
-	assert_false(level.get_node("Interface/Collegue").visible, "Le panneau doit se fermer")
 	assert_eq(level._score.score(), score_before - LevelScore.WRONG_ANSWER_PENALTY, "La mauvaise reponse doit couter des points")
 	assert_almost_eq(x_before - patrol.position.x, ManagerPatrol.SPEED * ManagerPatrol.RUSH_FACTOR * 0.5, 0.01, "Le manager doit foncer vers le collegue")
+	await _finish_reaction()
+	assert_false(level.get_node("Interface/Collegue").visible, "Le panneau doit se fermer")
 
 
 func test_apres_une_mauvaise_reponse_le_joueur_n_est_plus_protege() -> void:
@@ -868,6 +879,7 @@ func test_apres_une_mauvaise_reponse_le_joueur_n_est_plus_protege() -> void:
 	await _start_talk(level)
 
 	level._unhandled_input(_answer_key(level, false))
+	await _finish_reaction()
 	await wait_physics_frames(5)
 
 	assert_true(level.get_node("Interface/MessageGameOver").visible, "Le manager qui regarde a gauche doit reperer le joueur")
@@ -878,6 +890,7 @@ func test_repasser_devant_le_collegue_ne_relance_pas_la_question() -> void:
 	var player: CharacterBody2D = level.get_node("Player")
 	await _start_talk(level)
 	level._unhandled_input(_answer_key(level, true))
+	await _finish_reaction()
 
 	player.position.x -= 100.0
 	await wait_physics_frames(5)
@@ -1251,3 +1264,102 @@ func test_le_niveau_n_affiche_pas_d_indice_d_interaction() -> void:
 	await wait_seconds(0.4)
 	assert_eq(key.position.y, key_y, "La cle ne doit plus flotter")
 	assert_eq(level.get_node("PostIt/Visuel").rotation, 0.0, "Le post-it ne doit plus osciller")
+
+
+func _screen_top(node: Node2D, local_top: float) -> Vector2:
+	return node.get_global_transform_with_canvas() * Vector2(0, local_top)
+
+
+func test_la_question_est_une_bulle_au_dessus_du_collegue() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	await _start_talk(level)
+	await wait_frames(2)
+	var quiz: Control = level.get_node("Interface/Collegue")
+	var dialogue: Rect2 = quiz.get_node("Dialogue").get_global_rect()
+	var colleague_top := _screen_top(level.get_node("Collegue"), level.get_node("Collegue/Visuel").position.y)
+	var player_top := _screen_top(level.get_node("Player"), -32.0)
+	assert_lt(dialogue.end.y, colleague_top.y, "La bulle de dialogue doit etre au-dessus du collegue")
+	assert_true(dialogue.encloses(quiz.get_node("Question").get_global_rect()), "La question doit etre dans la bulle de dialogue")
+	var cloud: SpeechBubble = quiz.get_node("Reflexion")
+	var thought := cloud.get_global_rect()
+	assert_true(cloud.thought, "Les reponses sont une reflexion du joueur")
+	assert_lt(thought.end.y, player_top.y, "Le nuage doit etre au-dessus du joueur")
+	assert_false(thought.intersects(dialogue), "Le nuage ne doit pas cacher le dialogue")
+	for i in 3:
+		assert_true(thought.encloses(quiz.get_node("Choix%d" % (i + 1)).get_global_rect()), "La reponse %d doit etre dans le nuage" % (i + 1))
+	assert_lt(dialogue.size.y, _screen_size().y / 2.0, "La bulle ne doit pas cacher le niveau")
+	assert_lt((quiz.get_node("Voile") as ColorRect).color.a, 0.3, "Le niveau doit rester visible derriere")
+	_assert_inside_screen(quiz)
+
+
+func test_une_trainee_droite_monte_de_la_tete_au_nuage() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	await _start_talk(level)
+	await wait_frames(2)
+	var quiz: Control = level.get_node("Interface/Collegue")
+	var trail: ThoughtTrail = quiz.get_node("Pensee")
+	var player_top := _screen_top(level.get_node("Player"), -32.0)
+	assert_true(trail.visible, "La trainee doit s'afficher avec la question")
+	assert_lt(trail.from.distance_to(player_top), 30.0, "La trainee doit partir de la tete du joueur")
+	assert_lt(trail.to.y, trail.from.y, "La trainee doit monter")
+	var cloud: SpeechBubble = quiz.get_node("Reflexion")
+	assert_false(cloud.show_dots, "Le nuage n'a pas ses propres ronds")
+	assert_lt(trail.to.distance_to(Vector2(trail.to.x, cloud.get_global_rect().end.y)), 1.0, "La trainee doit arriver sous le nuage")
+	for dot in ThoughtTrail.dots(trail.from, trail.to):
+		assert_false(cloud.get_global_rect().has_point(Vector2(dot.x, dot.y)), "Les ronds ne doivent pas etre caches par le nuage")
+
+
+func test_les_reponses_ont_une_touche_et_des_separateurs() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	await _start_talk(level)
+	await wait_frames(2)
+	var quiz: Control = level.get_node("Interface/Collegue")
+	var cloud: Rect2 = quiz.get_node("Reflexion").get_global_rect()
+	var rows := []
+	for i in 3:
+		var key: Rect2 = quiz.get_node("Touche%d" % (i + 1)).get_global_rect()
+		var label: Rect2 = quiz.get_node("Choix%d" % (i + 1)).get_global_rect()
+		assert_true(cloud.encloses(key), "La touche %d doit etre dans le nuage" % (i + 1))
+		assert_lt(key.end.x, label.position.x, "La touche %d doit etre a gauche de sa reponse" % (i + 1))
+		assert_almost_eq(key.get_center().y, label.get_center().y, 2.0, "La touche %d doit etre sur la ligne de sa reponse" % (i + 1))
+		rows.append(label.merge(key))
+	for i in 2:
+		var separator: Control = quiz.get_node("Separateur%d" % (i + 1))
+		var y := separator.get_global_rect().get_center().y
+		assert_true(separator is DashedLine, "Le separateur doit etre en pointilles")
+		assert_true(cloud.encloses(separator.get_global_rect()), "Le separateur doit etre dans le nuage")
+		assert_gt(y, rows[i].end.y, "Le separateur %d doit etre sous la reponse %d" % [i + 1, i + 1])
+		assert_lt(y, rows[i + 1].position.y, "Le separateur %d doit etre au-dessus de la reponse suivante" % (i + 1))
+
+
+func test_une_bonne_reponse_colore_la_ligne_en_vert_avant_de_fermer() -> void:
+	var level := _add_level_with_fixed_manager_back()
+	await _start_talk(level)
+	var right: int = level._quiz.question()["answer"]
+	level._unhandled_input(_answer_key(level, true))
+	var quiz: Control = level.get_node("Interface/Collegue")
+	assert_true(quiz.visible, "Les bulles restent pendant la reaction")
+	var chosen: Label = quiz.get_node("Choix%d" % (right + 1))
+	assert_eq(chosen.get_theme_color("font_color"), QuizReaction.RIGHT_COLOR, "La bonne reponse doit etre verte")
+	assert_false(quiz.get_node("Rature%d" % (right + 1)).visible, "La bonne reponse n'est pas barree")
+	for i in 3:
+		if i != right:
+			assert_lt(quiz.get_node("Choix%d" % (i + 1)).modulate.a, 0.5, "Les autres reponses s'estompent")
+	assert_true(level.get_node("Player").is_busy(), "Le joueur reste bloque pendant la reaction")
+	await _finish_reaction()
+	assert_false(quiz.visible, "Les bulles se ferment apres la reaction")
+	assert_false(level.get_node("Player").is_busy(), "Le joueur repart apres la reaction")
+	assert_eq(chosen.modulate.a, 1.0, "Les styles sont remis a zero")
+
+
+func test_une_mauvaise_reponse_est_rouge_barree_et_protege_pendant_la_reaction() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _start_talk(level)
+	var key := _answer_key(level, false)
+	var chosen_index := key.keycode - KEY_1
+	level._unhandled_input(key)
+	var quiz: Control = level.get_node("Interface/Collegue")
+	assert_eq(quiz.get_node("Choix%d" % (chosen_index + 1)).get_theme_color("font_color"), QuizReaction.WRONG_COLOR, "La mauvaise reponse doit etre rouge")
+	assert_true(quiz.get_node("Rature%d" % (chosen_index + 1)).visible, "La mauvaise reponse doit etre barree")
+	level.get_node("Manager").body_spotted.emit(level.get_node("Player"))
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "Pendant la reaction le joueur reste protege")

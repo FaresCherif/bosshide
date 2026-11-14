@@ -9,6 +9,8 @@ const STAMP_DURATION := 0.25
 const SHAKE_DURATION := 0.3
 const SHAKE_DISTANCE := 12.0
 const SWING_DURATION := 2.4
+const HOP_DURATION := 0.4
+const HOP_HEIGHT := 14.0
 
 
 # Apparait en grossissant depuis le centre, avec un petit rebond
@@ -43,6 +45,17 @@ static func shake(control: Control) -> Tween:
 	for offset in [SHAKE_DISTANCE, -SHAKE_DISTANCE, SHAKE_DISTANCE * 0.6, -SHAKE_DISTANCE * 0.6, SHAKE_DISTANCE * 0.3]:
 		tween.tween_property(control, "position", start + Vector2(offset, 0), step)
 	tween.tween_property(control, "position", start, step)
+	return tween
+
+
+# Petit saut vers le haut puis retour a la position de depart
+static func hop(control: Control) -> Tween:
+	var start := control.position
+	var tween := control.create_tween()
+	tween.tween_property(control, "position", start - Vector2(0, HOP_HEIGHT), HOP_DURATION / 2.0) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "position", start, HOP_DURATION / 2.0) \
+		.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	return tween
 
 

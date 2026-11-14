@@ -12,11 +12,23 @@ signal pause_requested
 const SUCCESS_PHRASE := "You reached the toilets. Productivity: 0%."
 const STAMP_ANGLE := -0.14
 const SURVEILLANCE_CROP := Vector2i(480, 300)
+const PLAYER_HALF_HEIGHT := 32.0
+const QUIZ_CHOICES := 3
+# Marge autour d'une reponse dans son nuage
+const THOUGHT_PADDING := Vector2(72, 52)
+# Lignes du nuage : touche de clavier, espace avant la reponse, espace entre deux lignes
+const KEY_WIDTH := 28.0
+const KEY_GAP := 10.0
+const ROW_GAP := 14.0
+# Hauteur du nuage au-dessus de la tete, et point d'arrivee de la trainee sous le nuage (part de sa largeur)
+const CLOUD_LIFT := 60.0
+const TRAIL_ARRIVAL := 0.7
 
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
 var _score := LevelScore.new()
 var _door_code := DoorCode.new(DoorCode.random_code(RandomNumberGenerator.new()))
+var _reaction := QuizReaction.new()
 var _quiz := ColleagueQuiz.new(ColleagueQuiz.pick_question(QuizQuestions.QUESTIONS, RandomNumberGenerator.new()))
 var _managers: Array[Node] = []
 var _patrolling_managers: Array[Node] = []
@@ -53,9 +65,12 @@ var _spotter := HrWarning.Spotter.WATCHING
 @onready var _keypad: Panel = $Interface/Digicode
 @onready var _keypad_entry: Label = $Interface/Digicode/Saisie
 @onready var _keypad_error: Label = $Interface/Digicode/Erreur
-@onready var _quiz_panel: Panel = $Interface/Collegue
+@onready var _quiz_panel: Control = $Interface/Collegue
+@onready var _quiz_speech: SpeechBubble = $Interface/Collegue/Dialogue
+@onready var _quiz_cloud: SpeechBubble = $Interface/Collegue/Reflexion
+@onready var _quiz_title: Label = $Interface/Collegue/Titre
+@onready var _quiz_help: Label = $Interface/Collegue/Aide
 @onready var _quiz_question: Label = $Interface/Collegue/Question
-@onready var _quiz_choices: Label = $Interface/Collegue/Choix
 
 
 func _ready() -> void:
@@ -117,6 +132,12 @@ func _has_code() -> bool:
 func _physics_process(delta: float) -> void:
 	_score.update(delta)
 	_refresh_chrono()
+	_update_quiz_reaction(delta)
+
+
+# La question ou la reaction qui la suit : le joueur est bloque et protege
+func _in_conversation() -> bool:
+	return _quiz.is_talking() or _reaction.is_active()
 
 
 
@@ -125,7 +146,7 @@ func _refresh_chrono() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _quiz.is_talking():
+	if _in_conversation():
 		_quiz_input(event)
 	elif _door_code.is_keypad_open():
 		_keypad_input(event)
@@ -163,7 +184,7 @@ func _press_work() -> void:
 # Ce qui est a portee du joueur, pour InteractionHint
 func _interaction_state() -> Dictionary:
 	return {
-		"can_act": _progress.can_move() and not _door_code.is_keypad_open() and not _quiz.is_talking(),
+		"can_act": _progress.can_move() and not _door_code.is_keypad_open() and not _in_conversation(),
 		"at_keypad": _has_code() and not _door_code.is_door_open() and _code_door.is_body_near(_player),
 		"on_post_it": _has_code() and _post_it.overlaps_body(_player),
 		"at_door": _has_key_door() and _door.is_body_near(_player),
@@ -255,24 +276,127 @@ func _on_collegue_body_entered(body: Node2D) -> void:
 	_player.set_busy(true)
 	var question := _quiz.question()
 	_quiz_question.text = question["text"]
-	var lines := []
-	for i in question["choices"].size():
-		lines.append("%d. %s" % [i + 1, question["choices"][i]])
-	_quiz_choices.text = "\n".join(lines)
+	for i in QUIZ_CHOICES:
+		var label := _quiz_choice_label(i)
+		label.text = question["choices"][i]
+		label.reset_size()
 	_quiz_panel.visible = true
+	_place_quiz_bubbles()
+	# La camera suit le joueur : on replace les bulles une fois qu'elle s'est posee
+	_place_quiz_bubbles.call_deferred()
+
+
+# Question dans une bulle de dialogue au-dessus du collegue (vers la droite),
+# les trois reponses dans un nuage de reflexion au-dessus du joueur
+func _place_quiz_bubbles() -> void:
+	var screen := get_viewport().get_visible_rect().size
+	var visual: Control = _colleague.get_node("Visuel")
+	var colleague_top := _colleague.get_global_transform_with_canvas() * Vector2(visual.position.x + visual.size.x / 2.0, visual.position.y)
+	var player_top := _player.get_global_transform_with_canvas() * Vector2(0, -PLAYER_HALF_HEIGHT)
+	var speech := SpeechBubble.place(colleague_top, _quiz_speech.size, screen, SpeechBubble.Side.RIGHT)
+	_quiz_speech.position = speech.position
+	_quiz_speech.tail_x = SpeechBubble.tail_offset(colleague_top, speech)
+	_quiz_title.position = speech.position + Vector2(16, 10)
+	_quiz_question.position = speech.position + Vector2(16, 34)
+	_quiz_help.position = speech.position + Vector2(16, speech.size.y - 26)
+	# Le nuage prend la taille des trois lignes (touche, reponse) et des separateurs
+	var row_height := 0.0
+	var text_width := 0.0
+	for i in QUIZ_CHOICES:
+		var label_size := _quiz_choice_label(i).size
+		row_height = maxf(row_height, maxf(label_size.y, _quiz_key(i).size.y))
+		text_width = maxf(text_width, label_size.x)
+	var content := Vector2(KEY_WIDTH + KEY_GAP + text_width, row_height * QUIZ_CHOICES + ROW_GAP * (QUIZ_CHOICES - 1))
+	_quiz_cloud.size = content + THOUGHT_PADDING
+	var cloud := SpeechBubble.place(player_top - Vector2(0, CLOUD_LIFT), _quiz_cloud.size, screen, SpeechBubble.Side.LEFT)
+	# Joueur et collegue se touchent : le nuage se range a cote du dialogue
+	cloud = SpeechBubble.avoid(cloud, speech, screen)
+	_quiz_cloud.position = cloud.position
+	var origin := cloud.position + THOUGHT_PADDING / 2.0
+	for i in QUIZ_CHOICES:
+		var top := origin.y + i * (row_height + ROW_GAP)
+		var key := _quiz_key(i)
+		var label := _quiz_choice_label(i)
+		key.position = Vector2(origin.x, top + (row_height - key.size.y) / 2.0)
+		label.position = Vector2(origin.x + KEY_WIDTH + KEY_GAP, top + (row_height - label.size.y) / 2.0)
+		if i < QUIZ_CHOICES - 1:
+			var separator: Control = get_node("Interface/Collegue/Separateur%d" % (i + 1))
+			separator.size.x = content.x
+			separator.position = Vector2(origin.x, top + row_height + (ROW_GAP - separator.size.y) / 2.0)
+	# Une trainee droite de ronds monte de la tete jusque sous le nuage
+	var trail: ThoughtTrail = $Interface/Collegue/Pensee
+	trail.from = player_top
+	var arrival := minf(SpeechBubble.tail_offset(player_top, cloud), cloud.size.x * TRAIL_ARRIVAL)
+	trail.to = Vector2(cloud.position.x + arrival, cloud.end.y)
+
+
+func _quiz_key(index: int) -> Label:
+	return get_node("Interface/Collegue/Touche%d" % (index + 1))
+
+
+func _quiz_choice_label(index: int) -> Label:
+	return get_node("Interface/Collegue/Choix%d" % (index + 1))
 
 
 # Pendant la question, seules les touches 1 a 3 comptent
 func _quiz_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		var result := _quiz.answer(_digit_of(event) - 1)
+	if _quiz.is_talking() and event is InputEventKey and event.pressed and not event.echo:
+		var choice := _digit_of(event) - 1
+		var result := _quiz.answer(choice)
 		if result == ColleagueQuiz.Result.WRONG:
 			_score.add_wrong_answer()
 			_attract_patrols(_colleague.position.x, ManagerPatrol.RUSH_FACTOR)
 		if result != ColleagueQuiz.Result.IGNORED:
-			_player.set_busy(false)
-			_quiz_panel.visible = false
+			_start_quiz_reaction(choice, result)
 	get_viewport().set_input_as_handled()
+
+
+# La reponse choisie passe en vert (rebond) ou en rouge barre (secousse), les autres s'estompent
+func _start_quiz_reaction(choice: int, result: ColleagueQuiz.Result) -> void:
+	_reaction.start(result)
+	for i in QUIZ_CHOICES:
+		var style := QuizReaction.row_style(i, choice, result)
+		var label := _quiz_choice_label(i)
+		label.add_theme_color_override("font_color", style["color"])
+		label.modulate.a = style["alpha"]
+		_quiz_key(i).modulate.a = style["alpha"]
+		var strike := _quiz_strike(i)
+		strike.visible = style["struck"]
+		strike.size.x = label.size.x
+		strike.position = label.position + Vector2(0, label.size.y / 2.0)
+	for node in _quiz_cloud_nodes():
+		if result == ColleagueQuiz.Result.RIGHT:
+			UiFx.hop(node)
+		else:
+			UiFx.shake(node)
+
+
+func _update_quiz_reaction(delta: float) -> void:
+	if not _reaction.is_active():
+		return
+	_reaction.update(delta)
+	if not _reaction.is_active():
+		_quiz_panel.visible = false
+		_player.set_busy(false)
+		for i in QUIZ_CHOICES:
+			_quiz_choice_label(i).remove_theme_color_override("font_color")
+			_quiz_choice_label(i).modulate.a = 1.0
+			_quiz_key(i).modulate.a = 1.0
+			_quiz_strike(i).visible = false
+
+
+# Tout ce qui forme le nuage de reponses, anime d'un seul bloc
+func _quiz_cloud_nodes() -> Array[Control]:
+	var nodes: Array[Control] = [_quiz_cloud, $Interface/Collegue/Pensee]
+	for i in QUIZ_CHOICES:
+		nodes.append_array([_quiz_key(i), _quiz_choice_label(i), _quiz_strike(i)])
+		if i < QUIZ_CHOICES - 1:
+			nodes.append(get_node("Interface/Collegue/Separateur%d" % (i + 1)))
+	return nodes
+
+
+func _quiz_strike(index: int) -> ColorRect:
+	return get_node("Interface/Collegue/Rature%d" % (index + 1))
 
 
 func _on_post_it_body_exited(body: Node2D) -> void:
@@ -310,7 +434,7 @@ func _remember_spotter(body: Node2D, manager: Node) -> void:
 
 
 func _on_manager_body_spotted(body: Node2D) -> void:
-	if body != _player or _player.is_working() or _quiz.is_talking():
+	if body != _player or _player.is_working() or _in_conversation():
 		return
 	# Une fois le niveau fini, une autre detection ne doit rien changer
 	if not _progress.can_move():

@@ -30,6 +30,10 @@ func press_work(on_desk: bool) -> void:
 	_refresh_display()
 
 
+func is_busy() -> bool:
+	return _work.is_busy()
+
+
 func set_busy(busy: bool) -> void:
 	_work.set_busy(busy)
 

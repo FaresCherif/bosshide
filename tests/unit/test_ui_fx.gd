@@ -42,3 +42,13 @@ func test_swing_se_balance_autour_du_pivot_en_boucle() -> void:
 	assert_true(tween.is_valid(), "Le balancement doit tourner")
 	assert_eq(tween.get_loops_left(), -1, "L'oscillation doit boucler sans fin")
 	tween.kill()
+
+
+func test_hop_saute_puis_revient() -> void:
+	var control := _add_control()
+	control.position = Vector2(40, 30)
+	var tween := UiFx.hop(control)
+	await wait_seconds(UiFx.HOP_DURATION / 2.0)
+	assert_lt(control.position.y, 30.0, "Le rebond doit monter")
+	await tween.finished
+	assert_eq(control.position, Vector2(40, 30), "Le rebond doit revenir a sa place")
