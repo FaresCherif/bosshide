@@ -13,6 +13,8 @@ const SUCCESS_PHRASE := "You reached the toilets. Productivity: 0%."
 const STAMP_ANGLE := -0.14
 const SURVEILLANCE_CROP := Vector2i(480, 300)
 const PLAYER_HALF_HEIGHT := 32.0
+const BACKDROP_SCENE := preload("res://level/office_backdrop.tscn")
+const HOME_DESK_SCENE := preload("res://level/home_desk.tscn")
 const QUIZ_CHOICES := 3
 # Marge autour d'une reponse dans son nuage
 const THOUGHT_PADDING := Vector2(72, 52)
@@ -74,8 +76,13 @@ var _spotter := HrWarning.Spotter.WATCHING
 
 
 func _ready() -> void:
+	# Decor d'open space en parallaxe, ajoute a tous les niveaux
+	if not has_node("Decor"):
+		add_child(BACKDROP_SCENE.instantiate())
+	_limit_camera_to_walls()
 	_managers = _find_in_group("managers")
 	_patrolling_managers = _find_in_group("patrolling_managers")
+	_add_home_desk()
 	_desks = _find_in_group("desks")
 	_goal.body_entered.connect(_on_arrivee_body_entered)
 	for manager in _managers:
@@ -94,6 +101,30 @@ func _ready() -> void:
 	configure(0, false)
 
 
+# Le joueur demarre a son bureau : un vrai bureau de travail, dessine derriere lui
+func _add_home_desk() -> void:
+	if has_node("BureauPerso"):
+		return
+	var desk: Node2D = HOME_DESK_SCENE.instantiate()
+	desk.position = Vector2(_player.position.x, 0)
+	add_child(desk)
+	move_child(desk, _player.get_index())
+
+
+# Les murs sont les bords du batiment : au depart le joueur est a gauche de l'ecran
+func _limit_camera_to_walls() -> void:
+	var camera: Camera2D = _player.get_node("Camera2D")
+	var limits := LevelBounds.camera_limits(_wall_rect($MurGauche), _wall_rect($MurDroit))
+	camera.limit_left = limits.x
+	camera.limit_right = limits.y
+	camera.limit_bottom = LevelBounds.camera_bottom(($Sol as Control).get_rect())
+
+
+func _wall_rect(wall: Node2D) -> Rect2:
+	var shape: RectangleShape2D = wall.get_node("CollisionShape2D").shape
+	return LevelBounds.wall_rect(wall.position, shape.size)
+
+
 # Appele par le jeu au chargement : numero du niveau et bouton Next ou Finish
 func configure(number: int, is_last: bool) -> void:
 	_level_number = number
@@ -104,6 +135,7 @@ func configure(number: int, is_last: bool) -> void:
 # Appele par le jeu au chargement : la photo choisie pour le badge, agrafee a l'avertissement RH
 func set_employee_icon(id: String) -> void:
 	$Interface/MessageGameOver/PhotoIdentite.icon_id = id
+	$BureauPerso/Visuel/Photo.icon_id = id
 
 
 # Appele par le jeu une fois le score enregistre

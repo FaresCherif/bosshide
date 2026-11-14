@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://level/office_backdrop.gd" id="1_backdrop"]
+
+[node name="Decor" type="ParallaxBackground"]
+
+[node name="Calque" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.5, 1)
+motion_mirroring = Vector2(1200, 0)
+
+[node name="OpenSpace" type="Control" parent="Calque"]
+layout_mode = 3
+anchors_preset = 0
+offset_top = -700.0
+offset_right = 1200.0
+offset_bottom = 600.0
+mouse_filter = 2
+script = ExtResource("1_backdrop")

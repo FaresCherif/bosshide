@@ -250,6 +250,8 @@ func test_e_sur_un_bureau_fait_travailler_le_joueur() -> void:
 
 func test_e_hors_bureau_ne_fait_rien() -> void:
 	var level: Node = add_child_autofree(_load_level())
+	# Le joueur demarre a son bureau : on l'en ecarte
+	level.get_node("Player").position.x += 100.0
 	await wait_physics_frames(5)
 
 	level._unhandled_input(_pressed("work"))
@@ -1363,3 +1365,34 @@ func test_une_mauvaise_reponse_est_rouge_barree_et_protege_pendant_la_reaction()
 	assert_true(quiz.get_node("Rature%d" % (chosen_index + 1)).visible, "La mauvaise reponse doit etre barree")
 	level.get_node("Manager").body_spotted.emit(level.get_node("Player"))
 	assert_false(level.get_node("Interface/MessageGameOver").visible, "Pendant la reaction le joueur reste protege")
+
+
+func test_au_depart_le_joueur_est_a_gauche_de_l_ecran() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	await wait_frames(3)
+	var screen_x: float = level.get_node("Player").get_global_transform_with_canvas().origin.x
+	assert_lt(screen_x, _screen_size().x / 4.0, "La camera bute sur le mur : le joueur demarre a gauche de l'ecran")
+	var wall_x: float = level.get_node("MurGauche").get_global_transform_with_canvas().origin.x
+	assert_almost_eq(wall_x, 20.0, 1.0, "Le mur de gauche doit etre colle au bord de l'ecran")
+
+
+func test_le_sol_est_en_bas_de_l_ecran() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	await wait_frames(3)
+	var floor_top: float = (level.get_node("Sol") as Control).get_global_transform_with_canvas().origin.y
+	assert_gt(floor_top, _screen_size().y * 0.8, "Le sol doit etre en bas de l'ecran, sans grand vide dessous")
+
+
+func test_au_depart_le_joueur_peut_travailler_a_son_bureau() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await wait_physics_frames(3)
+	level._unhandled_input(_pressed("work"))
+	assert_true(level.get_node("Player").is_working(), "Le joueur doit pouvoir travailler a son bureau")
+
+
+func test_la_photo_du_badge_est_sur_le_bureau_du_joueur() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var photo: IdPhoto = level.get_node("BureauPerso/Visuel/Photo")
+	assert_eq(photo.icon_id, "classic")
+	level.set_employee_icon("mug")
+	assert_eq(photo.icon_id, "mug", "La photo choisie doit etre sur le bureau")

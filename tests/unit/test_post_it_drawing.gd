@@ -109,3 +109,13 @@ func test_le_trait_pointille_se_dessine() -> void:
 	viewport.add_child(line)
 	await wait_frames(1)
 	assert_gt(line.dash, 0.0, "Le trait doit etre en pointilles")
+
+
+func test_le_bureau_perso_se_dessine() -> void:
+	var viewport: SubViewport = add_child_autofree(SubViewport.new())
+	viewport.size = Vector2i(120, 120)
+	var visual := HomeDeskVisual.new()
+	visual.size = Vector2(80, 96)
+	viewport.add_child(visual)
+	await wait_frames(1)
+	assert_eq(visual.size, Vector2(80, 96))

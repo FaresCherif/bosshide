@@ -628,6 +628,7 @@ func test_l_icone_est_gardee_et_passee_au_niveau() -> void:
 	_icon_button(game, "mug").pressed.emit()
 	_button(game, "MenuPrincipal/Boutons/Jouer").pressed.emit()
 	assert_eq(_level(game).get_node("Interface/MessageGameOver/PhotoIdentite").icon_id, "mug", "L'avertissement RH doit montrer l'icone choisie")
+	assert_eq(_level(game).get_node("BureauPerso/Visuel/Photo").icon_id, "mug", "Le bureau du joueur doit montrer l'icone choisie")
 	_pause(game)
 	_button(game, "Pause/Boutons/Menu").pressed.emit()
 	assert_eq(_badge(game).get_node("Photo").icon_id, "mug", "Le choix doit durer toute la session")

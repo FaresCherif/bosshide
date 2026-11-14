@@ -24,6 +24,8 @@ func test_le_niveau_n_a_pas_d_obstacle_optionnel() -> void:
 
 func test_e_hors_bureau_ne_fait_rien() -> void:
 	var level := _add_level()
+	# Le joueur demarre a son bureau : on l'en ecarte
+	level.get_node("Player").position.x += 100.0
 	await wait_physics_frames(5)
 	level._unhandled_input(_pressed("work"))
 	assert_false(level.get_node("Player").is_working(), "E hors d'un bureau ne doit rien faire")
