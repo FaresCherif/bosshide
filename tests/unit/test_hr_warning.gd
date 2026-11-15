@@ -44,3 +44,24 @@ func test_le_formulaire_assemble_les_sections() -> void:
 	assert_string_contains(text, "Spotted by:\n[  ] The boss (watching)\n[X] The boss (patrolling)")
 	assert_string_contains(text, "Reason:\n[X] Not at desk\n[X] In possession of a stolen key\n[  ] Knows confidential codes")
 	assert_string_contains(text, "Sanction: " + HrWarning.SANCTIONS[1])
+
+
+func test_temps_ecoule_remplace_le_bloc_repere_par() -> void:
+	var text := HrWarning.form_text(HrWarning.Spotter.TIME_UP, false, true, 9)
+	assert_false(text.contains("Spotted by"), "Personne n'a repere le joueur")
+	assert_string_contains(text, "Shift over, still not at desk")
+	assert_string_contains(text, "Reason:\n[X] Not at desk\n[  ] In possession of a stolen key\n[X] Knows confidential codes")
+	assert_string_contains(text, "Sanction: " + HrWarning.sanction(9))
+
+
+func test_le_tampon_depend_de_la_cause() -> void:
+	assert_eq(HrWarning.stamp_text(HrWarning.Spotter.WATCHING), "BUSTED!")
+	assert_eq(HrWarning.stamp_text(HrWarning.Spotter.PATROLLING), "BUSTED!")
+	assert_eq(HrWarning.stamp_text(HrWarning.Spotter.TIME_UP), "TOO LATE!")
+
+
+func test_une_sanction_differente_pour_chacun_des_dix_niveaux() -> void:
+	var sanctions := {}
+	for number in range(1, 11):
+		sanctions[HrWarning.sanction(number)] = true
+	assert_eq(sanctions.size(), 10, "Chaque niveau a sa propre sanction")

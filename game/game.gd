@@ -5,10 +5,21 @@ extends Node
 
 enum Screen { MENU, PHOTO, SELECTOR, LEVEL, PAUSE, END }
 
-const LEVELS := ["res://levels/level_01.tscn", "res://levels/level_02.tscn"]
+const LEVELS := [
+	"res://levels/level_01.tscn",
+	"res://levels/level_02.tscn",
+	"res://levels/level_03.tscn",
+	"res://levels/level_04.tscn",
+	"res://levels/level_05.tscn",
+	"res://levels/level_06.tscn",
+	"res://levels/level_07.tscn",
+	"res://levels/level_08.tscn",
+	"res://levels/level_09.tscn",
+	"res://levels/level_10.tscn",
+]
 const LEVEL_NODE_NAME := "Niveau"
 # Angle de chaque post-it du selecteur : toujours le meme pour un niveau donne
-const TILTS := [-0.05, 0.035, -0.02, 0.045, -0.03]
+const TILTS := [-0.05, 0.035, -0.02, 0.045, -0.03, 0.025, -0.04, 0.015, -0.025, 0.04]
 const END_TEXT := "Annual review: %d points.\nYour reward: more work.\nR: play again - Esc: level select"
 
 # Badge du menu : le niveau demarre apres le bip de la pointeuse

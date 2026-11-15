@@ -124,3 +124,25 @@ func test_le_manager_qui_a_fonce_revient_a_vitesse_normale() -> void:
 	patrol.update(ManagerPatrol.ATTRACT_WAIT)
 	patrol.update(0.5)
 	assert_eq(patrol.get_x(), -400.0 + ManagerPatrol.SPEED * 0.5, "Le retour doit se faire a vitesse normale")
+
+
+func test_la_vitesse_est_reglable() -> void:
+	var patrol := ManagerPatrol.new(LEFT_LIMIT, RIGHT_LIMIT, 200.0)
+	patrol.update(1.0)
+	assert_eq(patrol.get_x(), RIGHT_LIMIT - 200.0, "Le manager avance a la vitesse choisie")
+
+
+func test_la_ruee_suit_la_vitesse_choisie() -> void:
+	var patrol := ManagerPatrol.new(LEFT_LIMIT, RIGHT_LIMIT, 100.0)
+	patrol.attract(-300.0, ManagerPatrol.RUSH_FACTOR)
+	patrol.update(1.0)
+	assert_eq(patrol.get_x(), RIGHT_LIMIT - 100.0 * ManagerPatrol.RUSH_FACTOR, "La ruee double la vitesse choisie")
+
+
+func test_le_retour_suit_la_vitesse_choisie() -> void:
+	var patrol := ManagerPatrol.new(LEFT_LIMIT, RIGHT_LIMIT, 100.0)
+	patrol.attract(RIGHT_LIMIT + 500.0)
+	patrol.update(5.0)
+	patrol.update(ManagerPatrol.ATTRACT_WAIT)
+	patrol.update(1.0)
+	assert_eq(patrol.get_x(), RIGHT_LIMIT + 400.0, "Le retour se fait a la vitesse choisie")

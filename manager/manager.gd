@@ -6,7 +6,13 @@ const FACING_COLOR := Color(0.9, 0.55, 0.2, 1)
 const BACK_COLOR := Color(0.4, 0.3, 0.25, 1)
 const ARROW_MAX_ANGLE := deg_to_rad(60.0)
 
-var _watch := ManagerWatch.new()
+# Reglages par niveau ; start_offset avance le cycle pour desynchroniser plusieurs managers
+@export var facing_duration := ManagerWatch.FACING_DURATION
+@export var back_duration := ManagerWatch.BACK_DURATION
+@export var sector_duration := ManagerWatch.SECTOR_DURATION
+@export var start_offset := 0.0
+
+var _watch: ManagerWatch
 
 @onready var _body_visual: ColorRect = $Visuel
 @onready var _zone_visual: ColorRect = $ZoneVisuelle
@@ -17,6 +23,8 @@ var _watch := ManagerWatch.new()
 
 
 func _ready() -> void:
+	_watch = ManagerWatch.new(facing_duration, back_duration, sector_duration)
+	_watch.update(start_offset)
 	_refresh_display()
 
 

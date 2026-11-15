@@ -56,9 +56,9 @@ Progression indicative, à ajuster en jouant :
 | 5 | Code à lire et digicode |
 | 6 | Collègue et QCM |
 | 7–8 | Combinaisons, plusieurs managers |
-| 9–10 | Tout à la fois, contraintes de temps serrées |
+| 9–10 | Tout à la fois, limite de temps (compte à rebours, game over « TOO LATE! ») |
 
-- [ ] P1 – Niveaux 1 à 10 jouables du début à la fin
+- [x] P1 – Niveaux 1 à 10 jouables du début à la fin (managers réglables par niveau, affiches de tutoriel, limite de temps aux niveaux 9–10)
 - [ ] P2 – Courbe de difficulté validée par des tests manuels
 - [ ] P2 – Scènes de scénario : une introduction qui pose l'histoire (l'employé qui veut passer son après-midi aux toilettes), des scènes entre certains niveaux qui expliquent pourquoi le patron ajoute de nouveaux obstacles, et une fin. Chaque scène peut être passée.
 

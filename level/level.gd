@@ -24,6 +24,10 @@ const ROW_GAP := 14.0
 # Hauteur du nuage au-dessus de la tete, et point d'arrivee de la trainee sous le nuage (part de sa largeur)
 const CLOUD_LIFT := 60.0
 const TRAIL_ARRIVAL := 0.7
+const CHRONO_ALERT_COLOR := Color(1, 0.25, 0.2, 1)
+
+# Limite de temps en secondes (0 = aucune) : le chrono compte a rebours et le depassement est un game over
+@export var time_limit := 0.0
 
 var _progress := LevelProgress.new()
 var _door_key := DoorKey.new()
@@ -103,6 +107,7 @@ func _ready() -> void:
 		screen.get_node("Boutons/Selection").pressed.connect(menu_requested.emit)
 	$Interface/MessageSucces/Pied.text = LevelResult.pick(LevelResult.BOSS_NOTES, RandomNumberGenerator.new())
 	configure(0, false)
+	_refresh_chrono()
 
 
 # Le joueur demarre a son bureau : un vrai bureau de travail, dessine derriere lui
@@ -168,6 +173,8 @@ func _has_code() -> bool:
 func _physics_process(delta: float) -> void:
 	_score.update(delta)
 	_refresh_chrono()
+	if _progress.can_move() and _score.is_time_up(time_limit):
+		_fail(HrWarning.Spotter.TIME_UP)
 	_update_quiz_reaction(delta)
 
 
@@ -178,7 +185,9 @@ func _in_conversation() -> bool:
 
 
 func _refresh_chrono() -> void:
-	_chrono.text = LevelScore.format_time(_score.elapsed())
+	_chrono.text = LevelScore.format_time(_score.chrono_seconds(time_limit))
+	if _score.is_running_out(time_limit):
+		_chrono.add_theme_color_override("font_color", CHRONO_ALERT_COLOR)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -486,6 +495,12 @@ func _on_manager_body_spotted(body: Node2D) -> void:
 	# Une fois le niveau fini, une autre detection ne doit rien changer
 	if not _progress.can_move():
 		return
+	_fail(_spotter)
+
+
+# Fin de niveau ratee : reperage par un manager ou temps ecoule
+func _fail(cause: HrWarning.Spotter) -> void:
+	_spotter = cause
 	_progress.fail()
 	_freeze_level()
 	_take_surveillance_shot()
@@ -501,6 +516,7 @@ func _fill_hr_warning() -> void:
 	var has_key := _has_key_door() and _door_key.has_key()
 	var knows_code := _has_code() and _door_code.has_read_code()
 	_game_over_form.text = HrWarning.form_text(_spotter, has_key, knows_code, _level_number)
+	_game_over_stamp.text = HrWarning.stamp_text(_spotter)
 	var time_text := LevelScore.format_time(_score.elapsed())
 	_game_over_details.text = HrWarning.stats(time_text, _score.wrong_codes(), _score.wrong_answers())
 	_photo_caption.text = SurveillanceShot.caption(time_text)

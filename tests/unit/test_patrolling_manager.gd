@@ -87,3 +87,13 @@ func test_attirer_deplace_le_manager_vers_la_cible() -> void:
 	manager.attract(manager.left_limit - 100.0)
 	manager._physics_process(5.0)
 	assert_eq(manager.position.x, manager.left_limit - 100.0, "Le manager doit aller vers la cible")
+
+
+func test_la_vitesse_reglee_dans_le_niveau_est_utilisee() -> void:
+	var scene: PackedScene = load(SCENE_PATH)
+	var manager: Node2D = scene.instantiate()
+	manager.speed = 220.0
+	add_child_autofree(manager)
+	var start: float = manager.position.x
+	manager._physics_process(1.0)
+	assert_eq(manager.position.x, start - 220.0, "Le manager avance a la vitesse reglee")

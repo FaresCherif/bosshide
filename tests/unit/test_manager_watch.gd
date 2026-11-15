@@ -155,3 +155,72 @@ func test_la_fleche_est_cachee_de_dos() -> void:
 
 func test_la_fleche_previent_avant_le_retournement() -> void:
 	assert_true(_watch_after(14.5).is_arrow_visible(), "La fleche doit reapparaitre juste avant le retournement")
+
+
+func test_les_durees_sont_reglables() -> void:
+	var watch := ManagerWatch.new(6.0, 4.0, 1.2)
+	watch.update(5.9)
+	assert_true(watch.is_facing(), "Le manager reste de face pendant la duree choisie")
+	watch.update(0.1)
+	assert_false(watch.is_facing(), "Le manager se retourne apres la duree choisie")
+	watch.update(4.0)
+	assert_true(watch.is_facing(), "Le manager revient de face apres la duree de dos choisie")
+
+
+func test_la_duree_par_tiers_est_reglable() -> void:
+	var watch := ManagerWatch.new(6.0, 4.0, 1.2)
+	assert_eq(watch.current_sector(), -1, "Le scan commence a gauche")
+	watch.update(1.3)
+	assert_eq(watch.current_sector(), 0, "Le scan passe au centre apres la duree par tiers choisie")
+	watch.update(1.2)
+	assert_eq(watch.current_sector(), 1, "Puis a droite")
+
+
+func test_par_defaut_les_durees_sont_celles_d_origine() -> void:
+	var watch := ManagerWatch.new()
+	watch.update(ManagerWatch.FACING_DURATION - 0.1)
+	assert_true(watch.is_facing(), "Les valeurs par defaut ne changent pas")
+	watch.update(0.1)
+	assert_false(watch.is_facing(), "Les valeurs par defaut ne changent pas")
+
+
+# Sans duree de dos, le manager ne se retourne jamais et balaie en continu
+func _sweep_after(seconds: float) -> ManagerWatch:
+	var watch := ManagerWatch.new(ManagerWatch.FACING_DURATION, 0.0, 2.0)
+	watch.update(seconds)
+	return watch
+
+
+func test_sans_pause_le_manager_ne_se_retourne_jamais() -> void:
+	for seconds in [0.0, 7.9, 8.0, 10.0, 15.0, 33.3, 100.0]:
+		var watch := _sweep_after(seconds)
+		assert_true(watch.is_facing(), "Le manager reste de face a %s secondes" % seconds)
+		assert_true(watch.is_arrow_visible(), "La fleche reste visible a %s secondes" % seconds)
+
+
+func test_sans_pause_le_manager_balaie_de_gauche_a_droite_en_boucle() -> void:
+	var expected := [-1, 0, 1, 0, -1, 0, 1, 0, -1]
+	for step in expected.size():
+		var seconds := step * 2.0 + 1.0
+		assert_eq(_sweep_after(seconds).current_sector(), expected[step], "Zone regardee a %s secondes" % seconds)
+
+
+func test_sans_pause_le_regard_glisse_sans_a_coup() -> void:
+	var previous := _sweep_after(0.0).look_position()
+	var seconds := 0.1
+	while seconds <= 24.0:
+		var look := _sweep_after(seconds).look_position()
+		assert_lt(absf(look - previous), 0.1, "Le regard ne doit pas sauter a %s secondes" % seconds)
+		previous = look
+		seconds += 0.1
+
+
+func test_sans_pause_le_regard_est_au_milieu_de_chaque_zone() -> void:
+	var expected := [-1.0, 0.0, 1.0, 0.0, -1.0]
+	for step in expected.size():
+		assert_almost_eq(_sweep_after(step * 2.0 + 1.0).look_position(), expected[step], 0.001, "Le regard au milieu de la zone %d" % step)
+
+
+func test_sans_pause_le_regard_passe_la_limite_quand_la_zone_change() -> void:
+	for step in range(1, 9):
+		assert_almost_eq(absf(_sweep_after(step * 2.0).look_position()), 0.5, 0.001, "Le regard sur une limite a %s secondes" % (step * 2.0))

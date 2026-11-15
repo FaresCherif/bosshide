@@ -1,6 +1,6 @@
 extends GutTest
 
-const LEVEL_PATH := "res://levels/level_01.tscn"
+const LEVEL_PATH := "res://levels/test_mecaniques.tscn"
 const MAIN_SCENE_PATH := "res://Game.tscn"
 const LEFT_SECTOR_OFFSET := Vector2(-200, 0)
 
@@ -585,6 +585,70 @@ func test_le_message_de_game_over_n_affiche_pas_de_score() -> void:
 	assert_true(message.visible, "Le joueur doit etre repere")
 	assert_string_contains(message.get_node("Details").text, "Time: " + level.get_node("Interface/Chrono").text)
 	assert_false(message.get_node("Details").text.contains("Score"), "Le game over ne doit pas afficher de score")
+
+
+func _add_level_with_time_limit(limit: float) -> Node:
+	var level := _load_level()
+	level.time_limit = limit
+	return add_child_autofree(level)
+
+
+func test_sans_limite_le_chrono_reste_dans_sa_couleur() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await wait_physics_frames(3)
+	assert_false(level.get_node("Interface/Chrono").has_theme_color_override("font_color"), "Pas d'alerte sans limite de temps")
+
+
+func test_avec_une_limite_le_chrono_compte_a_rebours() -> void:
+	var level := _add_level_with_time_limit(90.0)
+	assert_eq(level.get_node("Interface/Chrono").text, "01:30.0", "Le chrono part de la limite")
+	await wait_physics_frames(10)
+	var text: String = level.get_node("Interface/Chrono").text
+	assert_true(text < "01:30.0" and text > "01:29.0", "Le chrono doit descendre : %s" % text)
+
+
+func test_le_chrono_passe_au_rouge_dans_les_dernieres_secondes() -> void:
+	var level := _add_level_with_time_limit(LevelScore.TIME_WARNING - 1.0)
+	await wait_physics_frames(2)
+	var chrono: Label = level.get_node("Interface/Chrono")
+	assert_true(chrono.has_theme_color_override("font_color"), "Le chrono doit changer de couleur")
+	var color := chrono.get_theme_color("font_color")
+	assert_gt(color.r, 0.8, "Le chrono doit etre rouge")
+	assert_lt(color.g, 0.4, "Le chrono doit etre rouge")
+
+
+func test_le_temps_ecoule_donne_un_game_over_trop_tard() -> void:
+	var level := _add_level_with_time_limit(0.1)
+	watch_signals(level)
+	await wait_physics_frames(15)
+	var message: Control = level.get_node("Interface/MessageGameOver")
+	assert_true(message.visible, "Le temps ecoule doit donner un game over")
+	assert_eq(message.get_node("Titre").text, "TOO LATE!", "Le tampon doit dire que c'est trop tard")
+	assert_string_contains(message.get_node("Formulaire").text, "Shift over, still not at desk")
+	assert_false(level.get_node("Player").is_physics_processing(), "Le niveau doit etre fige")
+	assert_signal_not_emitted(level, "succeeded")
+
+
+func test_le_temps_ecoule_meme_si_le_joueur_travaille() -> void:
+	var level := _add_level_with_time_limit(0.2)
+	level.get_node("Player").press_work(true)
+	await wait_physics_frames(20)
+	assert_true(level.get_node("Interface/MessageGameOver").visible, "Travailler ne protege pas de la fin du service")
+
+
+func test_une_detection_garde_le_tampon_busted() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	level.get_node("Player").position = level.get_node("Manager").position + LEFT_SECTOR_OFFSET
+	await wait_physics_frames(5)
+	assert_eq(level.get_node("Interface/MessageGameOver/Titre").text, "BUSTED!")
+
+
+func test_apres_l_arrivee_le_temps_ne_donne_plus_de_game_over() -> void:
+	var level := _add_level_with_time_limit(0.3)
+	level.get_node("Player").position = level.get_node("Arrivee").position
+	await wait_physics_frames(30)
+	assert_true(level.get_node("Interface/MessageSucces").visible, "La reussite reste affichee")
+	assert_false(level.get_node("Interface/MessageGameOver").visible, "Le temps ne compte plus une fois arrive")
 
 
 func _digit_key(digit: int) -> InputEventKey:

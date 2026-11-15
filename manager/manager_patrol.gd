@@ -14,10 +14,13 @@ var _direction := -1
 var _state := State.PATROL
 var _target := 0.0
 var _wait := 0.0
-var _attract_speed := SPEED
+var _speed: float
+var _attract_speed: float
 
 
-func _init(left_limit: float, right_limit: float) -> void:
+func _init(left_limit: float, right_limit: float, speed := SPEED) -> void:
+	_speed = speed
+	_attract_speed = speed
 	_left_limit = left_limit
 	_right_limit = right_limit
 	_x = right_limit
@@ -39,7 +42,7 @@ func is_attracted() -> bool:
 # speed_factor l'accelere a l'aller seulement
 func attract(target_x: float, speed_factor := 1.0) -> void:
 	_target = target_x
-	_attract_speed = SPEED * speed_factor
+	_attract_speed = _speed * speed_factor
 	_state = State.ATTRACTED
 
 
@@ -57,13 +60,13 @@ func update(delta: float) -> void:
 				_target = clampf(_x, _left_limit, _right_limit)
 				_state = State.PATROL if _target == _x else State.RETURNING
 		State.RETURNING:
-			if _move_toward(_target, SPEED * delta):
+			if _move_toward(_target, _speed * delta):
 				_state = State.PATROL
 
 
 # Avance le manager : le trop-parcouru apres une limite est reporte dans l'autre sens
 func _patrol(delta: float) -> void:
-	_x += _direction * SPEED * delta
+	_x += _direction * _speed * delta
 	while _x < _left_limit or _x > _right_limit:
 		if _x < _left_limit:
 			_x = 2.0 * _left_limit - _x

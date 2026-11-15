@@ -159,3 +159,28 @@ func test_la_fleche_est_cachee_de_dos_puis_previent_du_retournement() -> void:
 	assert_false(arrow.visible, "La fleche doit etre cachee de dos")
 	manager._physics_process(4.5)
 	assert_true(arrow.visible, "La fleche doit reapparaitre juste avant le retournement")
+
+
+func _add_tuned_manager() -> Node2D:
+	var scene: PackedScene = load(MANAGER_SCENE_PATH)
+	var manager: Node2D = scene.instantiate()
+	manager.facing_duration = 6.0
+	manager.back_duration = 4.0
+	manager.sector_duration = 1.2
+	return add_child_autofree(manager)
+
+
+func test_les_durees_reglees_dans_le_niveau_sont_utilisees() -> void:
+	var manager := _add_tuned_manager()
+	manager._physics_process(6.0)
+	assert_false(manager.get_node("ZoneVisuelle").visible, "Le manager se retourne apres la duree de face reglee")
+	manager._physics_process(4.0)
+	assert_true(manager.get_node("ZoneVisuelle").visible, "Le manager revient de face apres la duree de dos reglee")
+
+
+func test_le_decalage_de_depart_avance_le_cycle() -> void:
+	var scene: PackedScene = load(MANAGER_SCENE_PATH)
+	var manager: Node2D = scene.instantiate()
+	manager.start_offset = ManagerWatch.FACING_DURATION + 1.0
+	add_child_autofree(manager)
+	assert_false(manager.get_node("ZoneVisuelle").visible, "Avec ce decalage, le manager demarre de dos")

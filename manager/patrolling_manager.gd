@@ -6,6 +6,7 @@ const VISION_LENGTH := 150.0
 
 @export var left_limit := -300.0
 @export var right_limit := 300.0
+@export var speed := ManagerPatrol.SPEED
 
 var _patrol: ManagerPatrol
 
@@ -15,7 +16,7 @@ var _patrol: ManagerPatrol
 
 
 func _ready() -> void:
-	_patrol = ManagerPatrol.new(left_limit, right_limit)
+	_patrol = ManagerPatrol.new(left_limit, right_limit, speed)
 	_refresh_display()
 
 

@@ -3,7 +3,8 @@ extends RefCounted
 
 # Textes de l'avertissement des RH affiche au game over, calcules sans l'arbre
 
-enum Spotter { WATCHING, PATROLLING }
+# TIME_UP : personne n'a repere le joueur, la limite de temps du niveau est depassee
+enum Spotter { WATCHING, PATROLLING, TIME_UP }
 
 # Une sanction fixe par niveau, reprise depuis le debut apres la derniere
 const SANCTIONS := [
@@ -13,6 +14,10 @@ const SANCTIONS := [
 	"Weekly 8 a.m. synergy meeting.",
 	"Toilet access now requires a badge.",
 	"Write a 40-page report explaining yourself.",
+	"Bathroom breaks now logged in a shared spreadsheet.",
+	"Your chair is replaced by a standing desk. Forever.",
+	"Coffee machine access revoked for the quarter.",
+	"Mandatory motivational seminar, Saturday, 7 a.m.",
 ]
 
 
@@ -44,9 +49,17 @@ static func sanction(level_number: int) -> String:
 	return SANCTIONS[maxi(level_number - 1, 0) % SANCTIONS.size()]
 
 
+static func stamp_text(spotter: Spotter) -> String:
+	return "TOO LATE!" if spotter == Spotter.TIME_UP else "BUSTED!"
+
+
 static func form_text(spotter: Spotter, has_key: bool, knows_code: bool, level_number: int) -> String:
-	var lines := ["Spotted by:"]
-	lines.append_array(spotted_by(spotter))
+	var lines := []
+	if spotter == Spotter.TIME_UP:
+		lines.append("Shift over, still not at desk.")
+	else:
+		lines.append("Spotted by:")
+		lines.append_array(spotted_by(spotter))
 	lines.append("Reason:")
 	lines.append_array(reasons(has_key, knows_code))
 	lines.append("Sanction: " + sanction(level_number))

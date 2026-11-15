@@ -74,3 +74,39 @@ func test_une_mauvaise_reponse_est_comptee_et_penalisee() -> void:
 	assert_eq(score.wrong_answers(), 1, "Les mauvaises reponses doivent etre comptees")
 	assert_eq(score.wrong_codes(), 0)
 	assert_eq(score.score(), LevelScore.BASE_SCORE - LevelScore.WRONG_ANSWER_PENALTY)
+
+
+func test_sans_limite_le_temps_n_est_jamais_ecoule() -> void:
+	var score := LevelScore.new()
+	score.update(10000.0)
+	assert_false(score.is_time_up(0.0), "Un niveau sans limite ne finit jamais par le temps")
+
+
+func test_le_temps_restant_diminue() -> void:
+	var score := LevelScore.new()
+	score.update(30.0)
+	assert_eq(score.time_left(100.0), 70.0, "Il reste la limite moins le temps ecoule")
+	assert_false(score.is_time_up(100.0), "Le temps n'est pas encore ecoule")
+
+
+func test_le_temps_restant_ne_descend_pas_sous_zero() -> void:
+	var score := LevelScore.new()
+	score.update(120.0)
+	assert_eq(score.time_left(100.0), 0.0, "Le temps restant s'arrete a zero")
+	assert_true(score.is_time_up(100.0), "Le temps est ecoule")
+
+
+func test_le_chrono_compte_a_rebours_seulement_avec_une_limite() -> void:
+	var score := LevelScore.new()
+	score.update(30.0)
+	assert_eq(score.chrono_seconds(0.0), 30.0, "Sans limite, le chrono affiche le temps ecoule")
+	assert_eq(score.chrono_seconds(100.0), 70.0, "Avec une limite, le chrono affiche le temps restant")
+
+
+func test_l_alerte_s_allume_dans_les_dernieres_secondes() -> void:
+	var score := LevelScore.new()
+	score.update(100.0 - LevelScore.TIME_WARNING - 0.1)
+	assert_false(score.is_running_out(100.0), "Pas d'alerte avant les dernieres secondes")
+	score.update(0.2)
+	assert_true(score.is_running_out(100.0), "Alerte dans les dernieres secondes")
+	assert_false(LevelScore.new().is_running_out(0.0), "Pas d'alerte sans limite")

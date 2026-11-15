@@ -5,6 +5,8 @@ const BASE_SCORE := 1000
 const POINTS_PER_SECOND := 10
 const WRONG_CODE_PENALTY := 100
 const WRONG_ANSWER_PENALTY := 100
+# Dernieres secondes d'une limite de temps : le chrono passe au rouge
+const TIME_WARNING := 10.0
 
 var _elapsed := 0.0
 var _running := true
@@ -24,6 +26,24 @@ func stop() -> void:
 
 func elapsed() -> float:
 	return _elapsed
+
+
+# Limite de temps du niveau en secondes ; 0 ou moins = pas de limite
+func time_left(limit: float) -> float:
+	return maxf(0.0, limit - _elapsed)
+
+
+func is_time_up(limit: float) -> bool:
+	return limit > 0.0 and _elapsed >= limit
+
+
+func is_running_out(limit: float) -> bool:
+	return limit > 0.0 and time_left(limit) <= TIME_WARNING
+
+
+# Avec une limite, le chrono compte a rebours
+func chrono_seconds(limit: float) -> float:
+	return time_left(limit) if limit > 0.0 else _elapsed
 
 
 func add_penalty(points: int) -> void:
