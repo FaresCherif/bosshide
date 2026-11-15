@@ -4,6 +4,32 @@ extends RefCounted
 # Textes des ecrans de fin de niveau, calcules sans dependre de l'arbre
 
 
+# Le patron se doute de tout mais ne peut rien prouver : tampon vert au bas du ticket
+const APPROVAL_STAMP := "NO EVIDENCE"
+
+# Phrase sous le titre, tiree au hasard a chaque niveau
+const SUSPICIONS := [
+	"Nobody saw you slack off. Officially.",
+	"No witnesses. No evidence. No productivity.",
+	"Your chair was still warm. The boss noticed.",
+	"The boss saw nothing. That worries him.",
+	"Badge says: at desk. The boss says: hmm.",
+]
+
+# Note du patron en pied de ticket, tiree au hasard a chaque niveau
+const BOSS_NOTES := [
+	"Boss's note: I know it was you. I just can't prove it. Yet.",
+	"Boss's note: \"Printer jam\" for 12 minutes. Sure.",
+	"Boss's note: Looked for you everywhere. \"In a meeting.\" Hmm.",
+	"Boss's note: Same smile as yesterday. Too relaxed. Watch closely.",
+	"Boss's note: 3 people swear you were working. All 3 owe you money.",
+]
+
+
+static func pick(lines: Array, rng: RandomNumberGenerator) -> String:
+	return lines[rng.randi_range(0, lines.size() - 1)]
+
+
 # Un niveau lance seul (sans le jeu) n'a pas de numero : 0
 static func success_title(number: int) -> String:
 	if number <= 0:

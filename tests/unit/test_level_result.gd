@@ -46,3 +46,25 @@ func test_le_rang_suit_le_score() -> void:
 
 func test_la_ligne_du_rang() -> void:
 	assert_eq(LevelResult.rank_line(950), "Rank: Toilet Ninja")
+
+
+func test_le_patron_a_plusieurs_soupcons_et_notes() -> void:
+	assert_gte(LevelResult.SUSPICIONS.size(), 3, "Il faut de la variete sous le titre")
+	assert_gte(LevelResult.BOSS_NOTES.size(), 3, "Il faut de la variete dans les notes du patron")
+	for note: String in LevelResult.BOSS_NOTES:
+		assert_true(note.begins_with("Boss's note: "), "Chaque note est signee par le patron : " + note)
+
+
+func test_le_tirage_reste_dans_la_liste_et_varie() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 42
+	var seen := {}
+	for i in 50:
+		var line := LevelResult.pick(LevelResult.SUSPICIONS, rng)
+		assert_has(LevelResult.SUSPICIONS, line)
+		seen[line] = true
+	assert_gt(seen.size(), 1, "Le tirage doit varier d'un niveau a l'autre")
+
+
+func test_le_tampon_dit_qu_il_n_y_a_pas_de_preuve() -> void:
+	assert_eq(LevelResult.APPROVAL_STAMP, "NO EVIDENCE")

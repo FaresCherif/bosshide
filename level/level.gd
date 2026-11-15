@@ -9,7 +9,6 @@ signal next_requested
 signal menu_requested
 signal pause_requested
 
-const SUCCESS_PHRASE := "You reached the toilets. Productivity: 0%."
 const STAMP_ANGLE := -0.14
 const SURVEILLANCE_CROP := Vector2i(480, 300)
 const PLAYER_HALF_HEIGHT := 32.0
@@ -36,6 +35,8 @@ var _managers: Array[Node] = []
 var _patrolling_managers: Array[Node] = []
 var _desks: Array[Node] = []
 var _level_number := 0
+# Textes du ticket de reussite, tires une fois par niveau
+var _suspicion := LevelResult.pick(LevelResult.SUSPICIONS, RandomNumberGenerator.new())
 var _spotter := HrWarning.Spotter.WATCHING
 
 @onready var _player: CharacterBody2D = $Player
@@ -52,6 +53,8 @@ var _spotter := HrWarning.Spotter.WATCHING
 @onready var _success_record: Label = $Interface/MessageSucces/Record
 @onready var _success_sign: Label = $Interface/MessageSucces/Plaque
 @onready var _success_rank: Label = $Interface/MessageSucces/Rang
+@onready var _success_paper: ToiletPaper = $Interface/MessageSucces/Papier
+@onready var _success_stamp: Label = $Interface/MessageSucces/Tampon
 @onready var _next_button: Button = $Interface/MessageSucces/Boutons/Suivant
 @onready var _game_over_message: Control = $Interface/MessageGameOver
 @onready var _game_over_details: Label = $Interface/MessageGameOver/Details
@@ -98,6 +101,7 @@ func _ready() -> void:
 	for screen in [_success_message, _game_over_message]:
 		screen.get_node("Boutons/Rejouer").pressed.connect(restart_requested.emit)
 		screen.get_node("Boutons/Selection").pressed.connect(menu_requested.emit)
+	$Interface/MessageSucces/Pied.text = LevelResult.pick(LevelResult.BOSS_NOTES, RandomNumberGenerator.new())
 	configure(0, false)
 
 
@@ -128,7 +132,7 @@ func _wall_rect(wall: Node2D) -> Rect2:
 # Appele par le jeu au chargement : numero du niveau et bouton Next ou Finish
 func configure(number: int, is_last: bool) -> void:
 	_level_number = number
-	_success_title.text = LevelResult.success_title(number) + "\n" + SUCCESS_PHRASE
+	_success_title.text = LevelResult.success_title(number) + "\n" + _suspicion
 	_next_button.text = LevelResult.next_label(is_last)
 
 
@@ -456,8 +460,19 @@ func _on_arrivee_body_entered(body: Node2D) -> void:
 	if _progress.can_continue():
 		_next_button.call_deferred("grab_focus")
 		UiFx.pop_in(_success_sign)
-		UiFx.pop_in(_success_rank, 0.3)
+		_print_receipt()
 		succeeded.emit(_score.score())
+
+
+# Le ticket sort du distributeur, chaque ligne apparait quand le papier l'atteint,
+# puis le tampon tombe au bas de la bande
+func _print_receipt() -> void:
+	var lines: Array[Control] = [_success_title, _success_details, _success_rank, _success_record, $Interface/MessageSucces/Pied]
+	_success_paper.unroll(lines)
+	_success_stamp.modulate.a = 0.0
+	var tween := _success_stamp.create_tween()
+	tween.tween_interval(ToiletPaper.UNROLL_DURATION)
+	tween.tween_callback(UiFx.stamp.bind(_success_stamp, STAMP_ANGLE))
 
 
 func _remember_spotter(body: Node2D, manager: Node) -> void:

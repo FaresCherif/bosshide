@@ -76,7 +76,7 @@ func test_le_signal_de_l_arrivee_est_connecte() -> void:
 func test_le_message_de_succes_est_cache_au_depart() -> void:
 	var message: Control = _instantiate_level().get_node("Interface/MessageSucces")
 	assert_false(message.visible, "Le message de succes doit etre cache au depart")
-	assert_string_contains(message.get_node("Titre").text, "You reached the toilets.")
+	assert_true(LevelResult.SUSPICIONS.any(func(line): return message.get_node("Titre").text.ends_with(line)), "Le titre doit finir par une phrase de patron soupconneux")
 
 
 func test_un_autre_corps_ne_declenche_pas_le_succes() -> void:
@@ -571,7 +571,7 @@ func test_le_message_de_succes_affiche_le_temps_et_le_score() -> void:
 	await wait_physics_frames(5)
 
 	var message: Control = level.get_node("Interface/MessageSucces")
-	assert_string_contains(message.get_node("Titre").text, "You reached the toilets.")
+	assert_true(LevelResult.SUSPICIONS.any(func(line): return message.get_node("Titre").text.ends_with(line)), "Le titre doit finir par une phrase de patron soupconneux")
 	assert_string_contains(message.get_node("Details").text, "Time: " + level.get_node("Interface/Chrono").text)
 	assert_string_contains(message.get_node("Details").text, "Score: ")
 
@@ -1098,6 +1098,132 @@ func test_la_reussite_affiche_la_plaque_vacant_et_le_rang() -> void:
 	var screen: Control = level.get_node("Interface/MessageSucces")
 	assert_eq(screen.get_node("Plaque").text, "VACANT")
 	assert_eq(screen.get_node("Rang").text, LevelResult.rank_line(level._score.score()), "Le rang doit suivre le score")
+
+
+func test_la_reussite_deroule_un_ticket_de_papier_toilette() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	var paper: ToiletPaper = level.get_node("Interface/MessageSucces/Papier")
+	await _reach_goal(level)
+	assert_lt(paper.unrolled, 1.0, "Le papier doit commencer a se derouler a l'arrivee")
+	await wait_seconds(ToiletPaper.UNROLL_DURATION + 0.1)
+	assert_eq(paper.unrolled, 1.0, "Le papier doit finir deroule")
+
+
+func test_la_reussite_tamponne_le_ticket() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _reach_goal(level)
+	var stamp: Label = level.get_node("Interface/MessageSucces/Tampon")
+	assert_eq(stamp.text, LevelResult.APPROVAL_STAMP)
+	await wait_seconds(ToiletPaper.UNROLL_DURATION + UiFx.STAMP_DURATION + 0.1)
+	assert_almost_eq(stamp.modulate.a, 1.0, 0.01, "Le tampon doit etre visible apres le deroulement")
+
+
+func test_les_lignes_du_ticket_sont_sur_le_papier() -> void:
+	var level: Node = _add_in_game_viewport(_load_level())
+	var screen: Control = level.get_node("Interface/MessageSucces")
+	screen.visible = true
+	await wait_frames(2)
+	var strip: Rect2 = (screen.get_node("Papier") as ToiletPaper).strip_global_rect()
+	for name in ["Titre", "Details", "Rang", "Record", "Tampon", "Pied"]:
+		var rect := (screen.get_node(name) as Control).get_global_rect()
+		assert_true(strip.encloses(rect), "%s doit etre imprime sur le papier : %s hors de %s" % [name, rect, strip])
+	screen.visible = false
+
+
+# Hauteur (en ecran) occupee par le texte d'un Label, selon son alignement vertical
+func _text_span(label: Label) -> Vector2:
+	var lines := label.get_line_count()
+	var spacing: int = label.get_theme_constant("line_spacing")
+	var height := lines * label.get_line_height() + (lines - 1) * spacing
+	var rect := label.get_global_rect()
+	var style := label.get_theme_stylebox("normal")
+	var top := rect.position.y + style.get_margin(SIDE_TOP)
+	if label.vertical_alignment == VERTICAL_ALIGNMENT_CENTER:
+		top = rect.position.y + (rect.size.y - height) / 2.0
+	return Vector2(top, top + height)
+
+
+# Numero de la feuille du ticket ou se trouve une hauteur d'ecran
+func _sheet_of(paper: ToiletPaper, y: float) -> int:
+	return int(floor((y - paper.strip_global_rect().position.y) / ToiletPaper.SHEET_HEIGHT))
+
+
+func _assert_in_one_sheet(paper: ToiletPaper, label: Label) -> void:
+	var span := _text_span(label)
+	assert_eq(_sheet_of(paper, span.x), _sheet_of(paper, span.y - 0.5),
+		"%s (\"%s\") ne doit pas passer sur des pointilles : %s" % [label.name, label.text, span])
+
+
+func _show_success_screen() -> Control:
+	var level: Node = _add_in_game_viewport(_load_level())
+	var screen: Control = level.get_node("Interface/MessageSucces")
+	screen.visible = true
+	screen.get_node("Record").visible = true
+	screen.get_node("Record").text = LevelResult.best_line(780, true)
+	return screen
+
+
+func test_chaque_bloc_du_ticket_tient_dans_sa_feuille() -> void:
+	var screen := _show_success_screen()
+	await wait_frames(2)
+	var paper: ToiletPaper = screen.get_node("Papier")
+	for name in ["Titre", "Details", "Rang", "Record", "Tampon", "Pied"]:
+		_assert_in_one_sheet(paper, screen.get_node(name))
+	var note: Label = screen.get_node("Pied")
+	for line in LevelResult.BOSS_NOTES:
+		note.text = line
+		await wait_frames(2)
+		_assert_in_one_sheet(paper, note)
+		assert_eq(_sheet_of(paper, _text_span(note).x), 3, "La note \"%s\" doit etre sur la derniere feuille" % line)
+		assert_lt(_text_span(note).y, paper.strip_global_rect().end.y - ToiletPaper.TOOTH, "La note \"%s\" ne doit pas toucher le bord dechire" % line)
+	var expected := {"Titre": 0, "Details": 1, "Rang": 1, "Record": 1, "Tampon": 2, "Pied": 3}
+	for name in expected:
+		var label: Label = screen.get_node(name)
+		assert_eq(_sheet_of(paper, _text_span(label).x), expected[name], "%s doit etre sur la feuille %d" % [name, expected[name] + 1])
+
+
+func test_le_rang_le_plus_long_reste_sur_sa_feuille() -> void:
+	var screen := _show_success_screen()
+	var paper: ToiletPaper = screen.get_node("Papier")
+	var rank: Label = screen.get_node("Rang")
+	for score in [1000, 800, 600, 300, 0]:
+		rank.text = LevelResult.rank_line(score)
+		await wait_frames(2)
+		_assert_in_one_sheet(paper, rank)
+		assert_lt(_text_span(rank).y, _text_span(screen.get_node("Record")).x, "\"%s\" ne doit pas toucher le record" % rank.text)
+
+
+func test_chaque_phrase_avec_le_niveau_10_tient_sur_la_premiere_feuille() -> void:
+	var screen := _show_success_screen()
+	var level: Node = screen.get_parent().get_parent()
+	var title: Label = screen.get_node("Titre")
+	for line in LevelResult.SUSPICIONS:
+		level._suspicion = line
+		level.configure(10, true)
+		await wait_frames(2)
+		assert_string_contains(title.text, "Level 10 complete!")
+		_assert_in_one_sheet(screen.get_node("Papier"), title)
+		assert_gte(_text_span(title).x, (screen.get_node("Papier") as ToiletPaper).strip_global_rect().position.y, "\"%s\" ne doit pas remonter dans le distributeur" % line)
+
+
+func test_la_note_du_patron_est_tiree_dans_la_liste() -> void:
+	var level := _instantiate_level()
+	add_child(level)
+	assert_has(LevelResult.BOSS_NOTES, level.get_node("Interface/MessageSucces/Pied").text, "La note doit venir de BOSS_NOTES")
+	remove_child(level)
+
+
+func test_le_tampon_attend_la_fin_du_deroulement() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _reach_goal(level)
+	assert_eq(level.get_node("Interface/MessageSucces/Tampon").modulate.a, 0.0, "Le tampon ne doit pas tomber avant que le papier soit deroule")
+
+
+func test_rien_ne_se_deroule_au_game_over() -> void:
+	var level: Node = add_child_autofree(_load_level())
+	await _get_spotted(level)
+	assert_false(level.get_node("Interface/MessageSucces").visible, "Pas d'ecran de reussite au game over")
+	assert_eq((level.get_node("Interface/MessageSucces/Papier") as ToiletPaper).unrolled, 1.0, "Le papier ne doit pas se derouler au game over")
 
 
 func test_le_game_over_explique_ou_le_joueur_va_finir() -> void:

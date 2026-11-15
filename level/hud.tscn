@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/PermanentMarker-Regular.ttf" id="1_marker"]
 [ext_resource type="Shader" path="res://ui/cctv.gdshader" id="2_cctv"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://ui/speech_bubble.gd" id="5_bubble"]
 [ext_resource type="Script" path="res://ui/thought_trail.gd" id="6_trail"]
 [ext_resource type="Script" path="res://ui/dashed_line.gd" id="7_dashed"]
+[ext_resource type="Script" path="res://ui/toilet_paper.gd" id="8_paper"]
 
 [sub_resource type="ShaderMaterial" id="Cctv"]
 shader = ExtResource("2_cctv")
@@ -23,6 +24,20 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="TamponVert"]
+content_margin_left = 14.0
+content_margin_right = 14.0
+draw_center = false
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.118, 0.55, 0.3, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [node name="Interface" type="CanvasLayer"]
 
@@ -44,20 +59,22 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.18, 0.227, 0.294, 0.75)
 
-[node name="Fiche" type="Panel" parent="MessageSucces"]
+[node name="Papier" type="Control" parent="MessageSucces"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -340.0
-offset_top = -262.0
-offset_right = 340.0
-offset_bottom = 300.0
+offset_left = -410.0
+offset_top = -314.0
+offset_right = 90.0
+offset_bottom = 304.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("8_paper")
+
 [node name="Plaque" type="Label" parent="MessageSucces"]
 layout_mode = 1
 anchors_preset = 8
@@ -65,16 +82,17 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -110.0
-offset_top = -250.0
-offset_right = 110.0
-offset_bottom = -200.0
+offset_left = -270.0
+offset_top = -302.0
+offset_right = -50.0
+offset_bottom = -252.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"VacantLabel"
 text = "VACANT"
 horizontal_alignment = 1
 vertical_alignment = 1
+
 [node name="Titre" type="Label" parent="MessageSucces"]
 layout_mode = 1
 anchors_preset = 8
@@ -82,19 +100,20 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -194.0
-offset_right = 320.0
-offset_bottom = -76.0
+offset_left = -365.0
+offset_top = -234.0
+offset_right = 45.0
+offset_bottom = -110.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = &"TitleLabel"
-theme_override_font_sizes/font_size = 30
+theme_override_fonts/font = ExtResource("1_marker")
+theme_override_font_sizes/font_size = 26
 text = "Level complete!
-You reached the toilets. Productivity: 0%."
+Nobody saw you slack off. Officially."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
+
 [node name="Details" type="Label" parent="MessageSucces"]
 layout_mode = 1
 anchors_preset = 8
@@ -102,14 +121,15 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -72.0
-offset_right = 320.0
-offset_bottom = -38.0
+offset_left = -365.0
+offset_top = -92.0
+offset_right = 45.0
+offset_bottom = -58.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "Time: 00:00.0 - Score: 0"
 horizontal_alignment = 1
+
 [node name="Rang" type="Label" parent="MessageSucces"]
 layout_mode = 1
 anchors_preset = 8
@@ -117,17 +137,37 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -36.0
-offset_right = 320.0
-offset_bottom = 4.0
+offset_left = -365.0
+offset_top = -54.0
+offset_right = 45.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.843, 0.149, 0.239, 1)
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "Rank: Employee of the Month"
 horizontal_alignment = 1
+autowrap_mode = 3
+
 [node name="Record" type="Label" parent="MessageSucces"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -365.0
+offset_top = -6.0
+offset_right = 45.0
+offset_bottom = 28.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.78, 0.47, 0, 1)
+text = "Best: 0"
+horizontal_alignment = 1
+
+[node name="Tampon" type="Label" parent="MessageSucces"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -135,15 +175,39 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -320.0
-offset_top = 6.0
-offset_right = 320.0
-offset_bottom = 40.0
+offset_top = 70.0
+offset_right = 0.0
+offset_bottom = 130.0
 grow_horizontal = 2
 grow_vertical = 2
-visible = false
-theme_override_colors/font_color = Color(0.78, 0.47, 0, 1)
-text = "Best: 0"
+theme_type_variation = &"StampLabel"
+theme_override_colors/font_color = Color(0.118, 0.55, 0.3, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("TamponVert")
+text = "NO EVIDENCE"
 horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Pied" type="Label" parent="MessageSucces"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -365.0
+offset_top = 206.0
+offset_right = 45.0
+offset_bottom = 266.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.55, 0.53, 0.48, 1)
+theme_override_font_sizes/font_size = 20
+text = "You probably were busy in some meeting.
+Please wash your hands. You dirty thief."
+horizontal_alignment = 1
+autowrap_mode = 3
+
 [node name="Boutons" type="VBoxContainer" parent="MessageSucces"]
 layout_mode = 1
 anchors_preset = 8
@@ -151,13 +215,14 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -170.0
-offset_top = 50.0
-offset_right = 170.0
-offset_bottom = 230.0
+offset_left = 140.0
+offset_top = -110.0
+offset_right = 440.0
+offset_bottom = 70.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 14
+
 [node name="Suivant" type="Button" parent="MessageSucces/Boutons"]
 layout_mode = 2
 text = "Next mission"
@@ -177,16 +242,17 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = 250.0
-offset_right = 320.0
-offset_bottom = 286.0
+offset_left = 110.0
+offset_top = 90.0
+offset_right = 470.0
+offset_bottom = 126.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.45, 0.42, 0.36, 1)
+theme_type_variation = &"HudLabel"
 theme_override_font_sizes/font_size = 20
 text = "R: play again - Esc: level select"
 horizontal_alignment = 1
+
 [node name="MessageGameOver" type="Control" parent="."]
 visible = false
 anchors_preset = 15
