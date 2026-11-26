@@ -46,7 +46,7 @@ func test_web_sans_threads_avec_un_canevas_fixe() -> void:
 	var section := _section("Web")
 	assert_eq(_config.get_value(section, "platform", ""), "Web")
 	assert_eq(_option("Web", "variant/thread_support"), false, "Sans threads, pas besoin d'en-tetes COOP/COEP")
-	assert_eq(_option("Web", "html/canvas_resize_policy"), 0, "Le canevas doit garder la taille du jeu")
+	assert_eq(_option("Web", "html/canvas_resize_policy"), 1, "La taille du canevas doit suivre celle du projet (1152x648)")
 	assert_eq(_config.get_value(section, "export_path", ""), "builds/web/index.html")
 
 
