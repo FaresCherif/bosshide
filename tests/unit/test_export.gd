@@ -61,3 +61,19 @@ func test_l_icone_du_projet_existe() -> void:
 	var icon: String = ProjectSettings.get_setting("application/config/icon", "")
 	assert_ne(icon, "", "Le projet doit avoir une icone")
 	assert_true(ResourceLoader.exists(icon), "L'icone du projet doit exister")
+
+
+func test_git_ignore_les_builds() -> void:
+	var lines := FileAccess.get_file_as_string("res://.gitignore").split("\n")
+	var trimmed: Array[String] = []
+	for line in lines:
+		trimmed.append(line.strip_edges())
+	assert_has(trimmed, "/builds/", "builds/ doit etre ignore par git, sur sa propre ligne")
+	assert_has(trimmed, "skills-lock.json", "skills-lock.json doit rester ignore")
+
+
+func test_godot_ignore_le_dossier_des_builds() -> void:
+	assert_string_contains(FileAccess.get_file_as_string("res://export.ps1"), ".gdignore", "export.ps1 doit cacher builds/ a Godot")
+	for preset_name in ["Windows Desktop", "Web"]:
+		var filter: String = _config.get_value(_section(preset_name), "exclude_filter", "")
+		assert_string_contains(filter, "builds/*", "%s ne doit pas exporter les anciens builds" % preset_name)

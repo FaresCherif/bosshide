@@ -22,6 +22,10 @@ $targets = @(
 )
 $licenses = Get-ChildItem (Join-Path $root "assets\fonts") -Filter "*.txt"
 
+# builds/ est dans le projet : sans .gdignore, Godot importerait les images des builds web
+New-Item -ItemType Directory -Force -Path $builds | Out-Null
+New-Item -ItemType File -Force -Path (Join-Path $builds ".gdignore") | Out-Null
+
 & $godot --headless --path $root --import | Out-Null
 
 foreach ($target in $targets) {

@@ -1,0 +1,93 @@
+# Teste, exporte et publie BossHide sur itch.io (canaux windows et html5).
+# Se lance quand on pousse un tag de version (v1.0.1 = config/version "1.0.1" dans project.godot),
+# ou a la main depuis l'onglet Actions.
+# Reglages GitHub : secret BUTLER_API_KEY (cle d'API itch) et variable ITCH_GAME (pseudo/bosshide).
+
+name: Deploy to itch.io
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: itch-deploy
+  cancel-in-progress: false
+
+env:
+  GODOT_DIR: C:\godot
+  BUTLER_VERSION: "15.24.0"
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.GODOT_DIR }}
+          key: godot-4.3-stable-${{ hashFiles('ci/install_godot.ps1') }}
+
+      - name: Install Godot
+        run: .\ci\install_godot.ps1 -Destination $env:GODOT_DIR
+
+      - name: Check version
+        id: version
+        run: |
+          $match = Select-String -Path project.godot -Pattern '^config/version="(.+)"'
+          if (-not $match) { throw "config/version absent de project.godot" }
+          $version = $match.Matches[0].Groups[1].Value
+          if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw "Le tag $env:GITHUB_REF_NAME ne correspond pas a config/version ($version) : attendu v$version"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Run tests
+        env:
+          GODOT_BIN: ${{ env.GODOT_DIR }}\Godot_v4.3-stable_win64_console.exe
+        run: .\run_tests.ps1
+
+      - name: Export
+        env:
+          GODOT_EXPORT_BIN: ${{ env.GODOT_DIR }}\Godot_v4.3-stable_win64_console.exe
+        run: .\export.ps1
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: BossHide-${{ steps.version.outputs.version }}
+          path: builds/*.zip
+
+      - name: Check itch.io settings
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_GAME: ${{ vars.ITCH_GAME }}
+        run: |
+          if (-not $env:BUTLER_API_KEY) { throw "Secret BUTLER_API_KEY manquant (cle d'API itch.io)" }
+          if (-not $env:ITCH_GAME) { throw "Variable ITCH_GAME manquante (pseudo/bosshide)" }
+
+      - name: Install butler
+        run: |
+          $ProgressPreference = "SilentlyContinue"
+          $dir = Join-Path $env:RUNNER_TEMP "butler"
+          Invoke-WebRequest -Uri "https://broth.itch.zone/butler/windows-amd64/$env:BUTLER_VERSION/archive/default" -OutFile "$dir.zip"
+          Expand-Archive "$dir.zip" -DestinationPath $dir
+          & "$dir\butler.exe" -V
+          $dir >> $env:GITHUB_PATH
+
+      - name: Push to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_GAME: ${{ vars.ITCH_GAME }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          butler push builds/windows "$($env:ITCH_GAME):windows" --userversion $env:VERSION
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          butler push builds/web "$($env:ITCH_GAME):html5" --userversion $env:VERSION
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
