@@ -3,4 +3,4 @@
 /android/
 .agents/
 .claude/
-skills-lock.json
+skills-lock.json/builds/

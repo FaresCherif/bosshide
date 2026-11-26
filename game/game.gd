@@ -72,6 +72,7 @@ func _ready() -> void:
 	_play_button.pressed.connect(_on_jouer_pressed)
 	_select_button.pressed.connect(_on_choisir_pressed)
 	_quit_button.pressed.connect(_on_quitter_pressed)
+	_quit_button.visible = can_quit(OS.has_feature("web"))
 	_back_button.pressed.connect(_on_retour_pressed)
 	_resume_button.pressed.connect(_on_reprendre_pressed)
 	_pause_select_button.pressed.connect(_on_selection_pressed)
@@ -331,6 +332,11 @@ func _on_choisir_pressed() -> void:
 
 func _on_quitter_pressed() -> void:
 	get_tree().quit()
+
+
+# Un navigateur ne laisse pas le jeu fermer son onglet : Resign est cache sur le web
+static func can_quit(is_web: bool) -> bool:
+	return not is_web
 
 
 func _on_retour_pressed() -> void:

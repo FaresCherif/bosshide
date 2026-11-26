@@ -72,7 +72,7 @@ Progression indicative, à ajuster en jouant :
 
 ### M5 – Release
 
-- [ ] P1 – Export et build jouable
+- [x] P1 – Export et build jouable (Windows : un seul .exe ; Web : HTML5 sans threads, canevas fixe 1152x648, sans Resign ; icône BossHide ; `export.ps1` crée les deux zips dans `builds/`)
 - [x] P2 – Pause (Échap : Resume, Level select, Main menu)
 - [ ] P2 – Polish : réglages, remappage des touches
 
@@ -93,7 +93,6 @@ Idées non planifiées, à piocher quand un jalon se libère :
 
 ## Questions ouvertes
 
-- **Plateforme cible** : PC seulement, ou aussi le web ?
 - **Score** : bonus pour les tâches optionnelles ?
 - **Graphismes** : assets faits main ou packs existants ?
 - **Scènes de scénario** : quel format (texte seul, dialogues entre personnages, images fixes, petite animation dans le décor du jeu) ? Entre quels niveaux ? Qui écrit les textes ? Peut-on les revoir depuis le menu ?

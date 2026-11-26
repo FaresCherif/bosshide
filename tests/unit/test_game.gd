@@ -827,3 +827,13 @@ func test_la_confirmation_tient_dans_l_ecran() -> void:
 	var play := _button(game, "MenuPrincipal/Boutons/Jouer").get_global_rect()
 	assert_eq(shredder.position.y, play.position.y, "La broyeuse doit etre sur la ligne des boutons")
 	_assert_inside_screen(_screen(game, "MenuPrincipal/Boutons"))
+
+
+func test_resign_n_existe_pas_sur_le_web() -> void:
+	assert_false(Game.can_quit(true), "Un navigateur ne peut pas fermer l'onglet : pas de Resign sur le web")
+	assert_true(Game.can_quit(false), "Resign doit quitter le jeu sur PC")
+
+
+func test_resign_reste_visible_hors_du_web() -> void:
+	var game := _add_game()
+	assert_true(_button(game, "MenuPrincipal/Boutons/Quitter").visible, "Hors du web, Resign doit etre affiche")
