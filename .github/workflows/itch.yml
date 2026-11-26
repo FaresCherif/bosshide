@@ -58,11 +58,17 @@ jobs:
           GODOT_EXPORT_BIN: ${{ env.GODOT_DIR }}\Godot_v4.3-stable_win64_console.exe
         run: .\export.ps1
 
-      - name: Upload builds
+      - name: Upload Windows build
         uses: actions/upload-artifact@v4
         with:
-          name: BossHide-${{ steps.version.outputs.version }}
-          path: builds/*.zip
+          name: BossHide-windows-${{ steps.version.outputs.version }}
+          path: builds/windows
+
+      - name: Upload Web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: BossHide-web-${{ steps.version.outputs.version }}
+          path: builds/web
 
       - name: Check itch.io settings
         env:

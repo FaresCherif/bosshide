@@ -54,3 +54,10 @@ func test_le_workflow_pousse_les_dossiers_exportes_sur_les_deux_canaux() -> void
 	assert_string_contains(_workflow, "butler push %s" % web_dir)
 	assert_string_contains(_workflow, ":html5", "Le build Web va sur le canal html5")
 	assert_gt(_workflow.find(":html5"), _workflow.find("export.ps1"), "On ne pousse qu'apres l'export")
+
+
+func test_le_run_joint_les_dossiers_exportes_sans_zip() -> void:
+	assert_string_contains(_workflow, "path: %s" % _export_dir("Windows Desktop"), "Le build Windows doit etre joint au run")
+	assert_string_contains(_workflow, "path: %s" % _export_dir("Web"), "Le build Web doit etre joint au run")
+	assert_does_not_have(_workflow, "builds/*.zip", "Les zips ne sont plus crees")
+	assert_false(FileAccess.get_file_as_string("res://export.ps1").contains("Compress-Archive"), "export.ps1 ne doit plus creer de zip")

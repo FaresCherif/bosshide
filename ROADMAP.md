@@ -72,7 +72,7 @@ Progression indicative, à ajuster en jouant :
 
 ### M5 – Release
 
-- [x] P1 – Export et build jouable (Windows : un seul .exe ; Web : HTML5 sans threads, canevas fixe 1152x648, sans Resign ; icône BossHide ; `export.ps1` crée les deux zips dans `builds/`)
+- [x] P1 – Export et build jouable (Windows : un seul .exe ; Web : HTML5 sans threads, canevas fixe 1152x648, sans Resign ; icône BossHide ; `export.ps1` exporte dans `builds/windows` et `builds/web`)
 - [x] P2 – Déploiement automatique sur itch.io (GitHub Actions : un tag `vX.Y.Z` teste, exporte et publie les canaux `windows` et `html5`)
 - [x] P2 – Pause (Échap : Resume, Level select, Main menu)
 - [ ] P2 – Polish : réglages, remappage des touches

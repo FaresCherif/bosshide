@@ -1,5 +1,5 @@
-# Exporte le jeu pour Windows (un seul exe) et pour le Web, puis cree un zip par plateforme
-# dans builds/. Code de sortie : 0 = succes, autre = echec.
+# Exporte le jeu pour Windows (un seul exe) dans builds/windows et pour le Web dans builds/web,
+# avec les licences des polices. Code de sortie : 0 = succes, autre = echec.
 # Usage : .\export.ps1
 # L'export utilise Godot 4.3 standard (pas .NET) en mode autonome : ses modeles d'export et rcedit
 # sont dans son dossier editor_data. Pour un autre Godot : definir GODOT_EXPORT_BIN.
@@ -17,8 +17,8 @@ if (-not (Test-Path $godot)) {
 $root = $PSScriptRoot
 $builds = Join-Path $root "builds"
 $targets = @(
-    @{ Preset = "Windows Desktop"; Dir = "windows"; File = "BossHide.exe"; Zip = "BossHide-windows.zip" },
-    @{ Preset = "Web"; Dir = "web"; File = "index.html"; Zip = "BossHide-web.zip" }
+    @{ Preset = "Windows Desktop"; Dir = "windows"; File = "BossHide.exe" },
+    @{ Preset = "Web"; Dir = "web"; File = "index.html" }
 )
 $licenses = Get-ChildItem (Join-Path $root "assets\fonts") -Filter "*.txt"
 
@@ -42,10 +42,6 @@ foreach ($target in $targets) {
     # Les licences des polices doivent accompagner le jeu
     $licenseDir = New-Item -ItemType Directory -Path (Join-Path $dir "licenses")
     $licenses | Copy-Item -Destination $licenseDir
-
-    $zip = Join-Path $builds $target.Zip
-    if (Test-Path $zip) { Remove-Item $zip -Force }
-    Compress-Archive -Path (Join-Path $dir "*") -DestinationPath $zip
-    Write-Host "OK : $zip"
+    Write-Host "OK : $dir"
 }
 exit 0
