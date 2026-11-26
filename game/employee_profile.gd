@@ -1,8 +1,7 @@
 class_name EmployeeProfile
 extends RefCounted
 
-# Profil de l'employe pour la session : l'icone choisie pour sa photo de badge.
-# Rien n'est sauvegarde a la fermeture.
+# Profil de l'employe : l'icone choisie pour sa photo de badge (sauvegardee par SaveData).
 
 const DEFAULT_ICON := "classic"
 const ICONS := [
@@ -31,6 +30,10 @@ func select(id: String) -> bool:
 		return false
 	_icon_id = id
 	return true
+
+
+func reset() -> void:
+	_icon_id = DEFAULT_ICON
 
 
 static func icon_name(id: String) -> String:

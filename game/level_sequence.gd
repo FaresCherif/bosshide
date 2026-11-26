@@ -4,7 +4,7 @@ extends RefCounted
 var _paths: Array
 var _index := 0
 var _scores := {}
-# Deblocages de la session : rien n'est sauvegarde a la fermeture
+# Deblocages et meilleurs scores : SaveData les sauvegarde
 var _unlocked := 1
 var _best_scores := {}
 
@@ -85,3 +85,30 @@ func advance() -> void:
 func restart_all() -> void:
 	_index = 0
 	_scores.clear()
+
+
+# Remet les deblocages et meilleurs scores lus dans la sauvegarde, en ignorant les valeurs
+# fausses. Un niveau qui a un meilleur score a ete reussi, donc le suivant est debloque.
+func restore(unlocked: int, best_scores: Dictionary) -> void:
+	_best_scores.clear()
+	_unlocked = clampi(unlocked, 1, _paths.size())
+	for number: Variant in best_scores:
+		var score: Variant = best_scores[number]
+		if number is int and number >= 1 and number <= _paths.size() and score is int and score >= 0:
+			_best_scores[number - 1] = score
+			_unlocked = clampi(number + 1, _unlocked, _paths.size())
+
+
+# Meilleurs scores ranges par numero de niveau (a partir de 1), pour la sauvegarde
+func best_scores_by_number() -> Dictionary:
+	var by_number := {}
+	for index: int in _best_scores:
+		by_number[index + 1] = _best_scores[index]
+	return by_number
+
+
+# Efface toute la progression : retour au niveau 1, seul debloque, sans aucun score
+func reset_progress() -> void:
+	restart_all()
+	_unlocked = 1
+	_best_scores.clear()

@@ -3,6 +3,15 @@ extends GutTest
 const GAME_SCENE_PATH := "res://Game.tscn"
 
 
+# Chaque partie demarre sans sauvegarde (le hook GUT la detourne vers un fichier de test)
+func before_each() -> void:
+	SaveData.erase()
+
+
+func after_all() -> void:
+	SaveData.erase()
+
+
 # Clock in demarre le niveau tout de suite : le delai du badge a son propre test
 func _add_game() -> Node:
 	var scene: PackedScene = load(GAME_SCENE_PATH)
@@ -594,7 +603,7 @@ func test_cliquer_la_photo_ouvre_le_choix_des_icones() -> void:
 	assert_true(_picker(game).visible, "Le choix doit s'ouvrir")
 	assert_eq(_picker(game).get_node("Icones").get_child_count(), EmployeeProfile.ICONS.size(), "Une icone par bouton")
 	assert_eq(game.get_viewport().gui_get_focus_owner(), _icon_button(game, "classic"), "Le focus doit etre sur l'icone actuelle")
-	for path in ["Jouer", "Choisir", "Quitter"]:
+	for path in ["Jouer", "Choisir", "Broyeuse", "Quitter"]:
 		assert_true(_button(game, "MenuPrincipal/Boutons/" + path).disabled, path + " doit etre inactif pendant le choix")
 	assert_true(_photo_button(game).disabled, "La photo doit etre inactive pendant le choix")
 
@@ -686,6 +695,7 @@ func test_les_boutons_du_menu_sont_des_objets_du_mur() -> void:
 	var expected := {
 		"Jouer": ["time_clock", &"TimeClockButton", "Clock in"],
 		"Choisir": ["clipboard", &"ClipboardButton", "Pick a mission"],
+		"Broyeuse": ["shredder", &"ShredderButton", "Shred my file"],
 		"Quitter": ["alarm", &"AlarmButton", "Resign"],
 	}
 	var heights := []
@@ -699,12 +709,121 @@ func test_les_boutons_du_menu_sont_des_objets_du_mur() -> void:
 	assert_gte(heights[0], 100.0, "Les objets doivent etre assez grands")
 	assert_eq(heights[0], heights[1], "Les objets doivent avoir la meme hauteur")
 	assert_eq(heights[1], heights[2], "Les objets doivent avoir la meme hauteur")
+	assert_eq(heights[2], heights[3], "Les objets doivent avoir la meme hauteur")
 
 
 func test_les_objets_interactifs_du_menu_brillent() -> void:
 	var game := _add_game()
-	for path in ["Boutons/Jouer", "Boutons/Choisir", "Boutons/Quitter", "Badge/BoutonPhoto"]:
+	for path in ["Boutons/Jouer", "Boutons/Choisir", "Boutons/Broyeuse", "Boutons/Quitter", "Badge/BoutonPhoto"]:
 		var button: Button = game.get_node("Interface/MenuPrincipal/" + path)
 		assert_true(button is GlowButton, path + " doit briller au survol")
 		assert_eq(button.mouse_default_cursor_shape, Control.CURSOR_POINTING_HAND, path + " doit montrer une main")
 	assert_string_contains(_badge(game).get_node("MentionPhoto").text, "Click to change")
+
+
+func test_une_reussite_est_sauvegardee_et_relue_au_lancement() -> void:
+	var game := _add_game_playing()
+	_level(game).succeeded.emit(650)
+	assert_true(FileAccess.file_exists(SaveData.path), "La reussite doit ecrire la sauvegarde")
+	var next_game := _add_game()
+	_open_selector(next_game)
+	assert_false(_level_button(next_game, 2).disabled, "Le niveau 2 doit rester debloque au lancement suivant")
+	assert_string_contains(_level_button(next_game, 1).text, "Best: 650", "Le meilleur score doit etre relu")
+
+
+func test_l_icone_choisie_est_relue_au_lancement() -> void:
+	var game := _add_game()
+	_photo_button(game).pressed.emit()
+	_icon_button(game, "plant").pressed.emit()
+	var next_game := _add_game()
+	assert_eq(_badge(next_game).get_node("Photo").icon_id, "plant", "Le badge doit montrer l'icone sauvegardee")
+
+
+func _shred_dialog(game: Node) -> Control:
+	return game.get_node("Interface/MenuPrincipal/ConfirmationBroyage")
+
+
+func _shred_button(game: Node) -> Button:
+	return _button(game, "MenuPrincipal/Boutons/Broyeuse")
+
+
+# Partie avec le niveau 1 reussi et une icone choisie, sauvegardee
+func _add_game_with_progress() -> Node:
+	var game := _add_game_playing()
+	_level(game).succeeded.emit(650)
+	_level(game).menu_requested.emit()
+	_show_main_menu(game)
+	_photo_button(game).pressed.emit()
+	_icon_button(game, "mug").pressed.emit()
+	return game
+
+
+func _show_main_menu(game: Node) -> void:
+	_button(game, "Selecteur/Retour").pressed.emit()
+
+
+func test_la_broyeuse_est_un_objet_du_mur() -> void:
+	var game := _add_game()
+	var shredder := _shred_button(game)
+	assert_true(shredder is WallDeviceButton, "La broyeuse doit etre un objet du mur")
+	assert_eq(shredder.device, "shredder")
+	assert_eq(shredder.theme_type_variation, &"ShredderButton")
+	assert_eq(shredder.text, "Shred my file")
+	assert_lt(_button(game, "MenuPrincipal/Boutons/Choisir").get_index(), shredder.get_index(), "La broyeuse doit etre apres Pick a mission")
+	assert_lt(shredder.get_index(), _button(game, "MenuPrincipal/Boutons/Quitter").get_index(), "La broyeuse doit etre avant Resign")
+
+
+func test_la_broyeuse_ouvre_une_confirmation() -> void:
+	var game := _add_game()
+	assert_false(_shred_dialog(game).visible, "La confirmation doit etre cachee au depart")
+	_shred_button(game).pressed.emit()
+	await wait_frames(2)
+	assert_true(_shred_dialog(game).visible, "La confirmation doit s'ouvrir")
+	assert_eq(game.get_viewport().gui_get_focus_owner(), _shred_dialog(game).get_node("Garder"), "Le focus doit etre sur Keep it")
+	for path in ["Jouer", "Choisir", "Broyeuse", "Quitter"]:
+		assert_true(_button(game, "MenuPrincipal/Boutons/" + path).disabled, path + " doit etre inactif pendant la confirmation")
+	assert_true(_photo_button(game).disabled, "La photo doit etre inactive pendant la confirmation")
+
+
+func test_keep_it_et_echap_ne_broient_rien() -> void:
+	var game := _add_game_with_progress()
+	_shred_button(game).pressed.emit()
+	_shred_dialog(game).get_node("Garder").pressed.emit()
+	assert_false(_shred_dialog(game).visible, "Keep it doit fermer la confirmation")
+	assert_false(_shred_button(game).disabled, "Le menu doit redevenir actif")
+	_shred_button(game).pressed.emit()
+	game._unhandled_input(_pressed("ui_cancel"))
+	assert_false(_shred_dialog(game).visible, "Echap doit fermer la confirmation")
+	assert_true(_screen(game, "MenuPrincipal").visible, "Le menu doit rester affiche")
+	assert_true(FileAccess.file_exists(SaveData.path), "La sauvegarde doit rester")
+	assert_eq(_badge(game).get_node("Photo").icon_id, "mug", "La photo ne doit pas changer")
+	_open_selector(game)
+	assert_false(_level_button(game, 2).disabled, "Le niveau 2 doit rester debloque")
+
+
+func test_shred_it_efface_toute_la_progression() -> void:
+	var game := _add_game_with_progress()
+	_shred_button(game).pressed.emit()
+	_shred_dialog(game).get_node("Broyer").pressed.emit()
+	await wait_frames(2)
+	assert_false(_shred_dialog(game).visible, "La confirmation doit se fermer")
+	assert_false(FileAccess.file_exists(SaveData.path), "La sauvegarde doit etre supprimee")
+	assert_eq(_badge(game).get_node("Photo").icon_id, EmployeeProfile.DEFAULT_ICON, "La photo doit redevenir classique")
+	assert_eq(game.get_viewport().gui_get_focus_owner(), _shred_button(game), "Le focus doit revenir sur la broyeuse")
+	_open_selector(game)
+	assert_true(_level_button(game, 2).disabled, "Le niveau 2 doit etre de nouveau verrouille")
+	assert_false(_level_button(game, 1).text.contains("Best"), "Le meilleur score doit etre efface")
+	var next_game := _add_game()
+	assert_eq(_badge(next_game).get_node("Photo").icon_id, EmployeeProfile.DEFAULT_ICON, "Un nouveau lancement repart de zero")
+
+
+func test_la_confirmation_tient_dans_l_ecran() -> void:
+	var game := _add_game_in_viewport()
+	await wait_frames(1)
+	_shred_button(game).pressed.emit()
+	await wait_frames(2)
+	_assert_inside_screen(_shred_dialog(game))
+	var shredder := _shred_button(game).get_global_rect()
+	var play := _button(game, "MenuPrincipal/Boutons/Jouer").get_global_rect()
+	assert_eq(shredder.position.y, play.position.y, "La broyeuse doit etre sur la ligne des boutons")
+	_assert_inside_screen(_screen(game, "MenuPrincipal/Boutons"))

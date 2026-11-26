@@ -30,3 +30,10 @@ func test_dix_icones_aux_ids_uniques_et_nommees() -> void:
 func test_chaque_icone_peut_etre_dessinee() -> void:
 	for icon in EmployeeProfile.ICONS:
 		assert_true(IdPhoto.supports(icon["id"]), icon["id"] + " doit avoir un dessin")
+
+
+func test_remettre_a_zero_revient_a_l_icone_par_defaut() -> void:
+	var profile := EmployeeProfile.new()
+	profile.select("mug")
+	profile.reset()
+	assert_eq(profile.icon_id(), EmployeeProfile.DEFAULT_ICON, "L'icone doit revenir a la silhouette classique")

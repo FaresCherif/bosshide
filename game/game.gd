@@ -3,7 +3,7 @@ extends Node
 
 # Menu principal, selecteur de niveau, puis niveaux charges un par un avec leurs scores
 
-enum Screen { MENU, PHOTO, SELECTOR, LEVEL, PAUSE, END }
+enum Screen { MENU, PHOTO, SHRED, SELECTOR, LEVEL, PAUSE, END }
 
 const LEVELS := [
 	"res://levels/level_01.tscn",
@@ -44,6 +44,10 @@ var _screen := Screen.MENU
 @onready var _play_button: Button = $Interface/MenuPrincipal/Boutons/Jouer
 @onready var _select_button: Button = $Interface/MenuPrincipal/Boutons/Choisir
 @onready var _quit_button: Button = $Interface/MenuPrincipal/Boutons/Quitter
+@onready var _shred_button: Button = $Interface/MenuPrincipal/Boutons/Broyeuse
+@onready var _shred_dialog: Control = $Interface/MenuPrincipal/ConfirmationBroyage
+@onready var _shred_confirm_button: Button = $Interface/MenuPrincipal/ConfirmationBroyage/Broyer
+@onready var _shred_cancel_button: Button = $Interface/MenuPrincipal/ConfirmationBroyage/Garder
 @onready var _badge: Control = $Interface/MenuPrincipal/Badge
 @onready var _badge_led: ColorRect = $Interface/MenuPrincipal/Badge/Voyant
 @onready var _access_granted: Label = $Interface/MenuPrincipal/Badge/Acces
@@ -63,6 +67,8 @@ var _screen := Screen.MENU
 
 
 func _ready() -> void:
+	SaveData.load_into(_sequence, _profile)
+	_badge_photo.icon_id = _profile.icon_id()
 	_play_button.pressed.connect(_on_jouer_pressed)
 	_select_button.pressed.connect(_on_choisir_pressed)
 	_quit_button.pressed.connect(_on_quitter_pressed)
@@ -72,6 +78,9 @@ func _ready() -> void:
 	_pause_menu_button.pressed.connect(_on_menu_pressed)
 	_photo_button.pressed.connect(_open_photo_picker)
 	_keep_button.pressed.connect(_close_photo_picker)
+	_shred_button.pressed.connect(_open_shred_dialog)
+	_shred_confirm_button.pressed.connect(_shred_file)
+	_shred_cancel_button.pressed.connect(_close_shred_dialog)
 	for icon in EmployeeProfile.ICONS:
 		_picker_icons.add_child(_new_icon_choice(icon["id"], icon["name"]))
 	for i in LEVELS.size():
@@ -88,6 +97,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event.is_action_pressed("ui_cancel"):
 				get_viewport().set_input_as_handled()
 				_close_photo_picker()
+		Screen.SHRED:
+			if event.is_action_pressed("ui_cancel"):
+				get_viewport().set_input_as_handled()
+				_close_shred_dialog()
 		Screen.SELECTOR:
 			if event.is_action_pressed("ui_cancel"):
 				_show_menu()
@@ -143,11 +156,38 @@ func _close_photo_picker() -> void:
 func _choose_icon(id: String) -> void:
 	if _profile.select(id):
 		_badge_photo.icon_id = id
+		_save()
 	_close_photo_picker()
 
 
+# Comme le choix de photo : le menu reste visible mais inactif, le focus sur Keep it
+func _open_shred_dialog() -> void:
+	_set_screen(Screen.SHRED)
+	_set_menu_enabled(false)
+	_shred_cancel_button.call_deferred("grab_focus")
+
+
+func _close_shred_dialog() -> void:
+	_set_screen(Screen.MENU)
+	_set_menu_enabled(true)
+	_shred_button.call_deferred("grab_focus")
+
+
+# Efface la sauvegarde et toute la progression, photo comprise
+func _shred_file() -> void:
+	SaveData.erase()
+	_sequence.reset_progress()
+	_profile.reset()
+	_badge_photo.icon_id = _profile.icon_id()
+	_close_shred_dialog()
+
+
+func _save() -> void:
+	SaveData.save(_sequence, _profile)
+
+
 func _set_menu_enabled(enabled: bool) -> void:
-	for button in [_play_button, _select_button, _quit_button, _photo_button]:
+	for button in [_play_button, _select_button, _shred_button, _quit_button, _photo_button]:
 		button.disabled = not enabled
 
 
@@ -188,9 +228,10 @@ func _tilt_level_post_its() -> void:
 # Un seul ecran visible a la fois
 func _set_screen(screen: Screen) -> void:
 	_screen = screen
-	_background.visible = screen in [Screen.MENU, Screen.PHOTO, Screen.SELECTOR, Screen.END]
-	_menu.visible = screen == Screen.MENU or screen == Screen.PHOTO
+	_background.visible = screen in [Screen.MENU, Screen.PHOTO, Screen.SHRED, Screen.SELECTOR, Screen.END]
+	_menu.visible = screen in [Screen.MENU, Screen.PHOTO, Screen.SHRED]
 	_picker.visible = screen == Screen.PHOTO
+	_shred_dialog.visible = screen == Screen.SHRED
 	_selector.visible = screen == Screen.SELECTOR
 	_level_label.visible = screen == Screen.LEVEL or screen == Screen.PAUSE
 	_pause.visible = screen == Screen.PAUSE
@@ -303,6 +344,7 @@ func _on_level_button_pressed(number: int) -> void:
 
 func _on_level_succeeded(score: int) -> void:
 	var is_new := _sequence.record_score(score)
+	_save()
 	_level.show_best(_sequence.best_score(_sequence.level_number()), is_new)
 
 

@@ -42,7 +42,7 @@ Chaque ligne correspond à une tâche du cycle de CLAUDE.md. Priorités : **P1**
 | [x] | P1 | Score | 1000 − 10 par seconde, sans descendre sous 0, affiché seulement à l'arrivée ; pas de score au game over | Chrono |
 | [x] | P1 | Données de niveau | Un niveau est décrit dans sa propre scène, chargée par un gestionnaire | – |
 | [x] | P1 | Enchaînement des niveaux | Une réussite mène au niveau suivant ; un échec relance le même | Données de niveau |
-| [ ] | P2 | Sauvegarde | Les niveaux débloqués, les meilleurs scores et la photo du badge sont conservés | Score, Enchaînement |
+| [x] | P2 | Sauvegarde | Les niveaux débloqués, les meilleurs scores et la photo du badge sont conservés ; une broyeuse dans le menu efface tout après confirmation | Score, Enchaînement |
 
 ### M3 – Contenu : les 10 niveaux
 
@@ -64,7 +64,7 @@ Progression indicative, à ajuster en jouant :
 
 ### M4 – Habillage
 
-- [x] P1 – Menu principal et sélection de niveau (déblocage et meilleur score par niveau affiché dans le sélecteur, limités à la session en attendant la sauvegarde)
+- [x] P1 – Menu principal et sélection de niveau (déblocage et meilleur score par niveau affiché dans le sélecteur, sauvegardés)
 - [x] P1 – Écrans de fin de niveau (score, chrono, meilleur score et « New best! », boutons Next/Finish, Replay, Level select ; réussite imprimée sur un ticket de papier toilette qui se déroule ; l'écran du score total reste à habiller)
 - [ ] P2 – Graphismes : joueur, managers, décor de bureau (interface faite : thème « open space sarcastique », polices, rangs, animations)
 - [ ] P2 – Sons : pas, alerte de détection, porte, réussite

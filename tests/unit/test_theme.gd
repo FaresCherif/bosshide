@@ -48,7 +48,7 @@ func test_les_anciennes_variations_du_post_it_ont_disparu() -> void:
 
 
 func test_les_objets_du_mur_ont_leurs_styles() -> void:
-	for variation in ["TimeClockButton", "ClipboardButton", "AlarmButton"]:
+	for variation in ["TimeClockButton", "ClipboardButton", "ShredderButton", "AlarmButton"]:
 		assert_eq(_theme().get_type_variation_base(variation), &"Button", variation + " doit etre une variation de Button")
 		for style in ["normal", "hover", "pressed", "disabled"]:
 			assert_true(_theme().has_stylebox(style, variation), "%s doit avoir le style %s" % [variation, style])

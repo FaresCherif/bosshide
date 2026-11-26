@@ -169,3 +169,51 @@ func test_egaler_ou_rater_le_meilleur_score_n_est_pas_un_record() -> void:
 	sequence.record_score(500)
 	assert_false(sequence.record_score(500), "Egaler le meilleur score n'est pas un record")
 	assert_false(sequence.record_score(300), "Un score plus faible n'est pas un record")
+
+
+func test_restaurer_les_deblocages_et_les_meilleurs_scores() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.restore(2, {1: 780})
+	assert_eq(sequence.unlocked_count(), 2, "Deux niveaux doivent etre debloques")
+	assert_eq(sequence.best_score(1), 780, "Le meilleur score doit etre restaure")
+	assert_eq(sequence.total_score(), 0, "Restaurer ne doit pas compter de score de partie")
+
+
+func test_restaurer_borne_les_deblocages() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.restore(99, {})
+	assert_eq(sequence.unlocked_count(), PATHS.size(), "Pas plus de niveaux que le jeu n'en a")
+	sequence.restore(0, {})
+	assert_eq(sequence.unlocked_count(), 1, "Le niveau 1 reste toujours debloque")
+
+
+func test_restaurer_ignore_les_meilleurs_scores_invalides() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.restore(3, {0: 100, 4: 100, 2: -1, 3: "abc", "1": 50})
+	for number in [1, 2, 3]:
+		assert_false(sequence.has_best_score(number), "Le niveau %d ne doit pas avoir de meilleur score" % number)
+
+
+func test_un_niveau_reussi_debloque_le_suivant_a_la_restauration() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.restore(1, {2: 600})
+	assert_eq(sequence.unlocked_count(), 3, "Un niveau avec un meilleur score a ete reussi : le suivant est debloque")
+
+
+func test_les_meilleurs_scores_par_numero_de_niveau() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.select(1)
+	sequence.record_score(700)
+	assert_eq(sequence.best_scores_by_number(), {1: 700}, "Les cles doivent etre les numeros de niveau")
+
+
+func test_remettre_a_zero_la_progression() -> void:
+	var sequence := LevelSequence.new(PATHS)
+	sequence.record_score(700)
+	sequence.advance()
+	sequence.record_score(600)
+	sequence.reset_progress()
+	assert_eq(sequence.unlocked_count(), 1, "Seul le niveau 1 doit rester debloque")
+	assert_false(sequence.has_best_score(1), "Les meilleurs scores doivent etre effaces")
+	assert_eq(sequence.total_score(), 0, "Les scores de la partie doivent etre effaces")
+	assert_eq(sequence.level_number(), 1, "Le niveau courant doit revenir au premier")

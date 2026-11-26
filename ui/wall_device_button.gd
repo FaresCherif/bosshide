@@ -3,12 +3,12 @@ class_name WallDeviceButton
 extends GlowButton
 
 # Bouton du menu dessine comme un objet fixe au mur, avec le halo de GlowButton. Le fond vient du theme
-# (TimeClockButton, ClipboardButton, AlarmButton) ; ce script ajoute les details
+# (TimeClockButton, ClipboardButton, ShredderButton, AlarmButton) ; ce script ajoute les details
 # dans le haut de l'objet, au-dessus du texte (affichage seulement).
 
-const DEVICES := ["time_clock", "clipboard", "alarm"]
+const DEVICES := ["time_clock", "clipboard", "shredder", "alarm"]
 
-@export_enum("time_clock", "clipboard", "alarm") var device := "time_clock":
+@export_enum("time_clock", "clipboard", "shredder", "alarm") var device := "time_clock":
 	set(value):
 		device = value if DEVICES.has(value) else "time_clock"
 		queue_redraw()
@@ -20,6 +20,8 @@ func _draw() -> void:
 			_draw_time_clock()
 		"clipboard":
 			_draw_clipboard()
+		"shredder":
+			_draw_shredder()
 		"alarm":
 			_draw_alarm()
 	# Halo d'interaction par-dessus l'objet
@@ -44,6 +46,22 @@ func _draw_clipboard() -> void:
 	draw_rect(Rect2(size.x / 2.0 - 32, -6, 64, 24), metal.darkened(0.25))
 	draw_rect(Rect2(size.x / 2.0 - 30, -4, 60, 20), metal)
 	draw_rect(Rect2(size.x / 2.0 - 16, 2, 32, 7), metal.darkened(0.4))
+
+
+# Fente noire avec une feuille a moitie avalee et des lamelles qui tombent dessous
+func _draw_shredder() -> void:
+	var paper := Color(0.97, 0.97, 0.94, 1)
+	var sheet := Rect2(size.x / 2.0 - 22, -10, 44, 22)
+	draw_rect(sheet, paper)
+	for i in 3:
+		draw_line(sheet.position + Vector2(6, 5 + i * 5), sheet.position + Vector2(36, 5 + i * 5), Color(0.6, 0.6, 0.65, 1), 1.0)
+	var slot := Rect2(14, 10, size.x - 28, 8)
+	draw_rect(slot, Color(0.05, 0.05, 0.06, 1))
+	for i in 6:
+		var x := slot.position.x + 10 + i * (slot.size.x - 20) / 5.0
+		draw_line(Vector2(x, slot.end.y), Vector2(x + (i % 2) * 2 - 1, slot.end.y + 14 + (i % 3) * 4), paper, 3.0)
+	# Voyant rouge du moteur
+	draw_circle(Vector2(size.x - 20, 30), 4.0, Color(0.85, 0.2, 0.2, 1))
 
 
 # Mention BREAK GLASS et vitre autour du texte
